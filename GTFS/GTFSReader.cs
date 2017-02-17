@@ -1229,6 +1229,9 @@ namespace GTFS
                 case "shape_dist_traveled":
                     stopTime.ShapeDistTravelled = this.ParseFieldString(header.Name, fieldName, value);
                     break;
+                case "timepoint":
+                    stopTime.TimePoint = this.ParseFieldTimePointType(header.Name, fieldName, value);
+                    break;
             }
         }
 
@@ -1643,6 +1646,36 @@ namespace GTFS
                     return PickupType.PhoneForPickup;
                 case "3":
                     return PickupType.DriverForPickup;
+            }
+            throw new GTFSParseException(name, fieldName, value);
+        }
+
+        /// <summary>
+        /// Parses a timepoint-type field.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private TimePointType? ParseFieldTimePointType(string name, string fieldName, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            { // there is no value.
+                return null;
+            }
+
+            // clean first.
+            value = this.CleanFieldValue(value);
+
+            //0 - Times are considered approximate
+            //1 - Times are considered exact
+            
+            switch (value)
+            {
+                case "0":
+                    return TimePointType.Approximate;
+                case "1":
+                    return TimePointType.Exact;                
             }
             throw new GTFSParseException(name, fieldName, value);
         }

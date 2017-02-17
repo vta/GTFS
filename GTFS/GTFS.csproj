@@ -63,6 +63,7 @@
     <Compile Include="Entities\Enumerations\DirectionType.cs" />
     <Compile Include="Entities\Enumerations\DropOffType.cs" />
     <Compile Include="Entities\Enumerations\ExceptionType.cs" />
+    <Compile Include="Entities\Enumerations\TimePointType.cs" />
     <Compile Include="Entities\Enumerations\LocationType.cs" />
     <Compile Include="Entities\Enumerations\PaymentMethodType.cs" />
     <Compile Include="Entities\Enumerations\PickupType.cs" />

@@ -92,6 +92,12 @@ namespace GTFS.Entities
         public string ShapeDistTravelled { get; set; }
 
         /// <summary>
+        /// Gets or sets a distance from the first shape point.
+        /// </summary>
+        [FieldName("timepoint")]
+        public TimePointType? TimePoint { get; set; }
+
+        /// <summary>
         /// Returns a description of this trip.
         /// </summary>
         /// <returns></returns>
