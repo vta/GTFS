@@ -564,7 +564,7 @@ namespace GTFS
             if (file != null)
             {
                 bool initialized = false;
-                var data = new string[9];
+                var data = new string[10];
                 foreach (var entity in entities)
                 {
                     if (!initialized)
@@ -584,6 +584,7 @@ namespace GTFS
                         data[6] = "pickup_type";
                         data[7] = "drop_off_type";
                         data[8] = "shape_dist_traveled";
+                        data[9] = "timepoint";
                         file.Write(data);
                         initialized = true;
                     }
@@ -598,11 +599,12 @@ namespace GTFS
                     data[6] = this.WriteFieldPickupType("stop_times", "pickup_type", entity.PickupType);
                     data[7] = this.WriteFieldDropOffType("stop_times", "drop_off_type", entity.DropOffType);
                     data[8] = this.WriteFieldString("stop_times", "shape_dist_traveled", entity.ShapeDistTravelled);
+                    data[9] = this.WriteFieldTimePointType("stop_times", "timepoint", entity.TimePoint);
                     file.Write(data);
                 }
                 file.Close();
             }
-        }
+        }        
 
         /// <summary>
         /// Writes the transfers.
@@ -926,6 +928,28 @@ namespace GTFS
                         return "2";
                     case PickupType.DriverForPickup:
                         return "3";
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Writes the pickup type.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string WriteFieldTimePointType(string name, string fieldName, TimePointType? value)
+        {
+            if (value.HasValue)
+            {
+                switch (value.Value)
+                {
+                    case TimePointType.Approximate:
+                        return "0";
+                    case TimePointType.Exact:
+                        return "1";                    
                 }
             }
             return string.Empty;
