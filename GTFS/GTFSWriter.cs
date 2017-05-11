@@ -67,7 +67,8 @@ namespace GTFS
         /// <param name="target"></param>
         /// <param name="selectedAgencies"></param>
         /// <param name="selectedRoutes"></param>
-        public void Write(T feed, IEnumerable<string> selectedIds, IEnumerable<IGTFSTargetFile> target, bool selectedAgencies = false, bool selectedRoutes = false)
+        /// <param name="onlyTripsWithShapes"></param>
+        public void Write(T feed, IEnumerable<string> selectedIds, IEnumerable<IGTFSTargetFile> target, bool selectedAgencies = false, bool selectedRoutes = false, bool onlyTripsWithShapes = false)
         {
             if (!selectedAgencies && !selectedRoutes) throw new Exception("One of the 2 booleans must be true!");
             if (selectedAgencies && selectedRoutes) throw new Exception("Only one of the 2 booleans may be true!");
@@ -95,13 +96,35 @@ namespace GTFS
 
             var routeIds = routesToWrite.Select(x => x.Id).ToList();
             var tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId));
+            
+            if (onlyTripsWithShapes) {
+                var allShapeIds = feed.Shapes.Select(x => x.Id).Distinct().ToList();
+                tripsToWrite = tripsToWrite.Where(x => allShapeIds.Contains(x.ShapeId)).ToList();
+                List<string> newRoutesToWriteIds = new List<string>();
+                foreach (Trip trip in tripsToWrite)
+                {
+                    if (!newRoutesToWriteIds.Contains(trip.RouteId))
+                    {
+                        newRoutesToWriteIds.Add(trip.RouteId);
+                        newRoutesToWriteIds.Sort();
+                    }
+                }
+                routesToWrite = routesToWrite.Where(x => newRoutesToWriteIds.Contains(x.Id)).ToList();
+            }
+
             var tripIds = tripsToWrite.Select(x => x.Id).ToList();
             var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId));
             var stopIds = stopTimesToWrite.Select(x => x.StopId).ToList();
             var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id));
             var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId));
             var shapeIds = tripsToWrite.Select(x => x.ShapeId).ToList();
-            var shapesToWrite = feed.Shapes.Where(x => shapeIds.Contains(x.Id));
+            List<Shape> shapesToWrite = new List<Shape>();
+            foreach(var shapeId in shapeIds)
+            {
+                var shapePoints = feed.Shapes.Get(shapeId);
+                shapesToWrite.AddRange(shapePoints);
+            }            
+            //var shapesToWrite = feed.Shapes.Where(x => shapeIds.Contains(x.Id));
             var frequenciesToWrite = feed.Frequencies.Where(x => tripIds.Contains(x.TripId));
             var fareRulesToWrite = feed.FareRules.Where(x => routeIds.Contains(x.RouteId));
             var fareRulesIds = fareRulesToWrite.Select(x => x.FareId).ToList();
