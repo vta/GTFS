@@ -117,7 +117,7 @@ namespace GTFS
             var stopIds = stopTimesToWrite.Select(x => x.StopId).ToList();
             var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id));
             var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId));
-            var shapeIds = tripsToWrite.Select(x => x.ShapeId).ToList();
+            var shapeIds = tripsToWrite.Select(x => x.ShapeId).Distinct().ToList();
             List<Shape> shapesToWrite = new List<Shape>();
             foreach(var shapeId in shapeIds)
             {
