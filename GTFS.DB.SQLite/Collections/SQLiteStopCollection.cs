@@ -63,7 +63,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <param name="entity"></param>
         public void Add(Stop entity)
         {
-            string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding);";
+            string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding, :passengers_boarding, :passengers_alighting);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -80,6 +80,8 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters.Add(new SQLiteParameter(@"parent_station", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"stop_timezone", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"wheelchair_boarding", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"passengers_boarding", DbType.Int32));
+                command.Parameters.Add(new SQLiteParameter(@"passengers_alighting", DbType.Int32));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
@@ -94,6 +96,8 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters[10].Value = entity.ParentStation;
                 command.Parameters[11].Value = entity.Timezone;
                 command.Parameters[12].Value = entity.WheelchairBoarding;
+                command.Parameters[13].Value = entity.PassengersBoarding;
+                command.Parameters[14].Value = entity.PassengersAlighting;
 
                 command.ExecuteNonQuery();
             }
@@ -107,7 +111,7 @@ namespace GTFS.DB.SQLite.Collections
                 {
                     foreach (var entity in entities)
                     {
-                        string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding);";
+                        string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding, :passengers_boarding, :passengers_alighting);";
                         command.CommandText = sql;
                         command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"id", DbType.String));
@@ -122,6 +126,8 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters.Add(new SQLiteParameter(@"parent_station", DbType.String));
                         command.Parameters.Add(new SQLiteParameter(@"stop_timezone", DbType.String));
                         command.Parameters.Add(new SQLiteParameter(@"wheelchair_boarding", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"passengers_boarding", DbType.Int32));
+                        command.Parameters.Add(new SQLiteParameter(@"passengers_alighting", DbType.Int32));
 
                         command.Parameters[0].Value = _id;
                         command.Parameters[1].Value = entity.Id;
@@ -136,6 +142,8 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters[10].Value = entity.ParentStation;
                         command.Parameters[11].Value = entity.Timezone;
                         command.Parameters[12].Value = entity.WheelchairBoarding;
+                        command.Parameters[13].Value = entity.PassengersBoarding;
+                        command.Parameters[14].Value = entity.PassengersAlighting;
 
                         command.ExecuteNonQuery();
                     }
@@ -151,7 +159,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public Stop Get(string entityId)
         {
-            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding FROM stop WHERE FEED_ID = :id AND id = :entityId";
+            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, passengers_boarding, passengers_alighting FROM stop WHERE FEED_ID = :id AND id = :entityId";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -173,7 +181,9 @@ namespace GTFS.DB.SQLite.Collections
                     LocationType = x.IsDBNull(8) ? null : (LocationType?)x.GetInt64(8),
                     ParentStation = x.IsDBNull(9) ? null : x.GetString(9),
                     Timezone = x.IsDBNull(10) ? null : x.GetString(10),
-                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11)
+                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11),
+                    PassengersBoarding = x.GetInt32(12),
+                    PassengersAlighting = x.GetInt32(13)
                 };
             }).FirstOrDefault();
         }
