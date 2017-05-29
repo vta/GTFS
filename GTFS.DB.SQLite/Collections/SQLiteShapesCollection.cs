@@ -61,7 +61,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <param name="entity"></param>
         public void Add(Shape entity)
         {
-            string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);";
+            string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled, :stop_id);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -71,6 +71,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters.Add(new SQLiteParameter(@"shape_pt_lon", DbType.Double));
                 command.Parameters.Add(new SQLiteParameter(@"shape_pt_sequence", DbType.Int64));
                 command.Parameters.Add(new SQLiteParameter(@"shape_dist_traveled", DbType.Double));
+                command.Parameters.Add(new SQLiteParameter(@"stop_id", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
@@ -78,6 +79,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters[3].Value = entity.Longitude;
                 command.Parameters[4].Value = entity.Sequence;
                 command.Parameters[5].Value = entity.DistanceTravelled;
+                command.Parameters[6].Value = entity.StopId;
 
                 command.ExecuteNonQuery();
             }
@@ -95,7 +97,7 @@ namespace GTFS.DB.SQLite.Collections
                 {
                     foreach(var entity in entities)
                     {
-                        string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);";
+                        string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled, :stop_id);";
                         command.CommandText = sql;
                         command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"id", DbType.String));
@@ -103,6 +105,7 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters.Add(new SQLiteParameter(@"shape_pt_lon", DbType.Double));
                         command.Parameters.Add(new SQLiteParameter(@"shape_pt_sequence", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"shape_dist_traveled", DbType.Double));
+                        command.Parameters.Add(new SQLiteParameter(@"stop_id", DbType.String));
 
                         command.Parameters[0].Value = _id;
                         command.Parameters[1].Value = entity.Id;
@@ -110,6 +113,7 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters[3].Value = entity.Longitude;
                         command.Parameters[4].Value = entity.Sequence;
                         command.Parameters[5].Value = entity.DistanceTravelled;
+                        command.Parameters[6].Value = entity.StopId;
 
                         command.ExecuteNonQuery();
                     }
@@ -124,7 +128,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<Shape> Get()
         {
-            string sql = "SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :id";
+            string sql = "SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled, stop_id FROM shape WHERE FEED_ID = :id";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -137,7 +141,8 @@ namespace GTFS.DB.SQLite.Collections
                     Latitude = x.GetDouble(1),
                     Longitude = x.GetDouble(2),
                     Sequence = (uint)x.GetInt64(3),
-                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
+                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4),
+                    StopId = x.IsDBNull(5) ? null : x.GetString(5)
                 };
             });
         }
@@ -149,7 +154,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<Shape> Get(string entityId)
         {
-            string sql = "SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :id AND id = :shapeId";
+            string sql = "SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled, stop_id FROM shape WHERE FEED_ID = :id AND id = :shapeId";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -164,7 +169,8 @@ namespace GTFS.DB.SQLite.Collections
                     Latitude = x.GetDouble(1),
                     Longitude = x.GetDouble(2),
                     Sequence = (uint)x.GetInt64(3),
-                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
+                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4),
+                    StopId = x.IsDBNull(5) ? null : x.GetString(5)
                 };
             });
         }

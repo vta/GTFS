@@ -65,6 +65,12 @@ namespace GTFS.Entities
         public double? DistanceTravelled { get; set; }
 
         /// <summary>
+        /// Each shape point can have an optional associated stop/waypoint id associated with it
+        /// </summary>
+        [FieldName("stop_id")]
+        public string StopId { get; set; }
+
+        /// <summary>
         /// Serves as a hash function.
         /// </summary>
         /// <returns></returns>
