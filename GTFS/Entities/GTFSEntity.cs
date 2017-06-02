@@ -25,12 +25,22 @@ namespace GTFS.Entities
     /// <summary>
     /// Represents a base-class for all GTFS entities.
     /// </summary>
-    public abstract class GTFSEntity
+    public abstract class GTFSEntity : System.IComparable<GTFSEntity>
     {
         /// <summary>
         /// Gets or sets a tag.
         /// </summary>
         /// <remarks>Can be used to attach extra information.</remarks>
         public object Tag { get; set; }
+
+        /// <summary>
+        /// Compares 2 GTFSEntities by looking at their ToString
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public int CompareTo(GTFSEntity obj)
+        {
+            return this.ToString().CompareTo(obj.ToString());
+        }
     }
 }
