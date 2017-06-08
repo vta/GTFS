@@ -95,7 +95,7 @@ namespace GTFS
             }
 
             var routeIds = routesToWrite.Select(x => x.Id).ToList();
-            var tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId));
+            var tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId)).ToList();
             
             if (onlyTripsWithShapes) {
                 var allShapeIds = feed.Shapes.Select(x => x.Id).Distinct().ToList();
@@ -113,10 +113,20 @@ namespace GTFS
             }
 
             var tripIds = tripsToWrite.Select(x => x.Id).ToList();
-            var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId));
+            var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId)).ToList();
             var stopIds = stopTimesToWrite.Select(x => x.StopId).ToList();
-            var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id));
-            var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId));
+            var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id)).ToList();
+            
+            //add stopsToWrite's stops' parent_stations not in stopsToWrite
+            var allStations = feed.Stops.Where(x => x.LocationType == LocationType.Station).ToList();
+            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.LocationType == LocationType.Stop && !x.ParentStation.Equals("")).ToList();
+            foreach (var stop in stopsToWrite_NotStations)
+            {
+                var station = allStations.FirstOrDefault(x => x.Id.Equals(stop.ParentStation));
+                if (!stopsToWrite.Contains(station)) stopsToWrite.Add(station);
+            }
+
+            var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId)).ToList();
             var shapeIds = tripsToWrite.Select(x => x.ShapeId).Distinct().ToList();
             List<Shape> shapesToWrite = new List<Shape>();
             foreach(var shapeId in shapeIds)
@@ -124,14 +134,13 @@ namespace GTFS
                 var shapePoints = feed.Shapes.Get(shapeId);
                 shapesToWrite.AddRange(shapePoints);
             }            
-            //var shapesToWrite = feed.Shapes.Where(x => shapeIds.Contains(x.Id));
-            var frequenciesToWrite = feed.Frequencies.Where(x => tripIds.Contains(x.TripId));
-            var fareRulesToWrite = feed.FareRules.Where(x => routeIds.Contains(x.RouteId));
+            var frequenciesToWrite = feed.Frequencies.Where(x => tripIds.Contains(x.TripId)).ToList();
+            var fareRulesToWrite = feed.FareRules.Where(x => routeIds.Contains(x.RouteId)).ToList();
             var fareRulesIds = fareRulesToWrite.Select(x => x.FareId).ToList();
-            var fareAttributesToWrite = feed.FareAttributes.Where(x => fareRulesIds.Contains(x.FareId));
+            var fareAttributesToWrite = feed.FareAttributes.Where(x => fareRulesIds.Contains(x.FareId)).ToList();
             var serviceIds = tripsToWrite.Select(x => x.ServiceId).ToList();
-            var calendarsToWrite = feed.Calendars.Where(x => serviceIds.Contains(x.ServiceId));
-            var calendarDatesToWrite = feed.CalendarDates.Where(x => serviceIds.Contains(x.ServiceId));
+            var calendarsToWrite = feed.Calendars.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
+            var calendarDatesToWrite = feed.CalendarDates.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
             // write files on-by-one.
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), agenciesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar_dates"), calendarDatesToWrite);
