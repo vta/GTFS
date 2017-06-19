@@ -71,12 +71,20 @@ namespace GTFS.DB.PostgreSQL
 
         public int AddFeed()
         {
-            throw new NotImplementedException();
+            string sqlInsertNewFeed = "INSERT INTO feed VALUES (1, null, null, null, null, null, null);";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sqlInsertNewFeed;
+                command.ExecuteNonQuery();
+            }
+            return (int)1;
         }
 
         public int AddFeed(IGTFSFeed feed)
         {
-            throw new NotImplementedException();
+            int newId = this.AddFeed();
+            feed.CopyTo(this.GetFeed(newId));
+            return newId;
         }
 
         public IGTFSFeed GetFeed(int id)
