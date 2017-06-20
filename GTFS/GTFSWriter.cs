@@ -119,7 +119,7 @@ namespace GTFS
             
             //add stopsToWrite's stops' parent_stations not in stopsToWrite
             var allStations = feed.Stops.Where(x => x.LocationType == LocationType.Station).ToList();
-            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.LocationType == LocationType.Stop && !x.ParentStation.Equals("")).ToList();
+            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.LocationType == LocationType.Stop && x.ParentStation != null && !x.ParentStation.Equals("")).ToList();
             foreach (var stop in stopsToWrite_NotStations)
             {
                 var station = allStations.FirstOrDefault(x => x.Id.Equals(stop.ParentStation));
