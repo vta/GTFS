@@ -49,7 +49,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\PostgreSQLAgencyCollection.cs" />
+    <Compile Include="Collections\PostgreSQLCalendarCollection.cs" />
+    <Compile Include="Collections\PostgreSQLCalendarDateCollection.cs" />
+    <Compile Include="Collections\PostgreSQLFareAttributesCollection.cs" />
+    <Compile Include="Collections\PostgreSQLFareRulesCollection.cs" />
+    <Compile Include="Collections\PostgreSQLFrequencyCollection.cs" />
+    <Compile Include="Collections\PostgreSQLRouteCollection.cs" />
+    <Compile Include="Collections\PostgreSQLShapesCollection.cs" />
+    <Compile Include="Collections\PostgreSQLStopCollection.cs" />
+    <Compile Include="Collections\PostgreSQLStopTimeCollection.cs" />
+    <Compile Include="Collections\PostgreSQLTransferCollection.cs" />
+    <Compile Include="Collections\PostgreSQLTripCollection.cs" />
+    <Compile Include="PostgreSQLGTFSFeed.cs" />
     <Compile Include="PostgreSQLGTFSFeedDB.cs" />
+    <Compile Include="PostgreSQLReaderEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,5 +75,6 @@
       <Name>GTFS</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

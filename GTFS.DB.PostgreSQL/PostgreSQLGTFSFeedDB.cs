@@ -4,15 +4,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace GTFS.DB.PostgreSQL
 {
+    /// <summary>
+    /// Represents a Postgre database that contains GTFS feeds.
+    /// </summary>
     public class PostgreSQLGTFSFeedDB : IGTFSFeedDB
     {
         /// <summary>
         /// Holds a connection.
         /// </summary>
         public NpgsqlConnection _connection;
+
+        /// <summary>
+        /// Returns the data source (filename of the db)
+        /// </summary>
+        public string GetDataSource()
+        {
+            return _connection.DataSource;
+        }
 
         /// <summary>
         /// Creates a new db.
@@ -87,9 +99,30 @@ namespace GTFS.DB.PostgreSQL
             return newId;
         }
 
+        /// <summary>
+        /// Returns the feed for the given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IGTFSFeed GetFeed(int id)
         {
-            throw new NotImplementedException();
+            string sql = "SELECT id FROM feed WHERE ID = :id";
+            var ids = new List<int>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter("id", DbType.Int64));
+                command.Parameters[0].Value = id;
+
+                using (var reader = command.ExecuteReader())
+                { // ok, feed was found!
+                    while (reader.Read())
+                    {
+                        return new PostgreSQLGTFSFeed(_connection, id);
+                    }
+                }
+            }
+            return null;
         }
 
         public IEnumerable<int> GetFeeds()
@@ -97,9 +130,51 @@ namespace GTFS.DB.PostgreSQL
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Removes the given feed.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public bool RemoveFeed(int id)
         {
-            throw new NotImplementedException();
+            this.RemoveAll("agency", id);
+            this.RemoveAll("calendar", id);
+            this.RemoveAll("calendar_date", id);
+            this.RemoveAll("fare_attribute", id);
+            this.RemoveAll("fare_rule", id);
+            this.RemoveAll("frequency", id);
+            this.RemoveAll("route", id);
+            this.RemoveAll("shape", id);
+            this.RemoveAll("stop", id);
+            this.RemoveAll("stop_time", id);
+            this.RemoveAll("transfer", id);
+            this.RemoveAll("trip", id);
+
+            string sql = "DELETE FROM feed WHERE ID = :id"; ;
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
+                command.Parameters[0].Value = id;
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
+
+        /// <summary>
+        /// Deletes all info from one table about one feed.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="id"></param>
+        private void RemoveAll(string table, int id)
+        {
+            string sql = string.Format("DELETE FROM {0} WHERE FEED_ID = :feed_id", table);
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                command.Parameters[0].Value = id;
+                command.ExecuteNonQuery();
+            }
         }
     }
 }
