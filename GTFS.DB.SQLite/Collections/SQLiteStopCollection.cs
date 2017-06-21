@@ -314,7 +314,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<Stop> Get()
         {
-            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding FROM stop WHERE FEED_ID = :id";
+            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, passengers_boarding, passengers_alighting FROM stop WHERE FEED_ID = :id";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -334,7 +334,9 @@ namespace GTFS.DB.SQLite.Collections
                     LocationType = x.IsDBNull(8) ? null : (LocationType?)x.GetInt64(8),
                     ParentStation = x.IsDBNull(9) ? null : x.GetString(9),
                     Timezone = x.IsDBNull(10) ? null : x.GetString(10),
-                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11)
+                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11),
+                    PassengersBoarding = x.GetInt32(12),
+                    PassengersAlighting = x.GetInt32(13)
                 };
             });
         }
