@@ -91,12 +91,12 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void AddRange(IUniqueEntityCollection<Trip> entities)
-        {
-            using (var command = _connection.CreateCommand())
+        {            
+            using (var transaction = _connection.BeginTransaction())
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var trip in entities)
                 {
-                    foreach (var trip in entities)
+                    using (var command = _connection.CreateCommand())
                     {
                         string sql = "INSERT INTO trip VALUES (:feed_id, :id, :route_id, :service_id, :trip_headsign, :trip_short_name, :direction_id, :block_id, :shape_id, :wheelchair_accessible);";
                         command.CommandText = sql;
@@ -125,9 +125,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                         command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                         command.ExecuteNonQuery();
                     }
-                    transaction.Commit();
                 }
-            }
+                transaction.Commit();
+            }            
         }
 
         public Trip Get(string entityId)

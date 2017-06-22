@@ -95,12 +95,12 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void AddRange(IEnumerable<StopTime> entities)
-        {
-            using (var command = _connection.CreateCommand())
+        {   
+            using (var transaction = _connection.BeginTransaction())
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var stopTime in entities)
                 {
-                    foreach (var stopTime in entities)
+                    using (var command = _connection.CreateCommand())
                     {
                         string sql = "INSERT INTO stop_time VALUES (:feed_id, :trip_id, :arrival_time, :departure_time, :stop_id, :stop_sequence, :stop_headsign, :pickup_type, :drop_off_type, :shape_dist_traveled);";
                         command.CommandText = sql;
@@ -128,9 +128,9 @@ namespace GTFS.DB.PostgreSQL.Collections
 
                         command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                         command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    }                        
                 }
+                transaction.Commit();
             }
         }
 

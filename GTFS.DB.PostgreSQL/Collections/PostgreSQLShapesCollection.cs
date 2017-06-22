@@ -91,11 +91,11 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entities"></param>
         public void AddRange(IEntityCollection<Shape> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var transaction = _connection.BeginTransaction())
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var entity in entities)
                 {
-                    foreach(var entity in entities)
+                    using (var command = _connection.CreateCommand())
                     {
                         string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);";
                         command.CommandText = sql;
@@ -116,9 +116,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                         command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                         command.ExecuteNonQuery();
                     }
-                    transaction.Commit();
-                }                
-            }
+                }
+                transaction.Commit();
+            }            
         }
 
         /// <summary>

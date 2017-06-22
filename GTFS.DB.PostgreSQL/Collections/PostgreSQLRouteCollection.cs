@@ -95,12 +95,12 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void AddRange(IUniqueEntityCollection<Route> entities)
-        {
-            using (var command = _connection.CreateCommand())
+        {   
+            using (var transaction = _connection.BeginTransaction())
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var entity in entities)
                 {
-                    foreach (var entity in entities)
+                    using (var command = _connection.CreateCommand())
                     {
                         string sql = "INSERT INTO route VALUES (:feed_id, :id, :agency_id, :route_short_name, :route_long_name, :route_desc, :route_type, :route_url, :route_color, :route_text_color);";
                         command.CommandText = sql;
@@ -129,8 +129,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                         command.ExecuteNonQuery();
                     }
-                    transaction.Commit();
                 }
+                transaction.Commit();
             }
         }
 
