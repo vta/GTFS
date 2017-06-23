@@ -46,7 +46,7 @@ namespace GTFS.IO.CSV
         /// <param name="stream"></param>
         public CSVStreamWriter(Stream stream)
         {
-            _stream = new StreamWriter(stream, new System.Text.UTF8Encoding(false));
+            _stream = new StreamWriter(stream, new System.Text.UTF8Encoding(true));
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace GTFS.IO.CSV
         /// <param name="seperator"></param>
         public CSVStreamWriter(Stream stream, char seperator)
         {
-            _stream = new StreamWriter(stream, new System.Text.UTF8Encoding(false));
+            _stream = new StreamWriter(stream, new System.Text.UTF8Encoding(true));
             _seperator = seperator;
         }
 
