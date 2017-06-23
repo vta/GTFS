@@ -91,7 +91,28 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entities"></param>
         public void AddRange(IEntityCollection<Shape> entities)
         {
-            using (var transaction = _connection.BeginTransaction())
+            DataSet dataSet = new DataSet();
+            NpgsqlDataAdapter dataApapter = new NpgsqlDataAdapter();
+            foreach (var entity in entities)
+            {
+                dataApapter.InsertCommand = new NpgsqlCommand("INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);");
+                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
+                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_pt_lat", DbType.Double));
+                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_pt_lon", DbType.Double));
+                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_pt_sequence", DbType.Int64));
+                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.Double));
+
+                dataApapter.InsertCommand.Parameters[0].Value = _id;
+                dataApapter.InsertCommand.Parameters[1].Value = entity.Id;
+                dataApapter.InsertCommand.Parameters[2].Value = entity.Latitude;
+                dataApapter.InsertCommand.Parameters[3].Value = entity.Longitude;
+                dataApapter.InsertCommand.Parameters[4].Value = entity.Sequence;
+                dataApapter.InsertCommand.Parameters[5].Value = entity.DistanceTravelled;
+                dataApapter.InsertCommand.ExecuteNonQuery();
+            }            
+
+            /*using (var transaction = _connection.BeginTransaction())
             {
                 foreach (var entity in entities)
                 {
@@ -118,7 +139,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     }
                 }
                 transaction.Commit();
-            }            
+            }*/
         }
 
         /// <summary>
