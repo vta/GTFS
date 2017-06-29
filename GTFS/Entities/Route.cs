@@ -120,7 +120,7 @@ namespace GTFS.Entities
                 hash = hash * 43 + (this.ShortName ?? string.Empty).GetHashCode();
                 hash = hash * 43 + this.TextColor.GetHashCode();
                 hash = hash * 43 + this.Type.GetHashCode();
-                hash = hash * 43 + this.Url.GetHashCode();
+                hash = hash * 43 + (this.Url ?? string.Empty).GetHashCode();
                 return hash;
             }
         }
