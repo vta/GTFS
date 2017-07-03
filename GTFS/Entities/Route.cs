@@ -118,7 +118,7 @@ namespace GTFS.Entities
                 hash = hash * 43 + (this.Id ?? string.Empty).GetHashCode();
                 hash = hash * 43 + (this.LongName ?? string.Empty).GetHashCode();
                 hash = hash * 43 + (this.ShortName ?? string.Empty).GetHashCode();
-                hash = hash * 43 + this.TextColor.GetHashCode();
+                hash = hash * 43 + (this.TextColor ?? -1).GetHashCode();
                 hash = hash * 43 + this.Type.GetHashCode();
                 hash = hash * 43 + (this.Url ?? string.Empty).GetHashCode();
                 return hash;
@@ -139,9 +139,9 @@ namespace GTFS.Entities
                     (this.Id ?? string.Empty) == (other.Id ?? string.Empty) &&
                     (this.LongName ?? string.Empty) == (other.LongName ?? string.Empty) &&
                     (this.ShortName ?? string.Empty) == (other.ShortName ?? string.Empty) &&
-                    this.TextColor == other.TextColor &&
+                    (this.TextColor ?? -1) == (other.TextColor ?? -1) &&
                     this.Type == other.Type &&
-                    this.Url == other.Url;
+                    (this.Url ?? string.Empty) == (other.Url ?? string.Empty);
             }
             return false;
         }
