@@ -112,7 +112,18 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public bool Remove(string entityId)
         {
-            throw new NotImplementedException();
+            string sql = "DELETE FROM fare_rule WHERE FEED_ID = :feed_id AND fare_id = :fare_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
+
+                command.Parameters[0].Value = _id;
+                command.Parameters[1].Value = entityId;
+
+                return command.ExecuteNonQuery() > 0;
+            }
         }
 
         /// <summary>
@@ -163,6 +174,73 @@ namespace GTFS.DB.SQLite.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.Get().GetEnumerator();
+        }
+
+        public bool Update(string entityId, FareRule newEntity)
+        {
+            string sql = "UPDATE fare_rule SET FEED_ID=:feed_id, fare_id=:fare_id, route_id=:route_id, origin_id=:origin_id, destination_id=:destination_id, contains_id=:contains_id WHERE fare_id=:entityId;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"route_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"origin_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"destination_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"contains_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"entityId", DbType.String));
+
+                command.Parameters[0].Value = _id;
+                command.Parameters[1].Value = newEntity.FareId;
+                command.Parameters[2].Value = newEntity.RouteId;
+                command.Parameters[3].Value = newEntity.OriginId;
+                command.Parameters[4].Value = newEntity.DestinationId;
+                command.Parameters[5].Value = newEntity.ContainsId;
+                command.Parameters[6].Value = entityId;
+
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
+
+        public void AddRange(IUniqueEntityCollection<FareRule> entities)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var entity in entities)
+                    {
+                        string sql = "INSERT INTO fare_rule VALUES (:feed_id, :fare_id, :route_id, :origin_id, :destination_id, :contains_id);";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"route_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"origin_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"destination_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"contains_id", DbType.String));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = entity.FareId;
+                        command.Parameters[2].Value = entity.RouteId;
+                        command.Parameters[3].Value = entity.OriginId;
+                        command.Parameters[4].Value = entity.DestinationId;
+                        command.Parameters[5].Value = entity.ContainsId;
+
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }            
+        }
+
+        public void RemoveRange(IEnumerable<string> entityIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAll()
+        {
+            throw new NotImplementedException();
         }
     }
 }

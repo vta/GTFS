@@ -80,6 +80,33 @@ namespace GTFS.DB.SQLite.Collections
             }
         }
 
+        public void AddRange(IEntityCollection<CalendarDate> entities)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var entity in entities)
+                    {
+                        string sql = "INSERT INTO calendar_date VALUES (:feed_id, :service_id, :date, :exception_type);";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"service_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"date", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"exception_type", DbType.Int64));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = entity.ServiceId;
+                        command.Parameters[2].Value = entity.Date.ToUnixTime();
+                        command.Parameters[3].Value = (int)entity.ExceptionType;
+
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }
+        }
+
         /// <summary>
         /// Returns all entities.
         /// </summary>
@@ -119,7 +146,18 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public bool Remove(string entityId)
         {
-            throw new NotImplementedException();
+            string sql = "DELETE FROM calendar_date WHERE FEED_ID = :feed_id AND service_id = :service_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                command.Parameters.Add(new SQLiteParameter(@"service_id", DbType.String));
+
+                command.Parameters[0].Value = _id;
+                command.Parameters[1].Value = entityId;
+
+                return command.ExecuteNonQuery() > 0;
+            }
         }
 
         /// <summary>
@@ -138,6 +176,19 @@ namespace GTFS.DB.SQLite.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.Get().GetEnumerator();
+        }
+
+        public void RemoveAll()
+        {
+            string sql = "DELETE from calendar_date WHERE FEED_ID = :feed_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+
+                command.Parameters[0].Value = _id;
+                command.ExecuteNonQuery();
+            }
         }
     }
 }

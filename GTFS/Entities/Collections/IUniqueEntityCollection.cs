@@ -37,6 +37,18 @@ namespace GTFS.Entities.Collections
         void Add(T entity);
 
         /// <summary>
+        /// Adds a range of entities.
+        /// </summary>
+        /// <param name="entities"></param>
+        void AddRange(IUniqueEntityCollection<T> entities);
+
+        /// <summary>
+        /// Removes a range of entities.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        void RemoveRange(IEnumerable<string> entityIds);
+
+        /// <summary>
         /// Gets the entity with the given id.
         /// </summary>
         /// <param name="entityId"></param>
@@ -58,6 +70,19 @@ namespace GTFS.Entities.Collections
         bool Remove(string entityId);
 
         /// <summary>
+        /// Removes all entities from the collection and database
+        /// </summary>
+        void RemoveAll();
+
+        /// <summary>
+        /// Update the entity with the given id.
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="newEntity"></param>
+        /// <returns></returns>
+        bool Update(string entityId, T newEntity);
+
+        /// <summary>
         /// Returns all entities.
         /// </summary>
         /// <returns></returns>
@@ -69,6 +94,6 @@ namespace GTFS.Entities.Collections
         int Count
         {
             get;
-        }
+        }        
     }
 }

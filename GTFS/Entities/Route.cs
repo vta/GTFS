@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using GTFS.Attributes;
 using GTFS.Entities.Enumerations;
 
@@ -92,6 +93,17 @@ namespace GTFS.Entities
         public int? TextColor { get; set; }
 
         /// <summary>
+        /// Returns a description of this route.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            if (this.LongName != null && this.LongName != "") return this.LongName;
+            else if (this.ShortName != null && this.ShortName != "") return this.ShortName;
+            else return this.Id;
+        }
+
+        /// <summary>
         /// Serves as a hash function.
         /// </summary>
         /// <returns></returns>
@@ -108,7 +120,7 @@ namespace GTFS.Entities
                 hash = hash * 43 + (this.ShortName ?? string.Empty).GetHashCode();
                 hash = hash * 43 + this.TextColor.GetHashCode();
                 hash = hash * 43 + this.Type.GetHashCode();
-                hash = hash * 43 + this.Url.GetHashCode();
+                hash = hash * 43 + (this.Url ?? string.Empty).GetHashCode();
                 return hash;
             }
         }
@@ -132,6 +144,26 @@ namespace GTFS.Entities
                     this.Url == other.Url;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns a new route given another route object
+        /// </summary>
+        public static Route From(Route route)
+        {
+            return new Route()
+            {
+                AgencyId = route.AgencyId,
+                Color = route.Color,
+                Description = route.Description,
+                Id = route.Id,
+                LongName = route.LongName,
+                ShortName = route.ShortName,
+                Tag = route.Tag,
+                TextColor = route.TextColor,
+                Type = route.Type,
+                Url = route.Url
+            };
         }
     }
 }

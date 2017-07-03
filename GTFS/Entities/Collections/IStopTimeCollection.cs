@@ -36,6 +36,35 @@ namespace GTFS.Entities.Collections
         void Add(StopTime entity);
 
         /// <summary>
+        /// Adds a range of  entities.
+        /// </summary>
+        /// <param name="entities"></param>
+        void AddRange(IEnumerable<StopTime> entities);
+
+        /// <summary>
+        /// Updates an entity based on the non-unique pair of stop and trip id (sequence needed to make it unique)
+        /// </summary>
+        /// <param name="stopId"></param>
+        /// <param name="tripId"></param>
+        /// <param name="newEntity"></param>
+        bool Update(string stopId, string tripId, StopTime newEntity);
+
+        /// <summary>
+        /// Updates an entity based on the non-unique pair of stop and trip id (sequence needed to make it unique)
+        /// </summary>
+        /// <param name="stopId"></param>
+        /// <param name="tripId"></param>
+        /// <param name="stopSequence"></param>
+        /// <param name="newEntity"></param>
+        bool Update(string stopId, string tripId, uint stopSequence, StopTime newEntity);
+
+        /// <summary>
+        /// Removes a range of entities
+        /// </summary>
+        /// <param name="entities"></param>
+        void RemoveRange(IEnumerable<StopTime> entities);
+
+        /// <summary>
         /// Gets all stop times.
         /// </summary>
         /// <returns></returns>
@@ -54,6 +83,18 @@ namespace GTFS.Entities.Collections
         int RemoveForTrip(string tripId);
 
         /// <summary>
+        /// Removes all stop times for the given trips.
+        /// </summary>
+        /// <returns></returns>
+        void RemoveForTrips(IEnumerable<string> tripIds);
+
+        /// <summary>
+        /// Removes all stop times in the database
+        /// </summary>
+        /// <returns></returns>
+        void RemoveAll();
+
+        /// <summary>
         /// Gets all stop times for the given stop.
         /// </summary>
         /// <returns></returns>
@@ -63,6 +104,6 @@ namespace GTFS.Entities.Collections
         /// Removes all stop times for the given stop.
         /// </summary>
         /// <returns></returns>
-        int RemoveForStop(string stopId);
+        int RemoveForStop(string stopId);        
     }
 }

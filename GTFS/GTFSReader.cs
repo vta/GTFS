@@ -69,7 +69,7 @@ namespace GTFS
             };
             this.TimeOfDayReader = (timeOfDayString) =>
             {
-                if (timeOfDayString == null || !(timeOfDayString.Length == 8 || timeOfDayString.Length == 7)) { throw new ArgumentException(string.Format("Invalid timeOfDayString: {0}", timeOfDayString)); }
+                if (timeOfDayString == null || !(timeOfDayString.Length == 8 || timeOfDayString.Length == 7)) { return new TimeOfDay() { Hours = 0, Minutes = 0, Seconds = 0 }; }
 
                 var timeOfDay = new TimeOfDay();
                 if (timeOfDayString.Length == 8)
@@ -159,6 +159,12 @@ namespace GTFS
             }
             catch (Exception ex)
             { // throw a GFTS parse exception instead.
+                return new TimeOfDay()
+                {
+                    Hours = 0,
+                    Minutes = 0,
+                    Seconds = 0
+                };
                 throw new GTFSParseException(name, fieldName, value, ex);
             }
         }
@@ -191,7 +197,7 @@ namespace GTFS
                 {
                     // oeps, file was not found!
                     // TODO: check if we should not return all missing files in the exception?
-                    throw new GTFSRequiredFileMissingException(missingRequiredFiles.First());
+                    //throw new GTFSRequiredFileMissingException(missingRequiredFiles.First());
                 }
 
                 var missingRequiredFileSets = GetRequiredFileSets()
@@ -202,7 +208,7 @@ namespace GTFS
                 {
                     // oeps, no file from file set was found!
                     // TODO: check if we should not return all missing file sets in the exception?
-                    throw new GTFSRequiredFileSetMissingException(missingRequiredFileSets.First());
+                    //throw new GTFSRequiredFileSetMissingException(missingRequiredFileSets.First());
                 }
             }
 
@@ -820,7 +826,46 @@ namespace GTFS
         /// <returns></returns>
         protected virtual FeedInfo ParseFeedInfo(T feed, GTFSSourceFileHeader header, string[] data)
         {
-            return null;
+            // check required fields.
+            this.CheckRequiredField(header, header.Name, this.FrequencyMap, "feed_publisher_name");
+            this.CheckRequiredField(header, header.Name, this.FrequencyMap, "feed_publisher_url");
+            this.CheckRequiredField(header, header.Name, this.FrequencyMap, "feed_lang");
+
+            // parse/set all fields.
+            FeedInfo feedInfo = new FeedInfo();
+            for(int idx = 0; idx < data.Length; idx++)
+            {
+                this.ParseFeedInfoField(feed, header, feedInfo, header.GetColumn(idx), data[idx]);
+            }
+            return feedInfo;
+        }
+
+        private void ParseFeedInfoField(T feed, GTFSSourceFileHeader header, FeedInfo feedInfo, string fieldName, string value)
+        {
+            this.CheckRequiredField(header, header.Name, this.FrequencyMap, "feed_publisher_name");
+            this.CheckRequiredField(header, header.Name, this.FrequencyMap, "feed_publisher_url");
+            this.CheckRequiredField(header, header.Name, this.FrequencyMap, "feed_lang");
+            switch (fieldName)
+            {
+                case "feed_publisher_name":
+                    feedInfo.PublisherName = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+                case "feed_publisher_url":
+                    feedInfo.PublisherUrl = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+                case "feed_lang":
+                    feedInfo.Lang = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+                case "feed_start_date":
+                    feedInfo.StartDate = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+                case "feed_end_date":
+                    feedInfo.EndDate = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+                case "feed_version":
+                    feedInfo.Version = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+            }
         }
 
         /// <summary>
@@ -1071,10 +1116,26 @@ namespace GTFS
                     stop.Description = this.ParseFieldString(header.Name, fieldName, value);
                     break;
                 case "stop_lat":
-                    stop.Latitude = this.ParseFieldDouble(header.Name, fieldName, value).Value;
+                    var parsedDouble = this.ParseFieldDouble(header.Name, fieldName, value);
+                    if(parsedDouble == null)
+                    {
+                        throw new GTFSParseException(header.Name, fieldName, value);
+                    }
+                    else
+                    {
+                        stop.Latitude = parsedDouble.Value;
+                    }
                     break;
                 case "stop_lon":
-                    stop.Longitude = this.ParseFieldDouble(header.Name, fieldName, value).Value;
+                    var parseDouble = this.ParseFieldDouble(header.Name, fieldName, value);
+                    if (parseDouble == null)
+                    {
+                        throw new GTFSParseException(header.Name, fieldName, value);
+                    }
+                    else
+                    {
+                        stop.Longitude = parseDouble.Value;
+                    }
                     break;
                 case "zone_id":
                     stop.Zone = this.ParseFieldString(header.Name, fieldName, value);
@@ -1676,7 +1737,7 @@ namespace GTFS
         }
 
         /// <summary>
-        /// Parses a double field.
+        /// Parses a double field. Returns null if value is null or empty 
         /// </summary>
         /// <param name="name"></param>
         /// <param name="fieldName"></param>
@@ -1695,6 +1756,7 @@ namespace GTFS
             double result;
             if (!double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out result))
             { // parsing failed!
+                return 0;
                 throw new GTFSParseException(name, fieldName, value);
             }
             return result;

@@ -51,6 +51,11 @@ namespace GTFS.IO
         }
 
         /// <summary>
+        /// Returns the path of this directory.
+        /// </summary>
+        public string DirectoryPath { get { return _directory.FullName; } }
+
+        /// <summary>
         /// Builds the new target files.
         /// </summary>
         private void BuildTargets()
@@ -69,7 +74,7 @@ namespace GTFS.IO
                 _targets.Add(new GTFSTargetFileStream(this.OpenWrite(_directory.FullName, "shapes"), "shapes"));
                 _targets.Add(new GTFSTargetFileStream(this.OpenWrite(_directory.FullName, "stops"), "stops"));
                 _targets.Add(new GTFSTargetFileStream(this.OpenWrite(_directory.FullName, "stop_times"), "stop_times"));
-                _targets.Add(new GTFSTargetFileStream(this.OpenWrite(_directory.FullName, "tranfers"), "tranfers"));
+                _targets.Add(new GTFSTargetFileStream(this.OpenWrite(_directory.FullName, "transfers"), "transfers"));
                 _targets.Add(new GTFSTargetFileStream(this.OpenWrite(_directory.FullName, "trips"), "trips"));
             }
         }

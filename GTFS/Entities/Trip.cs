@@ -23,6 +23,7 @@
 using GTFS.Attributes;
 using GTFS.Entities.Enumerations;
 using System.Collections.Generic;
+using System;
 
 namespace GTFS.Entities
 {
@@ -95,7 +96,10 @@ namespace GTFS.Entities
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("[{0}] {1}", this.ShortName, this.Headsign);
+            if (this.ShortName != null && this.ShortName != "" && this.Headsign != null && this.Headsign != "") return string.Format("{0} (to {1})", this.ShortName, this.Headsign);
+            else if (this.ShortName != null && this.ShortName != "") return string.Format("{0}", this.ShortName);
+            else if (this.Headsign != null && this.Headsign != "") return string.Format("{0} (to {1})", this.Id, this.Headsign);
+            else return this.Id;
         }
 
         /// <summary>
@@ -139,6 +143,26 @@ namespace GTFS.Entities
                     (this.ShortName ?? string.Empty) == (other.ShortName ?? string.Empty);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns a new trip given another trip object
+        /// </summary>
+        public static Trip From(Trip trip)
+        {
+            return new Trip()
+            {
+                AccessibilityType = trip.AccessibilityType,
+                BlockId = trip.BlockId,
+                Direction = trip.Direction,
+                Headsign = trip.Headsign,
+                Id = trip.Id,
+                RouteId = trip.RouteId,
+                ServiceId = trip.ServiceId,
+                ShapeId = trip.ShapeId,
+                ShortName = trip.ShortName,
+                Tag = trip.Tag
+            };
         }
     }
 }

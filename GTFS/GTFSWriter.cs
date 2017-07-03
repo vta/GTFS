@@ -55,8 +55,106 @@ namespace GTFS
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "shapes"), feed.Shapes);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stops"), feed.Stops);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), feed.StopTimes);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "tranfers"), feed.Transfers);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "transfers"), feed.Transfers);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), feed.Trips);
+        }
+
+        /// <summary>
+        /// Writes the given feed to the given target files.
+        /// </summary>
+        /// <param name="feed"></param>
+        /// <param name="selectedIds"></param>
+        /// <param name="target"></param>
+        /// <param name="selectedAgencies"></param>
+        /// <param name="selectedRoutes"></param>
+        /// <param name="onlyTripsWithShapes"></param>
+        public void Write(T feed, IEnumerable<string> selectedIds, IEnumerable<IGTFSTargetFile> target, bool selectedAgencies = false, bool selectedRoutes = false, bool onlyTripsWithShapes = false)
+        {
+            if (!selectedAgencies && !selectedRoutes) throw new Exception("One of the 2 booleans must be true!");
+            if (selectedAgencies && selectedRoutes) throw new Exception("Only one of the 2 booleans may be true!");
+
+            List<Agency> agenciesToWrite = new List<Agency>();
+            List<Route> routesToWrite = new List<Route>();
+
+            if (selectedAgencies)
+            {
+                agenciesToWrite = feed.Agencies.Where(x => selectedIds.Contains(x.Id)).ToList();
+                routesToWrite = feed.Routes.Where(x => selectedIds.Contains(x.AgencyId)).ToList();
+            }
+            else if (selectedRoutes)
+            {
+                routesToWrite = feed.Routes.Where(x => selectedIds.Contains(x.Id)).ToList();
+                foreach (Route route in routesToWrite)
+                {
+                    Agency agency = feed.Agencies.Where(x => route.AgencyId == x.Id).ToList().First();
+                    if (!agenciesToWrite.Contains(agency))
+                    {
+                        agenciesToWrite.Add(agency);
+                    }
+                }
+            }
+
+            var routeIds = routesToWrite.Select(x => x.Id).ToList();
+            var tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId)).ToList();
+            
+            if (onlyTripsWithShapes) {
+                var allShapeIds = feed.Shapes.Select(x => x.Id).Distinct().ToList();
+                tripsToWrite = tripsToWrite.Where(x => allShapeIds.Contains(x.ShapeId)).ToList();
+                List<string> newRoutesToWriteIds = new List<string>();
+                foreach (Trip trip in tripsToWrite)
+                {
+                    if (!newRoutesToWriteIds.Contains(trip.RouteId))
+                    {
+                        newRoutesToWriteIds.Add(trip.RouteId);
+                        newRoutesToWriteIds.Sort();
+                    }
+                }
+                routesToWrite = routesToWrite.Where(x => newRoutesToWriteIds.Contains(x.Id)).ToList();
+            }
+
+            var tripIds = tripsToWrite.Select(x => x.Id).ToList();
+            var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId)).ToList();
+            var stopIds = stopTimesToWrite.Select(x => x.StopId).ToList();
+            var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id)).ToList();
+            
+            //add stopsToWrite's stops' parent_stations not in stopsToWrite
+            var allStations = feed.Stops.Where(x => x.LocationType == LocationType.Station).ToList();
+            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.LocationType == LocationType.Stop && x.ParentStation != null && !x.ParentStation.Equals("")).ToList();
+            foreach (var stop in stopsToWrite_NotStations)
+            {
+                var station = allStations.FirstOrDefault(x => x.Id.Equals(stop.ParentStation));
+                if (!stopsToWrite.Contains(station)) stopsToWrite.Add(station);
+            }
+
+            var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId)).ToList();
+            var shapeIds = tripsToWrite.Select(x => x.ShapeId).Distinct().ToList();
+            List<Shape> shapesToWrite = new List<Shape>();
+            foreach(var shapeId in shapeIds)
+            {
+                var shapePoints = feed.Shapes.Get(shapeId);
+                shapesToWrite.AddRange(shapePoints);
+            }            
+            var frequenciesToWrite = feed.Frequencies.Where(x => tripIds.Contains(x.TripId)).ToList();
+            var fareRulesToWrite = feed.FareRules.Where(x => routeIds.Contains(x.RouteId)).ToList();
+            var fareRulesIds = fareRulesToWrite.Select(x => x.FareId).ToList();
+            var fareAttributesToWrite = feed.FareAttributes.Where(x => fareRulesIds.Contains(x.FareId)).ToList();
+            var serviceIds = tripsToWrite.Select(x => x.ServiceId).ToList();
+            var calendarsToWrite = feed.Calendars.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
+            var calendarDatesToWrite = feed.CalendarDates.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
+            // write files on-by-one.
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), agenciesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar_dates"), calendarDatesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar"), calendarsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "fare_attributes"), fareAttributesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "fare_rules"), fareRulesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "feed_info"), feed.GetFeedInfo());
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "frequencies"), frequenciesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "routes"), routesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "shapes"), shapesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stops"), stopsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), stopTimesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "transfers"), transfersToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), tripsToWrite);
         }
 
         /// <summary>

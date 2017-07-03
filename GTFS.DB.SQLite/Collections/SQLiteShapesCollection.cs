@@ -84,6 +84,41 @@ namespace GTFS.DB.SQLite.Collections
         }
 
         /// <summary>
+        /// Adds range of entities
+        /// </summary>
+        /// <param name="entities"></param>
+        public void AddRange(IEntityCollection<Shape> entities)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach(var entity in entities)
+                    {
+                        string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"shape_pt_lat", DbType.Double));
+                        command.Parameters.Add(new SQLiteParameter(@"shape_pt_lon", DbType.Double));
+                        command.Parameters.Add(new SQLiteParameter(@"shape_pt_sequence", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"shape_dist_traveled", DbType.Double));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = entity.Id;
+                        command.Parameters[2].Value = entity.Latitude;
+                        command.Parameters[3].Value = entity.Longitude;
+                        command.Parameters[4].Value = entity.Sequence;
+                        command.Parameters[5].Value = entity.DistanceTravelled;
+
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }                
+            }
+        }
+
+        /// <summary>
         /// Returns all entities.
         /// </summary>
         /// <returns></returns>
@@ -114,7 +149,24 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<Shape> Get(string entityId)
         {
-            throw new NotImplementedException();
+            string sql = "SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :id AND id = :shapeId";
+            var parameters = new List<SQLiteParameter>();
+            parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
+            parameters[0].Value = _id;
+            parameters.Add(new SQLiteParameter(@"shapeId", DbType.String));
+            parameters[1].Value = entityId;
+
+            return new SQLiteEnumerable<Shape>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new Shape()
+                {
+                    Id = x.GetString(0),
+                    Latitude = x.GetDouble(1),
+                    Longitude = x.GetDouble(2),
+                    Sequence = (uint)x.GetInt64(3),
+                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
+                };
+            });
         }
 
         /// <summary>
@@ -124,7 +176,36 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public bool Remove(string entityId)
         {
-            throw new NotImplementedException();
+            string sql = "DELETE FROM shape WHERE FEED_ID = :feed_id AND id = :shape_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                command.Parameters.Add(new SQLiteParameter(@"shape_id", DbType.String));
+
+
+                command.Parameters[0].Value = _id;
+                command.Parameters[1].Value = entityId;
+
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
+
+        /// <summary>
+        /// Removes all entities
+        /// </summary>
+        /// <returns></returns>
+        public void RemoveAll()
+        {
+            string sql = "DELETE from shape WHERE FEED_ID = :feed_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+
+                command.Parameters[0].Value = _id;
+                command.ExecuteNonQuery();
+            }
         }
 
         /// <summary>
@@ -143,6 +224,6 @@ namespace GTFS.DB.SQLite.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.Get().GetEnumerator();
-        }
+        }        
     }
 }

@@ -20,27 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace GTFS.Entities
+namespace GTFS.Entities.Enumerations
 {
     /// <summary>
-    /// Represents a base-class for all GTFS entities.
+    /// Type of accessibility for wheelchair boardings are possible from the specified stop or station.
     /// </summary>
-    public abstract class GTFSEntity : System.IComparable<GTFSEntity>
+    public enum BikesAllowed
     {
         /// <summary>
-        /// Gets or sets a tag.
+        /// Indicates that there is no accessibility information
         /// </summary>
-        /// <remarks>Can be used to attach extra information.</remarks>
-        public object Tag { get; set; }
-
+        NoInformation,
         /// <summary>
-        /// Compares 2 GTFSEntities by looking at their ToString
+        /// Indicates that at least some vehicles at this stop can be boarded by a rider in a wheelchair or there exists some accessible path from outside the station to the specific stop/platform.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public int CompareTo(GTFSEntity obj)
-        {
-            return this.ToString().CompareTo(obj.ToString());
-        }
+        SomeAccessibility,
+        /// <summary>
+        /// Wheelchair boarding is not possible at this stop or there exists no accessible path from outside the station to the specific stop/platform.
+        /// </summary>
+        NoAccessibility
     }
 }

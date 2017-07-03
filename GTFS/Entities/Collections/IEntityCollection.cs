@@ -37,6 +37,12 @@ namespace GTFS.Entities.Collections
         void Add(T entity);
 
         /// <summary>
+        /// Adds range of entities
+        /// </summary>
+        /// <param name="entities"></param>
+        void AddRange(IEntityCollection<T> entities);
+
+        /// <summary>
         /// Returns all entities.
         /// </summary>
         /// <returns></returns>
@@ -55,5 +61,12 @@ namespace GTFS.Entities.Collections
         /// <param name="entityId"></param>
         /// <returns></returns>
         bool Remove(string entityId);
+
+        /// <summary>
+        /// Removes all entities
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <returns></returns>
+        void RemoveAll();
     }
 }

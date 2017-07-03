@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -126,6 +127,60 @@ namespace GTFS.Entities.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return _entities.GetEnumerator();
+        }
+
+        /// <summary>
+        /// This doesn't do anything
+        /// </summary>
+        /// <returns></returns>
+        public void AddRange(IEnumerable<StopTime> entities)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This doesn't do anything
+        /// </summary>
+        /// <returns></returns>
+        public void RemoveRange(IEnumerable<StopTime> entities)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This doesn't do anything
+        /// </summary>
+        /// <returns></returns>
+        public void RemoveForTrips(IEnumerable<string> tripIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This doesn't do anything - placeholder
+        /// </summary>
+        /// <returns></returns>
+        public bool Update(string stopId, string tripId, StopTime newEntity)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This doesn't do anything - placeholder
+        /// </summary>
+        /// <returns></returns>
+        public bool Update(string stopId, string tripId, uint stopSequence, StopTime newEntity)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This doesn't do anything - placeholder
+        /// </summary>
+        /// <returns></returns>
+        public void RemoveAll()
+        {
+            throw new NotImplementedException();
         }
     }
 }

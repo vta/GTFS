@@ -97,7 +97,8 @@ namespace GTFS.Entities
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("[{0}:{1}] {2}", this.TripId, this.StopId, this.StopHeadsign);
+            return string.Format("{0}-{1}", ArrivalTime, DepartureTime);
+            //return string.Format("[{0}:{1}] {2}", this.TripId, this.StopId, this.StopHeadsign);
         }
 
         /// <summary>
@@ -156,6 +157,26 @@ namespace GTFS.Entities
                     (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns a new StopTime object created from a previous stop time object
+        /// </summary>
+        public static StopTime From(StopTime other)
+        {
+            return new StopTime()
+            {
+                ArrivalTime = other.ArrivalTime,
+                DepartureTime = other.DepartureTime,
+                DropOffType = other.DropOffType,
+                PickupType = other.PickupType,
+                ShapeDistTravelled = other.ShapeDistTravelled,
+                StopHeadsign = other.StopHeadsign,
+                StopId = other.StopId,
+                StopSequence = other.StopSequence,
+                Tag = other.Tag,
+                TripId = other.TripId
+            };
         }
     }
 }
