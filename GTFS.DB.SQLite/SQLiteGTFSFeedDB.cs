@@ -288,5 +288,16 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("DROP TABLE frequency");
             this.ExecuteNonQuery("ALTER TABLE frequency_sorted RENAME TO frequency");
         }
+
+        /// <summary>
+        /// Deletes and recreates the calendar_dates table in a sorted order (first by date then by exception_type) - may take time
+        /// </summary>
+        public void SortCalendarDates()
+        {
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar_date_sorted] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [date] INTEGER, [exception_type] INTEGER );");
+            this.ExecuteNonQuery("INSERT INTO calendar_date_sorted (FEED_ID, service_id, date, exception_type) SELECT FEED_ID, service_id, date, exception_type FROM calendar_date ORDER BY date, exception_type ASC;");
+            this.ExecuteNonQuery("DROP TABLE calendar_date");
+            this.ExecuteNonQuery("ALTER TABLE calendar_date_sorted RENAME TO calendar_date");
+        }
     }
 }

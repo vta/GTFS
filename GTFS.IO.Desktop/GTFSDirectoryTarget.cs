@@ -51,6 +51,11 @@ namespace GTFS.IO
         }
 
         /// <summary>
+        /// Returns the path of this directory.
+        /// </summary>
+        public string DirectoryPath { get { return _directory.FullName; } }
+
+        /// <summary>
         /// Builds the new target files.
         /// </summary>
         private void BuildTargets()

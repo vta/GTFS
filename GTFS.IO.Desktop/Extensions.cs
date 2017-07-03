@@ -1,6 +1,6 @@
 ﻿// The MIT License (MIT)
 
-// Copyright (c) 2014 Ben Abelshausen
+// Copyright (c) 2016 Ben Abelshausen
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace GTFS.Entities
+using System.IO;
+
+namespace GTFS.IO
 {
     /// <summary>
-    /// Represents a base-class for all GTFS entities.
+    /// Extensions methods for convenient reading/writing feeds.
     /// </summary>
-    public abstract class GTFSEntity : System.IComparable<GTFSEntity>
+    public static class Extensions
     {
         /// <summary>
-        /// Gets or sets a tag.
+        /// Reads a fead from the given directory.
         /// </summary>
-        /// <remarks>Can be used to attach extra information.</remarks>
-        public object Tag { get; set; }
+        public static GTFSFeed Read(this GTFSReader<GTFSFeed> reader, DirectoryInfo directory)
+        {
+            var feed = new GTFSFeed();
+            using (var source = new GTFSDirectorySource(directory))
+            {
+                return reader.Read(feed, source);
+            }
+        }
+        /// <summary>
+        /// Reads a fead from the given directory.
+        /// </summary>
+        public static GTFSFeed Read(this GTFSReader<GTFSFeed> reader, string path)
+        {
+            var directory = new DirectoryInfo(path);
+            return reader.Read(directory);
+        }        
 
         /// <summary>
-        /// Compares 2 GTFSEntities by looking at their ToString
+        /// Reads a fead from the given directory.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public int CompareTo(GTFSEntity obj)
+        public static GTFSFeed Read(this DirectoryInfo directory)
         {
-            return this.ToString().CompareTo(obj.ToString());
+            return (new GTFSReader<GTFSFeed>()).Read(directory);
         }
     }
 }
