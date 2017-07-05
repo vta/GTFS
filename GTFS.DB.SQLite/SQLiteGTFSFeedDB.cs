@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.IO;
 
 namespace GTFS.DB.SQLite
 {
@@ -43,6 +44,15 @@ namespace GTFS.DB.SQLite
         public string GetDataSource()
         {
             return _connection.DataSource;
+        }
+
+        /// <summary>
+        /// Returns the data source in full (location of the db)
+        /// </summary>
+        public string GetFullDataSource()
+        {
+            string connStr = _connection.ConnectionString;
+            return connStr.Substring(connStr.IndexOf("Data Source=") + ("Data Source=").Length, connStr.IndexOf("Data Source=") + connStr.Substring(connStr.IndexOf("Data Source=") + ("Data Source=").Length).IndexOf(";"));
         }
 
         /// <summary>
