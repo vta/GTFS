@@ -43,6 +43,8 @@ namespace GTFS
         /// <param name="target"></param>
         public void Write(T feed, IEnumerable<IGTFSTargetFile> target)
         {
+            var stopTimesToWrite = feed.StopTimes.OrderBy(y => y.TripId).ToList();
+
             // write files on-by-one.
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), feed.Agencies);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar_dates"), feed.CalendarDates);
@@ -54,7 +56,7 @@ namespace GTFS
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "routes"), feed.Routes);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "shapes"), feed.Shapes);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stops"), feed.Stops);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), feed.StopTimes);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), stopTimesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "transfers"), feed.Transfers);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), feed.Trips);
         }
@@ -113,7 +115,7 @@ namespace GTFS
             }
 
             var tripIds = tripsToWrite.Select(x => x.Id).ToList();
-            var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId)).ToList();
+            var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId)).OrderBy(y => y.TripId).ToList();
             var stopIds = stopTimesToWrite.Select(x => x.StopId).ToList();
             var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id)).ToList();
             
