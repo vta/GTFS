@@ -63,7 +63,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <param name="entity"></param>
         public void Add(Agency entity)
         {
-            string sql = "INSERT INTO agency VALUES (:feed_id, :id, :agency_name, :agency_url, :agency_timezone, :agency_lang, :agency_phone, :agency_fare_url);";
+            string sql = "INSERT INTO agency VALUES (:feed_id, :id, :agency_name, :agency_url, :agency_timezone, :agency_lang, :agency_phone, :agency_fare_url, :agency_email);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -75,6 +75,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters.Add(new SQLiteParameter(@"agency_lang", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"agency_phone", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"agency_fare_url", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"agency_email", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
@@ -84,6 +85,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters[5].Value = entity.LanguageCode;
                 command.Parameters[6].Value = entity.Phone;
                 command.Parameters[7].Value = entity.FareURL;
+                command.Parameters[8].Value = entity.Email;
 
                 command.ExecuteNonQuery();
             }
@@ -97,7 +99,7 @@ namespace GTFS.DB.SQLite.Collections
                 {
                     foreach (var entity in entities)
                     {
-                        string sql = "INSERT INTO agency VALUES (:feed_id, :id, :agency_name, :agency_url, :agency_timezone, :agency_lang, :agency_phone, :agency_fare_url);";
+                        string sql = "INSERT INTO agency VALUES (:feed_id, :id, :agency_name, :agency_url, :agency_timezone, :agency_lang, :agency_phone, :agency_fare_url, :agency_email);";
                         command.CommandText = sql;
                         command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"id", DbType.String));
@@ -107,6 +109,7 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters.Add(new SQLiteParameter(@"agency_lang", DbType.String));
                         command.Parameters.Add(new SQLiteParameter(@"agency_phone", DbType.String));
                         command.Parameters.Add(new SQLiteParameter(@"agency_fare_url", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"agency_email", DbType.String));
 
                         command.Parameters[0].Value = _id;
                         command.Parameters[1].Value = entity.Id;
@@ -116,6 +119,7 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters[5].Value = entity.LanguageCode;
                         command.Parameters[6].Value = entity.Phone;
                         command.Parameters[7].Value = entity.FareURL;
+                        command.Parameters[8].Value = entity.Email;
 
                         command.ExecuteNonQuery();
                     }
@@ -171,7 +175,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<Agency> Get()
         {
-            string sql = "SELECT id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url FROM agency WHERE FEED_ID = :id";
+            string sql = "SELECT id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url, agency_email FROM agency WHERE FEED_ID = :id";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -186,7 +190,8 @@ namespace GTFS.DB.SQLite.Collections
                     Timezone = x.IsDBNull(3) ? null : x.GetString(3),
                     LanguageCode = x.IsDBNull(4) ? null : x.GetString(4),
                     Phone = x.IsDBNull(5) ? null : x.GetString(5),
-                    FareURL = x.IsDBNull(6) ? null : x.GetString(6)
+                    FareURL = x.IsDBNull(6) ? null : x.GetString(6),
+                    Email = x.IsDBNull(6) ? null : x.GetString(7)
                 };
             });
         }
@@ -227,7 +232,7 @@ namespace GTFS.DB.SQLite.Collections
 
         public bool Update(string entityId, Agency entity)
         {
-            string sql = "UPDATE agency SET FEED_ID=:feed_id, id=:id, agency_name=:agency_name, agency_url=:agency_url, agency_timezone=:agency_timezone, agency_lang=:agency_lang, agency_phone=:agency_phone, agency_fare_url=:agency_fare_url WHERE id=:entityId;";
+            string sql = "UPDATE agency SET FEED_ID=:feed_id, id=:id, agency_name=:agency_name, agency_url=:agency_url, agency_timezone=:agency_timezone, agency_lang=:agency_lang, agency_phone=:agency_phone, agency_fare_url=:agency_fare_url, agency_email=:agency_email WHERE id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -239,6 +244,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters.Add(new SQLiteParameter(@"agency_lang", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"agency_phone", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"agency_fare_url", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"agency_email", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"entityId", DbType.String));
 
                 command.Parameters[0].Value = _id;
@@ -249,7 +255,8 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters[5].Value = entity.LanguageCode;
                 command.Parameters[6].Value = entity.Phone;
                 command.Parameters[7].Value = entity.FareURL;
-                command.Parameters[8].Value = entityId;
+                command.Parameters[8].Value = entity.Email;
+                command.Parameters[9].Value = entityId;
 
                 return command.ExecuteNonQuery() > 0;
             }
