@@ -189,10 +189,6 @@ namespace GTFS.DB.SQLite
         /// </summary>
         private void RebuildDB()
         {
-            // Alter existing tables for backwards compatibility
-            //  1. add agency_email column to agency
-            if (TableExists("agency") && !ColumnExists("agency", "agency_email")) this.ExecuteNonQuery("ALTER TABLE [agency] ADD [agency_email] TEXT;");
-
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [feed] ( [ID] INTEGER NOT NULL PRIMARY KEY, [feed_publisher_name] TEXT, [feed_publisher_url] TEXT, [feed_lang] TEXT,  [feed_start_date] TEXT, [feed_end_date] TEXT, [feed_version] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [agency] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [agency_name] TEXT, [agency_url] TEXT, [agency_timezone], [agency_lang] TEXT, [agency_phone] TEXT, [agency_fare_url] TEXT, [agency_email] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [monday] INTEGER, [tuesday] INTEGER, [wednesday] INTEGER, [thursday] INTEGER, [friday] INTEGER, [saturday] INTEGER, [sunday] INTEGER, [start_date] INTEGER, [end_date] INTEGER );");
@@ -215,6 +211,12 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
+
+
+            // Alter existing tables, if their structure is incorrect, for backwards compatibility
+            //  1. add agency_email column to agency
+            if (!ColumnExists("agency", "agency_email")) this.ExecuteNonQuery("ALTER TABLE [agency] ADD [agency_email] TEXT;");
+            
         }
 
         /// <summary>
