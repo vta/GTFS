@@ -191,7 +191,7 @@ namespace GTFS.DB.SQLite.Collections
                     LanguageCode = x.IsDBNull(4) ? null : x.GetString(4),
                     Phone = x.IsDBNull(5) ? null : x.GetString(5),
                     FareURL = x.IsDBNull(6) ? null : x.GetString(6),
-                    Email = x.IsDBNull(6) ? null : x.GetString(7)
+                    Email = x.IsDBNull(7) ? null : x.GetString(7)
                 };
             });
         }
