@@ -192,7 +192,7 @@ namespace GTFS
             if (agenciesFile != null)
             {
                 bool initialized = false;
-                var data = new string[7];
+                var data = new string[8];
                 foreach (var agency in agencies)
                 {
                     if (!initialized)
