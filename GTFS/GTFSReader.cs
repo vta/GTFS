@@ -558,6 +558,12 @@ namespace GTFS
                 case "agency_url":
                     agency.URL = this.ParseFieldString(header.Name, fieldName, value);
                     break;
+                case "agency_fare_url":
+                    agency.FareURL = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
+                case "agency_email":
+                    agency.Email = this.ParseFieldString(header.Name, fieldName, value);
+                    break;
             }
         }
 

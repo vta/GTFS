@@ -190,7 +190,7 @@ namespace GTFS.DB.SQLite
         private void RebuildDB()
         {
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [feed] ( [ID] INTEGER NOT NULL PRIMARY KEY, [feed_publisher_name] TEXT, [feed_publisher_url] TEXT, [feed_lang] TEXT,  [feed_start_date] TEXT, [feed_end_date] TEXT, [feed_version] TEXT );");
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [agency] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [agency_name] TEXT, [agency_url] TEXT, [agency_timezone], [agency_lang] TEXT, [agency_phone] TEXT, [agency_fare_url] TEXT );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [agency] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [agency_name] TEXT, [agency_url] TEXT, [agency_timezone], [agency_lang] TEXT, [agency_phone] TEXT, [agency_fare_url] TEXT, [agency_email] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [monday] INTEGER, [tuesday] INTEGER, [wednesday] INTEGER, [thursday] INTEGER, [friday] INTEGER, [saturday] INTEGER, [sunday] INTEGER, [start_date] INTEGER, [end_date] INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar_date] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [date] INTEGER, [exception_type] INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [fare_attribute] ( [FEED_ID] INTEGER NOT NULL, [fare_id] TEXT NOT NULL, [price] TEXT, [currency_type] TEXT, [payment_method] INTEGER, [transfers] INTEGER, [transfer_duration] TEXT );");
@@ -211,6 +211,59 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
+
+
+            // Alter existing tables, if their structure is incorrect, for backwards compatibility
+            //  1. add agency_email column to agency
+            if (!ColumnExists("agency", "agency_email")) this.ExecuteNonQuery("ALTER TABLE [agency] ADD [agency_email] TEXT;");
+            
+        }
+
+        /// <summary>
+        /// Checks if a table with the given name exists in this database.
+        /// </summary>
+        /// <param name="tableName">The table in this database to look for.</param>
+        /// <returns>True if th</returns>
+        private bool TableExists(string tableName)
+        {
+            var cmd = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                var value = dr.GetValue(0);
+                if (tableName.Equals(value))
+                {
+                    dr.Close();
+                    return true;
+                }
+            }
+
+            dr.Close();
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the given table contains a column with the given name.
+        /// </summary>
+        /// <param name="tableName">The table in this database to check.</param>
+        /// <param name="columnName">The column in the given table to look for.</param>
+        /// <returns>True if the given table contains a column with the given name.</returns>
+        private bool ColumnExists(string tableName, string columnName)
+        {
+            var cmd = new SQLiteCommand("PRAGMA table_info(" + tableName + ")", _connection);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                var value = dr.GetValue(1);//column 1 from the result contains the column names
+                if (columnName.Equals(value))
+                {
+                    dr.Close();
+                    return true;
+                }
+            }
+
+            dr.Close();
+            return false;
         }
 
         /// <summary>
