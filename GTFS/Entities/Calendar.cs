@@ -220,7 +220,7 @@ namespace GTFS.Entities
         }
 
         /// <summary>
-        /// Returns a description of this trip.
+        /// Returns a description of this calendar.
         /// </summary>
         public override string ToString()
         {
