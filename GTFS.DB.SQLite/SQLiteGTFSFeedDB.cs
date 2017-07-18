@@ -46,6 +46,15 @@ namespace GTFS.DB.SQLite
         }
 
         /// <summary>
+        /// Returns the data source in full (location of the db)
+        /// </summary>
+        public string GetFullDataSource()
+        {
+            string connStr = _connection.ConnectionString;
+            return connStr.Substring(connStr.IndexOf("Data Source=") + ("Data Source=").Length, connStr.IndexOf("Data Source=") + connStr.Substring(connStr.IndexOf("Data Source=") + ("Data Source=").Length).IndexOf(";"));
+        }
+
+        /// <summary>
         /// Creates a new db.
         /// </summary>
         public SQLiteGTFSFeedDB()
