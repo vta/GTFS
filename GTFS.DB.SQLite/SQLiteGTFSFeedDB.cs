@@ -80,6 +80,18 @@ namespace GTFS.DB.SQLite
         }
 
         /// <summary>
+        /// Creates a new db.
+        /// </summary>
+        public SQLiteGTFSFeedDB(FileInfo dbFile, int defaultTimeout = 10, int version = 3)
+        {
+            _connection = new SQLiteConnection(String.Format("Data Source={0};DefaultTimeout={1};Version={2};", dbFile.FullName, defaultTimeout, version));
+            _connection.Open();
+
+            // build database.
+            this.RebuildDB();
+        }
+
+        /// <summary>
         /// Adds a new empty feed.
         /// </summary>
         /// <returns></returns>
