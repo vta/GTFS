@@ -158,7 +158,7 @@ namespace GTFS.Entities.Collections
         /// <returns></returns>
         public void AddRange(IUniqueEntityCollection<T> entities)
         {
-            throw new NotImplementedException();
+            _entities.AddRange(entities);
         }
 
         /// <summary>

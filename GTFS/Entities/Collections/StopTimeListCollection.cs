@@ -135,7 +135,7 @@ namespace GTFS.Entities.Collections
         /// <returns></returns>
         public void AddRange(IEnumerable<StopTime> entities)
         {
-            throw new NotImplementedException();
+            _entities.AddRange(entities);
         }
 
         /// <summary>
