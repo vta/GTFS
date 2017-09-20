@@ -115,6 +115,7 @@ namespace GTFS.DB.SQLite
         {
             int newId = this.AddFeed();
             feed.CopyTo(this.GetFeed(newId));
+            SortAllTables();
             return newId;
         }
 
@@ -310,6 +311,20 @@ namespace GTFS.DB.SQLite
         }
 
         /// <summary>
+        /// Deletes and recreates the routes, trips, stops, stop_times, frequencies and calendar_dates tables in a sorted order - may take some time
+        /// </summary>
+        public void SortAllTables()
+        {
+            SortRoutes();
+            SortTrips();
+            SortStops();
+            SortStopTimes();
+            SortFrequencies();
+            SortCalendars();
+            SortCalendarDates();
+        }
+
+        /// <summary>
         /// Deletes and recreates the routes table in a sorted order - may take time
         /// </summary>
         public void SortRoutes()
@@ -362,6 +377,14 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("INSERT INTO frequency_sorted (FEED_ID, trip_id, start_time, end_time, headway_secs, exact_times) SELECT FEED_ID, trip_id, start_time, end_time, headway_secs, exact_times FROM frequency ORDER BY trip_id ASC;");
             this.ExecuteNonQuery("DROP TABLE frequency");
             this.ExecuteNonQuery("ALTER TABLE frequency_sorted RENAME TO frequency");
+        }
+
+        public void SortCalendars()
+        {
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar_sorted] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [monday] INTEGER, [tuesday] INTEGER, [wednesday] INTEGER, [thursday] INTEGER, [friday] INTEGER, [saturday] INTEGER, [sunday] INTEGER, [start_date] INTEGER, [end_date] INTEGER );");
+            this.ExecuteNonQuery("INSERT INTO calendar_sorted (FEED_ID, service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) SELECT FEED_ID, service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date FROM calendar ORDER BY service_id ASC;");
+            this.ExecuteNonQuery("DROP TABLE calendar");
+            this.ExecuteNonQuery("ALTER TABLE calendar_sorted RENAME TO calendar");
         }
 
         /// <summary>
