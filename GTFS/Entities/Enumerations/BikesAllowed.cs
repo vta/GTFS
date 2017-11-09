@@ -23,20 +23,20 @@
 namespace GTFS.Entities.Enumerations
 {
     /// <summary>
-    /// Type of accessibility for wheelchair boardings are possible from the specified stop or station.
+    /// Type of accessibility for bicycle boardings are possible from the specified stop or station.
     /// </summary>
     public enum BikesAllowed
     {
         /// <summary>
-        /// Indicates that there is no accessibility information
+        /// Indicates that there is no bicycle information for this trip.
         /// </summary>
         NoInformation,
         /// <summary>
-        /// Indicates that at least some vehicles at this stop can be boarded by a rider in a wheelchair or there exists some accessible path from outside the station to the specific stop/platform.
+        /// Indicates that the vehicle being used on this particular trip can accommodate at least one bicycle.
         /// </summary>
         SomeAccessibility,
         /// <summary>
-        /// Wheelchair boarding is not possible at this stop or there exists no accessible path from outside the station to the specific stop/platform.
+        /// Indicates that no bicycles are allowed on this trip.
         /// </summary>
         NoAccessibility
     }
