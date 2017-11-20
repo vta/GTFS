@@ -310,6 +310,11 @@ namespace GTFS.DB.SQLite
             }
         }
 
+        public void CloseConnection()
+        {
+            _connection.Close();
+        }
+
         /// <summary>
         /// Deletes and recreates the routes, trips, stops, stop_times, frequencies and calendar_dates tables in a sorted order - may take some time
         /// </summary>
