@@ -32,7 +32,7 @@ namespace GTFS.Entities.Collections
     public class StopTimeListCollection : IStopTimeCollection
     {
         /// <summary>
-        /// Holds the list containing all stops.
+        /// Holds the list containing all stop_times.
         /// </summary>
         private List<StopTime> _entities;
 
@@ -175,12 +175,12 @@ namespace GTFS.Entities.Collections
         }
 
         /// <summary>
-        /// This doesn't do anything - placeholder
+        /// Replaces the internal list of stop_times with a new, empty list.
         /// </summary>
         /// <returns></returns>
         public void RemoveAll()
         {
-            throw new NotImplementedException();
+            _entities = new List<StopTime>();
         }
     }
 }

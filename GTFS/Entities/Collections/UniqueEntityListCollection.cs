@@ -171,12 +171,12 @@ namespace GTFS.Entities.Collections
         }
 
         /// <summary>
-        /// This is just a placeholder
+        /// Replaces the internal list of entities with a new, empty list.
         /// </summary>
         /// <returns></returns>
         public void RemoveAll()
         {
-            throw new NotImplementedException();
+            _entities = new List<T>();
         }
     }
 }
