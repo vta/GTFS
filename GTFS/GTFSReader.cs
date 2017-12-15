@@ -1608,11 +1608,11 @@ namespace GTFS
                 case "0":
                     return DropOffType.Regular;
                 case "1":
-                    return DropOffType.NoPickup;
+                    return DropOffType.NoDropOff;
                 case "2":
-                    return DropOffType.PhoneForPickup;
+                    return DropOffType.PhoneForDropOff;
                 case "3":
-                    return DropOffType.DriverForPickup;
+                    return DropOffType.DriverForDropOff;
             }
             throw new GTFSParseException(name, fieldName, value);
         }
