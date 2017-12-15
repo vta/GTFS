@@ -977,11 +977,11 @@ namespace GTFS
                 {
                     case DropOffType.Regular:
                         return "0";
-                    case DropOffType.NoPickup:
+                    case DropOffType.NoDropOff:
                         return "1";
-                    case DropOffType.PhoneForPickup:
+                    case DropOffType.PhoneForDropOff:
                         return "2";
-                    case DropOffType.DriverForPickup:
+                    case DropOffType.DriverForDropOff:
                         return "3";
                 }
             }
