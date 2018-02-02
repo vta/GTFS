@@ -71,6 +71,41 @@ namespace GTFS.Entities
             };
         }
 
+        public static bool operator >(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds > b.TotalSeconds;
+        }
+
+        public static bool operator <(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds < b.TotalSeconds;
+        }
+
+        public static bool operator >=(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds >= b.TotalSeconds;
+        }
+
+        public static bool operator <=(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds <= b.TotalSeconds;
+        }
+
+        public static bool operator ==(TimeOfDay a, TimeOfDay b)
+        {
+            if (Object.ReferenceEquals(a, null) || Object.ReferenceEquals(b, null))
+            {
+                return Object.ReferenceEquals(a, null) && Object.ReferenceEquals(b, null);
+            }
+
+            return a.TotalSeconds == b.TotalSeconds;
+        }
+
+        public static bool operator !=(TimeOfDay a, TimeOfDay b)
+        {
+            return !(a == b);
+        }
+
         /// <summary>
         /// Serves as a hash function.
         /// </summary>
