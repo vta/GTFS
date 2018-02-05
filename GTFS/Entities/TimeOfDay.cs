@@ -92,11 +92,11 @@ namespace GTFS.Entities
                 var tokens = timeString.Split(':');
                 for (int i = 0; i < tokens.Length; i++)
                 {
-                    if (tokens[i].Contains(" "))
+                    if (tokens[i].Contains(" "))//adds a 0 to the end of the token if it only contains a single number
                     {
                         tokens[i] = tokens[i].ToCharArray()[0] + "0";
                     }
-                    else if (tokens[i] == "" || tokens[i] == "  ")
+                    else if (tokens[i] == "" || tokens[i] == "  ")//replaces all the chars in the token to 0's if it is empty
                     {
                         tokens[i] = "00";
                     }
