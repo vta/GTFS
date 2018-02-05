@@ -71,6 +71,50 @@ namespace GTFS.Entities
             };
         }
 
+        public static TimeOfDay FromDateTime(DateTime date)
+        {
+            return FromTimeSpan(date.TimeOfDay);
+        }
+
+        public static TimeOfDay FromTimeSpan(TimeSpan ts)
+        {
+            return FromTotalSeconds(Convert.ToInt32(ts.TotalSeconds));
+        }
+
+        /// <summary>
+        /// Creates a new time of day from a string in the HH:MM:SS format.
+        /// </summary>
+        public static TimeOfDay FromString(string timeString)
+        {
+            TimeOfDay tod = new TimeOfDay();
+            var tokens = timeString.Split(':');
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                if (tokens[i].Contains(" "))
+                {
+                    tokens[i] = tokens[i].ToCharArray()[0] + "0";
+                }
+                else if (tokens[i] == "" || tokens[i] == "  ")
+                {
+                    tokens[i] = "00";
+                }
+            }
+            tod.Hours = int.Parse(tokens[0]);
+            tod.Minutes = int.Parse(tokens[1]);
+            tod.Seconds = int.Parse(tokens[2]);
+            if (tod.Seconds >= 60)
+            {
+                tod.Minutes += (tod.Seconds / 60);
+                tod.Seconds = tod.Seconds % 60;
+            }
+            if (tod.Minutes >= 60)
+            {
+                tod.Hours += (tod.Minutes / 60);
+                tod.Minutes = tod.Minutes % 60;
+            }
+            return tod;
+        }
+
         public static bool operator >(TimeOfDay a, TimeOfDay b)
         {
             return a.TotalSeconds > b.TotalSeconds;
