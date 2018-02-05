@@ -86,33 +86,41 @@ namespace GTFS.Entities
         /// </summary>
         public static TimeOfDay FromString(string timeString)
         {
-            TimeOfDay tod = new TimeOfDay();
-            var tokens = timeString.Split(':');
-            for (int i = 0; i < tokens.Length; i++)
+            try
             {
-                if (tokens[i].Contains(" "))
+                TimeOfDay tod = new TimeOfDay();
+                var tokens = timeString.Split(':');
+                for (int i = 0; i < tokens.Length; i++)
                 {
-                    tokens[i] = tokens[i].ToCharArray()[0] + "0";
+                    if (tokens[i].Contains(" "))
+                    {
+                        tokens[i] = tokens[i].ToCharArray()[0] + "0";
+                    }
+                    else if (tokens[i] == "" || tokens[i] == "  ")
+                    {
+                        tokens[i] = "00";
+                    }
                 }
-                else if (tokens[i] == "" || tokens[i] == "  ")
+                tod.Hours = int.Parse(tokens[0]);
+                tod.Minutes = int.Parse(tokens[1]);
+                tod.Seconds = int.Parse(tokens[2]);
+                if (tod.Seconds >= 60)
                 {
-                    tokens[i] = "00";
+                    tod.Minutes += (tod.Seconds / 60);
+                    tod.Seconds = tod.Seconds % 60;
                 }
+                if (tod.Minutes >= 60)
+                {
+                    tod.Hours += (tod.Minutes / 60);
+                    tod.Minutes = tod.Minutes % 60;
+                }
+
+                return tod;
             }
-            tod.Hours = int.Parse(tokens[0]);
-            tod.Minutes = int.Parse(tokens[1]);
-            tod.Seconds = int.Parse(tokens[2]);
-            if (tod.Seconds >= 60)
+            catch (Exception ex)
             {
-                tod.Minutes += (tod.Seconds / 60);
-                tod.Seconds = tod.Seconds % 60;
+                throw new ArgumentException($"Failed to parse the given string '{timeString}' to a tod: {ex.Message}");
             }
-            if (tod.Minutes >= 60)
-            {
-                tod.Hours += (tod.Minutes / 60);
-                tod.Minutes = tod.Minutes % 60;
-            }
-            return tod;
         }
 
         public static bool operator >(TimeOfDay a, TimeOfDay b)
