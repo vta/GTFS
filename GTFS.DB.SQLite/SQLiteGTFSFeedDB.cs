@@ -404,5 +404,16 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("DROP TABLE calendar_date");
             this.ExecuteNonQuery("ALTER TABLE calendar_date_sorted RENAME TO calendar_date");
         }
+
+        /// <summary>
+        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// </summary>
+        public void SortPolygons()//TODO: test!
+        {
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [polygons_sorted] ( [id] TEXT NOT NULL, [poly_pt_lat] REAL, [poly_pt_lon] REAL, [poly_pt_seq] INTEGER );");
+            this.ExecuteNonQuery("INSERT INTO polygons_sorted (id, poly_pt_lat, poly_pt_lon, poly_pt_seq) SELECT id, poly_pt_lat, poly_pt_lon, poly_pt_seq FROM polygons ORDER BY poly_pt_seq ASC, id ASC;");
+            this.ExecuteNonQuery("DROP TABLE polygons");
+            this.ExecuteNonQuery("ALTER TABLE polygons_sorted RENAME TO polygons");
+        }
     }
 }
