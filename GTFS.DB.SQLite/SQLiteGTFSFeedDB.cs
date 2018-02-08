@@ -411,7 +411,7 @@ namespace GTFS.DB.SQLite
         public void SortPolygons()//TODO: test!
         {
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [polygons_sorted] ( [id] TEXT NOT NULL, [poly_pt_lat] REAL, [poly_pt_lon] REAL, [poly_pt_seq] INTEGER );");
-            this.ExecuteNonQuery("INSERT INTO polygons_sorted (id, poly_pt_lat, poly_pt_lon, poly_pt_seq) SELECT id, poly_pt_lat, poly_pt_lon, poly_pt_seq FROM polygons ORDER BY poly_pt_seq ASC, id ASC;");
+            this.ExecuteNonQuery("INSERT INTO polygons_sorted (id, poly_pt_lat, poly_pt_lon, poly_pt_seq) SELECT id, poly_pt_lat, poly_pt_lon, poly_pt_seq FROM polygons ORDER BY id ASC, poly_pt_seq ASC;");
             this.ExecuteNonQuery("DROP TABLE polygons");
             this.ExecuteNonQuery("ALTER TABLE polygons_sorted RENAME TO polygons");
         }
