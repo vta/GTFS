@@ -220,6 +220,8 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [cleaned_stops] ( [stop_id] TEXT);");
             // CREATE TABLE TO STORE LOGS OF EDITS
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [log] ( [timestamp] TEXT, [action] TEXT, [route_id] TEXT, [pc_name] TEXT, [pc_ip] TEXT, [note] TEXT);");
+            // CREATE TABLE TO STORE POLYGONS
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [polygons] ( [id] TEXT NOT NULL, [poly_pt_lat] REAL, [poly_pt_lon] REAL, [poly_pt_seq] INTEGER );");
             // CREATE DATABASE INDEXES FOR EFFICIENT LOOKUP
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
@@ -401,6 +403,17 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("INSERT INTO calendar_date_sorted (FEED_ID, service_id, date, exception_type) SELECT FEED_ID, service_id, date, exception_type FROM calendar_date ORDER BY date, exception_type ASC;");
             this.ExecuteNonQuery("DROP TABLE calendar_date");
             this.ExecuteNonQuery("ALTER TABLE calendar_date_sorted RENAME TO calendar_date");
+        }
+
+        /// <summary>
+        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// </summary>
+        public void SortPolygons()//TODO: test!
+        {
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [polygons_sorted] ( [id] TEXT NOT NULL, [poly_pt_lat] REAL, [poly_pt_lon] REAL, [poly_pt_seq] INTEGER );");
+            this.ExecuteNonQuery("INSERT INTO polygons_sorted (id, poly_pt_lat, poly_pt_lon, poly_pt_seq) SELECT id, poly_pt_lat, poly_pt_lon, poly_pt_seq FROM polygons ORDER BY id ASC, poly_pt_seq ASC;");
+            this.ExecuteNonQuery("DROP TABLE polygons");
+            this.ExecuteNonQuery("ALTER TABLE polygons_sorted RENAME TO polygons");
         }
     }
 }
