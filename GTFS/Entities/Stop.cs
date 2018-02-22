@@ -167,5 +167,28 @@ namespace GTFS.Entities
             }
             return false;
         }
+
+        /// <summary>
+        /// Returns a new Stop object created from a previous stop object
+        /// </summary>
+        public static Stop From(Stop other, string newStopId = null)
+        {
+            return new Stop()
+            {
+                Id = newStopId ?? other.Id,
+                Code = other.Code,
+                Name = other.Name,
+                Description = other.Description,
+                Latitude = other.Latitude,
+                Longitude = other.Longitude,
+                Zone = other.Zone,
+                Url = other.Url,
+                LocationType = other.LocationType,
+                ParentStation = other.ParentStation,
+                Timezone = other.Timezone,
+                WheelchairBoarding = other.WheelchairBoarding,
+                Tag = other.Tag
+            };
+        }
     }
 }
