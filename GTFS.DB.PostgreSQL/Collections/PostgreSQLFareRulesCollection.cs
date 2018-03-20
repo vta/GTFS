@@ -134,22 +134,23 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<FareRule> Get()
         {
-            string sql = "SELECT fare_id, route_id, origin_id, destination_id, contains_id FROM fare_rule WHERE FEED_ID = :id";
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
-            parameters[0].Value = _id;
-
-            return new PostgreSQLEnumerable<FareRule>(_connection, sql, parameters.ToArray(), (x) =>
+            var fareRules = new List<FareRule>();
+            using (var reader = _connection.BeginBinaryExport("COPY fare_rule TO STDOUT (FORMAT BINARY)"))
             {
-                return new FareRule()
+                while (reader.StartRow() > 0)
                 {
-                    FareId = x.GetString(0),
-                    RouteId = x.IsDBNull(1) ? null : x.GetString(1),
-                    OriginId = x.IsDBNull(2) ? null : x.GetString(2),
-                    DestinationId = x.IsDBNull(3) ? null : x.GetString(3),
-                    ContainsId = x.IsDBNull(4) ? null : x.GetString(4)
-                };
-            });
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    fareRules.Add(new FareRule()
+                    {
+                        FareId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        RouteId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        OriginId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        DestinationId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ContainsId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text)
+                    });
+                }
+            }
+            return fareRules;
         }
 
         /// <summary>

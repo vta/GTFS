@@ -112,23 +112,24 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<FareAttribute> Get()
         {
-            string sql = "SELECT fare_id, price, currency_type, payment_method, transfers, transfer_duration FROM fare_attribute WHERE FEED_ID = :id";
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
-            parameters[0].Value = _id;
-
-            return new PostgreSQLEnumerable<FareAttribute>(_connection, sql, parameters.ToArray(), (x) =>
+            var fareAttributes = new List<FareAttribute>();
+            using (var reader = _connection.BeginBinaryExport("COPY fare_attribute TO STDOUT (FORMAT BINARY)"))
             {
-                return new FareAttribute()
+                while (reader.StartRow() > 0)
                 {
-                    FareId = x.GetString(0),
-                    Price = x.GetString(1),
-                    CurrencyType = x.IsDBNull(1) ? null : x.GetString(2),
-                    PaymentMethod = (PaymentMethodType)x.GetInt64(3),
-                    Transfers = x.IsDBNull(4) ? null : (uint?)x.GetInt64(4),
-                    TransferDuration = x.IsDBNull(5) ? null : x.GetString(5)
-                };
-            });
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    fareAttributes.Add(new FareAttribute()
+                    {
+                        FareId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        Price = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        CurrencyType = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        PaymentMethod = (PaymentMethodType)reader.ReadIntSafe(),
+                        Transfers = (uint?)reader.ReadIntSafe(),
+                        TransferDuration = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text)
+                    });
+                }
+            }
+            return fareAttributes;
         }
 
         /// <summary>
