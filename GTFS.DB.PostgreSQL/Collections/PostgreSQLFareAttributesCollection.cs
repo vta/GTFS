@@ -90,34 +90,18 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEntityCollection<FareAttribute> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY fare_attribute (feed_id, fare_id, price, currency_type, payment_method, transfers, transfer_duration) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var fareAttribute in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"fare_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"price", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"currency_type", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"payment_method", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"transfers", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"transfer_duration", DbType.String));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.FareId;
-                        command.Parameters[2].Value = entity.Price;
-                        command.Parameters[3].Value = entity.CurrencyType;
-                        command.Parameters[4].Value = (int)entity.PaymentMethod;
-                        command.Parameters[5].Value = entity.Transfers == null ? -1 : (int)entity.Transfers;
-                        command.Parameters[6].Value = entity.TransferDuration;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(fareAttribute.FareId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareAttribute.Price, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareAttribute.CurrencyType, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareAttribute.PaymentMethod, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(fareAttribute.Transfers, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(fareAttribute.TransferDuration, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }

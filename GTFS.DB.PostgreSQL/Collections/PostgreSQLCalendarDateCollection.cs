@@ -84,28 +84,15 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEntityCollection<CalendarDate> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY calendar_date (feed_id, service_id, date, exception_type) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var calendarDate in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO calendar_date VALUES (:feed_id, :service_id, :date, :exception_type);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"service_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"date", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"exception_type", DbType.Int64));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.ServiceId;
-                        command.Parameters[2].Value = entity.Date.ToUnixTime();
-                        command.Parameters[3].Value = (int)entity.ExceptionType;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendarDate.ServiceId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(calendarDate.Date.ToUnixTime(), NpgsqlTypes.NpgsqlDbType.Bigint);
+                    writer.Write(calendarDate.ExceptionType, NpgsqlTypes.NpgsqlDbType.Integer);
                 }
             }
         }

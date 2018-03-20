@@ -97,42 +97,22 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEntityCollection<Calendar> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY calendar (feed_id, service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var calendar in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO calendar VALUES (:feed_id, :service_id, :monday, :tuesday, :wednesday, :thursday, :friday, :saturday, :sunday, :start_date, :end_date);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"service_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"monday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"tuesday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"wednesday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"thursday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"friday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"saturday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"sunday", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"start_date", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"end_date", DbType.Int64));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.ServiceId;
-                        command.Parameters[2].Value = entity.Monday ? 1 : 0;
-                        command.Parameters[3].Value = entity.Tuesday ? 1 : 0;
-                        command.Parameters[4].Value = entity.Wednesday ? 1 : 0;
-                        command.Parameters[5].Value = entity.Thursday ? 1 : 0;
-                        command.Parameters[6].Value = entity.Friday ? 1 : 0;
-                        command.Parameters[7].Value = entity.Saturday ? 1 : 0;
-                        command.Parameters[8].Value = entity.Sunday ? 1 : 0;
-                        command.Parameters[9].Value = entity.StartDate.ToUnixTime();
-                        command.Parameters[10].Value = entity.EndDate.ToUnixTime();
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.ServiceId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(calendar.Monday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.Tuesday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.Wednesday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.Thursday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.Friday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.Saturday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.Sunday, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(calendar.StartDate.ToUnixTime(), NpgsqlTypes.NpgsqlDbType.Bigint);
+                    writer.Write(calendar.EndDate.ToUnixTime(), NpgsqlTypes.NpgsqlDbType.Bigint);
                 }
             }
         }
