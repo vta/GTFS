@@ -112,22 +112,21 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Shape> Get()
         {
-            string sql = "SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :id";
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
-            parameters[0].Value = _id;
-
-            return new PostgreSQLEnumerable<Shape>(_connection, sql, parameters.ToArray(), (x) =>
+            var shapePoints = new List<Shape>();
+            using (var reader = _connection.BeginBinaryExport("COPY shape (feed_id, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) TO STDOUT (FORMAT BINARY)"))
             {
-                return new Shape()
+                reader.StartRow();
+                reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                shapePoints.Add(new Shape()
                 {
-                    Id = x.GetString(0),
-                    Latitude = x.GetDouble(1),
-                    Longitude = x.GetDouble(2),
-                    Sequence = (uint)x.GetInt64(3),
-                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
-                };
-            });
+                    Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                    Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                    Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                    Sequence = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                    DistanceTravelled = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real)
+                });
+            }
+            return shapePoints;
         }
 
         /// <summary>
