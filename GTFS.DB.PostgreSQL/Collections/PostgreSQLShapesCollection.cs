@@ -91,55 +91,19 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entities"></param>
         public void AddRange(IEntityCollection<Shape> entities)
         {
-            DataSet dataSet = new DataSet();
-            NpgsqlDataAdapter dataApapter = new NpgsqlDataAdapter();
-            foreach (var entity in entities)
-            {
-                dataApapter.InsertCommand = new NpgsqlCommand("INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);");
-                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_pt_lat", DbType.Double));
-                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_pt_lon", DbType.Double));
-                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_pt_sequence", DbType.Int64));
-                dataApapter.InsertCommand.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.Double));
-
-                dataApapter.InsertCommand.Parameters[0].Value = _id;
-                dataApapter.InsertCommand.Parameters[1].Value = entity.Id;
-                dataApapter.InsertCommand.Parameters[2].Value = entity.Latitude;
-                dataApapter.InsertCommand.Parameters[3].Value = entity.Longitude;
-                dataApapter.InsertCommand.Parameters[4].Value = entity.Sequence;
-                dataApapter.InsertCommand.Parameters[5].Value = entity.DistanceTravelled;
-                dataApapter.InsertCommand.ExecuteNonQuery();
-            }            
-
-            /*using (var transaction = _connection.BeginTransaction())
+            using (var writer = _connection.BeginBinaryImport("COPY shape (feed_id, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var entity in entities)
                 {
-                    using (var command = _connection.CreateCommand())
-                    {
-                        string sql = "INSERT INTO shape VALUES (:feed_id, :id, :shape_pt_lat, :shape_pt_lon, :shape_pt_sequence, :shape_dist_traveled);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"shape_pt_lat", DbType.Double));
-                        command.Parameters.Add(new NpgsqlParameter(@"shape_pt_lon", DbType.Double));
-                        command.Parameters.Add(new NpgsqlParameter(@"shape_pt_sequence", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.Double));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.Id;
-                        command.Parameters[2].Value = entity.Latitude;
-                        command.Parameters[3].Value = entity.Longitude;
-                        command.Parameters[4].Value = entity.Sequence;
-                        command.Parameters[5].Value = entity.DistanceTravelled;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(entity.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(entity.Latitude, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(entity.Longitude, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(entity.Sequence, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(entity.DistanceTravelled, NpgsqlTypes.NpgsqlDbType.Real);
                 }
-                transaction.Commit();
-            }*/
+            }
         }
 
         /// <summary>

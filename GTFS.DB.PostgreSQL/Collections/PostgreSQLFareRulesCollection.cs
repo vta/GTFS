@@ -207,34 +207,19 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IUniqueEntityCollection<FareRule> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY fare_rule (feed_id, fare_id, route_id, origin_id, destination_id, contains_id) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var entity in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO fare_rule VALUES (:feed_id, :fare_id, :route_id, :origin_id, :destination_id, :contains_id);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"fare_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"origin_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"destination_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"contains_id", DbType.String));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.FareId;
-                        command.Parameters[2].Value = entity.RouteId;
-                        command.Parameters[3].Value = entity.OriginId;
-                        command.Parameters[4].Value = entity.DestinationId;
-                        command.Parameters[5].Value = entity.ContainsId;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(entity.FareId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(entity.RouteId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(entity.OriginId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(entity.DestinationId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(entity.ContainsId, NpgsqlTypes.NpgsqlDbType.Text);
                 }
-            }            
+            }
         }
 
         public void RemoveRange(IEnumerable<string> entityIds)
