@@ -21,5 +21,18 @@ namespace GTFS.DB.PostgreSQL
                 return null;
             }
         }
+
+        public static string ReadStringSafe(this NpgsqlBinaryExporter reader)
+        {
+            if (!reader.IsNull)
+            {
+                return reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text);
+            }
+            else
+            {
+                reader.Skip();
+                return null;
+            }
+        }
     }
 }
