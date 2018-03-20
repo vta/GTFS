@@ -207,27 +207,6 @@ namespace GTFS.DB.PostgreSQL.Collections
                 }
             }
             return trips;
-
-            string sql = "SELECT id, route_id, service_id, trip_headsign, trip_short_name, direction_id, block_id, shape_id, wheelchair_accessible FROM trip WHERE FEED_ID = :id;";
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
-            parameters[0].Value = _id;
-
-            return new PostgreSQLEnumerable<Trip>(_connection, sql, parameters.ToArray(), (x) =>
-            {
-                return new Trip()
-                {
-                    Id = x.GetString(0),
-                    RouteId = x.IsDBNull(1) ? null : x.GetString(1),
-                    ServiceId = x.IsDBNull(2) ? null : x.GetString(2),
-                    Headsign = x.IsDBNull(3) ? null : x.GetString(3),
-                    ShortName = x.IsDBNull(4) ? null : x.GetString(4),
-                    Direction = x.IsDBNull(5) ? null : (DirectionType?)x.GetInt64(5),
-                    BlockId = x.IsDBNull(6) ? null : x.GetString(6),
-                    ShapeId = x.IsDBNull(7) ? null : x.GetString(7),
-                    AccessibilityType = x.IsDBNull(8) ? null : (WheelchairAccessibilityType?)x.GetInt64(8)
-                };
-            });
         }
 
         public int Count

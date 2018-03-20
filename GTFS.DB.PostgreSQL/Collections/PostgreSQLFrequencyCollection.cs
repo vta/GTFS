@@ -108,22 +108,23 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Frequency> Get()
         {
-            string sql = "SELECT trip_id, start_time, end_time, headway_secs, exact_times FROM frequency WHERE FEED_ID = :id";
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
-            parameters[0].Value = _id;
-
-            return new PostgreSQLEnumerable<Frequency>(_connection, sql, parameters.ToArray(), (x) =>
+            var frequencies = new List<Frequency>();
+            using (var reader = _connection.BeginBinaryExport("COPY frequency TO STDOUT (FORMAT BINARY)"))
             {
-                return new Frequency()
+                while (reader.StartRow() > 0)
                 {
-                    TripId = x.GetString(0),
-                    StartTime = x.IsDBNull(1) ? null : x.GetString(1),
-                    EndTime = x.IsDBNull(2) ? null : x.GetString(2),
-                    HeadwaySecs = x.IsDBNull(3) ? null : x.GetString(3),
-                    ExactTimes = x.IsDBNull(4) ? null : (bool?)(x.GetInt64(4) == 1)
-                };
-            });
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    frequencies.Add(new Frequency()
+                    {
+                        TripId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        StartTime = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        EndTime = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        HeadwaySecs = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ExactTimes = reader.ReadIntSafe() == 1
+                    });
+                }
+            }
+            return frequencies;
         }
 
         /// <summary>

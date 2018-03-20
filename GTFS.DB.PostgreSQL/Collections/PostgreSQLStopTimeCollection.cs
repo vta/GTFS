@@ -243,26 +243,27 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<StopTime> Get()
         {
-            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled FROM stop_time WHERE FEED_ID = :id";
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
-            parameters[0].Value = _id;
-
-            return new PostgreSQLEnumerable<StopTime>(_connection, sql, parameters.ToArray(), (x) =>
+            var stopTimes = new List<StopTime>();
+            using (var reader = _connection.BeginBinaryExport("COPY stop_time TO STDOUT (FORMAT BINARY)"))
             {
-                return new StopTime()
+                while (reader.StartRow() > 0)
                 {
-                    TripId = x.GetString(0),
-                    ArrivalTime = TimeOfDay.FromTotalSeconds(x.GetInt32(1)),
-                    DepartureTime = TimeOfDay.FromTotalSeconds(x.GetInt32(2)),
-                    StopId = x.GetString(3),
-                    StopSequence = (uint)x.GetInt32(4),
-                    StopHeadsign = x.IsDBNull(5) ? null : x.GetString(5),
-                    PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
-                    DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
-                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8)
-                };
-            });
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    stopTimes.Add(new StopTime()
+                    {
+                        TripId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ArrivalTime = TimeOfDay.FromTotalSeconds(reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)),
+                        DepartureTime = TimeOfDay.FromTotalSeconds(reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)),
+                        StopId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        StopSequence = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                        StopHeadsign = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        PickupType = (PickupType?)reader.ReadIntSafe(),
+                        DropOffType = (DropOffType?)reader.ReadIntSafe(),
+                        ShapeDistTravelled = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text)
+                    });
+                }
+            }
+            return stopTimes;
         }
 
         /// <summary>
