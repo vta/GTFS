@@ -93,36 +93,19 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IUniqueEntityCollection<Agency> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY agency (feed_id, id, agency_name, agency_url, agency_timezone, agency_lang, agency_phone, agency_fare_url) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var agency in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO agency VALUES (:feed_id, :id, :agency_name, :agency_url, :agency_timezone, :agency_lang, :agency_phone, :agency_fare_url);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_name", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_url", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_timezone", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_lang", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_phone", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_fare_url", DbType.String));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.Id;
-                        command.Parameters[2].Value = entity.Name;
-                        command.Parameters[3].Value = entity.URL;
-                        command.Parameters[4].Value = entity.Timezone;
-                        command.Parameters[5].Value = entity.LanguageCode;
-                        command.Parameters[6].Value = entity.Phone;
-                        command.Parameters[7].Value = entity.FareURL;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(agency.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(agency.Name, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(agency.URL, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(agency.Timezone, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(agency.LanguageCode, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(agency.Phone, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(agency.FareURL, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }
