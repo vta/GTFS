@@ -163,6 +163,28 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Route> Get()
         {
+            var routes = new List<Route>();
+            using (var reader = _connection.BeginBinaryExport("COPY route TO STDOUT (FORMAT BINARY)"))
+            {
+                while (reader.StartRow() > 0)
+                {
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    routes.Add(new Route()
+                    {
+                        Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        AgencyId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ShortName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        LongName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        Type = (RouteTypeExtended)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                        Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        Color = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                        TextColor = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)
+                    });
+                }
+            }
+            return routes;
+
             string sql = "SELECT id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color FROM route WHERE FEED_ID = :id";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));

@@ -113,7 +113,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         public IEnumerable<Shape> Get()
         {
             var shapePoints = new List<Shape>();
-            using (var reader = _connection.BeginBinaryExport("COPY shape (feed_id, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) TO STDOUT (FORMAT BINARY)"))
+            using (var reader = _connection.BeginBinaryExport("COPY shape TO STDOUT (FORMAT BINARY)"))
             {
                 while(reader.StartRow() > 0)
                 {
