@@ -93,15 +93,15 @@ namespace GTFS.DB.PostgreSQL.Collections
         {
             using (var writer = _connection.BeginBinaryImport("COPY shape (feed_id, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) FROM STDIN (FORMAT BINARY)"))
             {
-                foreach (var entity in entities)
+                foreach (var shapePoint in entities)
                 {
                     writer.StartRow();
                     writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(entity.Id, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(entity.Latitude, NpgsqlTypes.NpgsqlDbType.Real);
-                    writer.Write(entity.Longitude, NpgsqlTypes.NpgsqlDbType.Real);
-                    writer.Write(entity.Sequence, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(entity.DistanceTravelled, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(shapePoint.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(shapePoint.Latitude, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(shapePoint.Longitude, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(shapePoint.Sequence, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(shapePoint.DistanceTravelled, NpgsqlTypes.NpgsqlDbType.Real);
                 }
             }
         }

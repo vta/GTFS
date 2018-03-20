@@ -87,32 +87,17 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEntityCollection<Frequency> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY frequency (feed_id, trip_id, start_time, end_time, headway_secs, exact_times) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var frequency in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO frequency VALUES (:feed_id, :trip_id, :start_time, :end_time, :headway_secs, :exact_times);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"trip_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"start_time", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"end_time", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"headway_secs", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"exact_times", DbType.Int64));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.TripId;
-                        command.Parameters[2].Value = entity.StartTime;
-                        command.Parameters[3].Value = entity.EndTime;
-                        command.Parameters[4].Value = entity.HeadwaySecs;
-                        command.Parameters[5].Value = entity.ExactTimes;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(frequency.TripId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(frequency.StartTime, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(frequency.EndTime, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(frequency.HeadwaySecs, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(frequency.ExactTimes, NpgsqlTypes.NpgsqlDbType.Integer);
                 }
             }
         }

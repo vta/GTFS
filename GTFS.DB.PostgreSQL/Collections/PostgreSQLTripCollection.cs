@@ -91,43 +91,24 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void AddRange(IUniqueEntityCollection<Trip> entities)
-        {            
-            using (var transaction = _connection.BeginTransaction())
+        {
+            using (var writer = _connection.BeginBinaryImport("COPY trip (feed_id, id, route_id, service_id, trip_headsign, trip_short_name, direction_id, block_id, shape_id, wheelchair_accessible) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var trip in entities)
                 {
-                    using (var command = _connection.CreateCommand())
-                    {
-                        string sql = "INSERT INTO trip VALUES (:feed_id, :id, :route_id, :service_id, :trip_headsign, :trip_short_name, :direction_id, :block_id, :shape_id, :wheelchair_accessible);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"service_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"trip_headsign", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"trip_short_name", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"direction_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"block_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"shape_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"wheelchair_accessible", DbType.Int64));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = trip.Id;
-                        command.Parameters[2].Value = trip.RouteId;
-                        command.Parameters[3].Value = trip.ServiceId;
-                        command.Parameters[4].Value = trip.Headsign;
-                        command.Parameters[5].Value = trip.ShortName;
-                        command.Parameters[6].Value = trip.Direction.HasValue ? (int?)trip.Direction.Value : null;
-                        command.Parameters[7].Value = trip.BlockId;
-                        command.Parameters[8].Value = trip.ShapeId;
-                        command.Parameters[9].Value = trip.AccessibilityType.HasValue ? (int?)trip.AccessibilityType.Value : null;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(trip.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.RouteId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.ServiceId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.Headsign, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.ShortName, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.Direction, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(trip.BlockId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.ShapeId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(trip.AccessibilityType, NpgsqlTypes.NpgsqlDbType.Integer);
                 }
-                transaction.Commit();
-            }            
+            }
         }
 
         public Trip Get(string entityId)

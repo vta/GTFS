@@ -95,42 +95,23 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void AddRange(IEnumerable<StopTime> entities)
-        {   
-            using (var transaction = _connection.BeginTransaction())
+        {
+            using (var writer = _connection.BeginBinaryImport("COPY stop_time (feed_id, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var stopTime in entities)
                 {
-                    using (var command = _connection.CreateCommand())
-                    {
-                        string sql = "INSERT INTO stop_time VALUES (:feed_id, :trip_id, :arrival_time, :departure_time, :stop_id, :stop_sequence, :stop_headsign, :pickup_type, :drop_off_type, :shape_dist_traveled);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"trip_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"arrival_time", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"departure_time", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_sequence", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_headsign", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"pickup_type", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"drop_off_type", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.String));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = stopTime.TripId;
-                        command.Parameters[2].Value = stopTime.ArrivalTime.TotalSeconds;
-                        command.Parameters[3].Value = stopTime.DepartureTime.TotalSeconds;
-                        command.Parameters[4].Value = stopTime.StopId;
-                        command.Parameters[5].Value = stopTime.StopSequence;
-                        command.Parameters[6].Value = stopTime.StopHeadsign;
-                        command.Parameters[7].Value = stopTime.PickupType.HasValue ? (int?)stopTime.PickupType.Value : null;
-                        command.Parameters[8].Value = stopTime.DropOffType.HasValue ? (int?)stopTime.DropOffType.Value : null;
-                        command.Parameters[9].Value = stopTime.ShapeDistTravelled;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }                        
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.TripId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stopTime.ArrivalTime.TotalSeconds, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.DepartureTime.TotalSeconds, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.StopId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stopTime.StopSequence, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.StopHeadsign, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stopTime.PickupType, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.DropOffType, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.ShapeDistTravelled, NpgsqlTypes.NpgsqlDbType.Text);
                 }
-                transaction.Commit();
             }
         }
 

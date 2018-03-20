@@ -102,46 +102,24 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IUniqueEntityCollection<Stop> entities)
         {
-            using (var command = _connection.CreateCommand())
+            using (var writer = _connection.BeginBinaryImport("COPY stop (feed_id, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding) FROM STDIN (FORMAT BINARY)"))
             {
-                using (var transaction = _connection.BeginTransaction())
+                foreach (var stop in entities)
                 {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_code", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_name", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_desc", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_lat", DbType.Double));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_lon", DbType.Double));
-                        command.Parameters.Add(new NpgsqlParameter(@"zone_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_url", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"location_type", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"parent_station", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"stop_timezone", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"wheelchair_boarding", DbType.String));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.Id;
-                        command.Parameters[2].Value = entity.Code;
-                        command.Parameters[3].Value = entity.Name;
-                        command.Parameters[4].Value = entity.Description;
-                        command.Parameters[5].Value = entity.Latitude;
-                        command.Parameters[6].Value = entity.Longitude;
-                        command.Parameters[7].Value = entity.Zone;
-                        command.Parameters[8].Value = entity.Url;
-                        command.Parameters[9].Value = entity.LocationType.HasValue ? (int?)entity.LocationType.Value : null;
-                        command.Parameters[10].Value = entity.ParentStation;
-                        command.Parameters[11].Value = entity.Timezone;
-                        command.Parameters[12].Value = entity.WheelchairBoarding;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stop.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.Code, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.Name, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.Description, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.Latitude, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(stop.Longitude, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(stop.Zone, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.Url, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.LocationType, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stop.ParentStation, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.Timezone, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.WheelchairBoarding, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }

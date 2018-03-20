@@ -95,42 +95,23 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void AddRange(IUniqueEntityCollection<Route> entities)
-        {   
-            using (var transaction = _connection.BeginTransaction())
+        {
+            using (var writer = _connection.BeginBinaryImport("COPY route (feed_id, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color) FROM STDIN (FORMAT BINARY)"))
             {
-                foreach (var entity in entities)
+                foreach (var route in entities)
                 {
-                    using (var command = _connection.CreateCommand())
-                    {
-                        string sql = "INSERT INTO route VALUES (:feed_id, :id, :agency_id, :route_short_name, :route_long_name, :route_desc, :route_type, :route_url, :route_color, :route_text_color);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"agency_id", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_short_name", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_long_name", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_desc", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_type", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_url", DbType.String));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_color", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_text_color", DbType.Int64));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.Id;
-                        command.Parameters[2].Value = entity.AgencyId;
-                        command.Parameters[3].Value = entity.ShortName;
-                        command.Parameters[4].Value = entity.LongName;
-                        command.Parameters[5].Value = entity.Description;
-                        command.Parameters[6].Value = (int)entity.Type;
-                        command.Parameters[7].Value = entity.Url;
-                        command.Parameters[8].Value = entity.Color;
-                        command.Parameters[9].Value = entity.TextColor;
-
-                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                        command.ExecuteNonQuery();
-                    }
+                    writer.StartRow();
+                    writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(route.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(route.AgencyId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(route.ShortName, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(route.LongName, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(route.Description, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(route.Type, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(route.Url, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(route.Color, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(route.TextColor, NpgsqlTypes.NpgsqlDbType.Integer);
                 }
-                transaction.Commit();
             }
         }
 

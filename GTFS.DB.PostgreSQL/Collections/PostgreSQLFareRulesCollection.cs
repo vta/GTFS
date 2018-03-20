@@ -209,15 +209,15 @@ namespace GTFS.DB.PostgreSQL.Collections
         {
             using (var writer = _connection.BeginBinaryImport("COPY fare_rule (feed_id, fare_id, route_id, origin_id, destination_id, contains_id) FROM STDIN (FORMAT BINARY)"))
             {
-                foreach (var entity in entities)
+                foreach (var fareRule in entities)
                 {
                     writer.StartRow();
                     writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(entity.FareId, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(entity.RouteId, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(entity.OriginId, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(entity.DestinationId, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(entity.ContainsId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareRule.FareId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareRule.RouteId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareRule.OriginId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareRule.DestinationId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareRule.ContainsId, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }
