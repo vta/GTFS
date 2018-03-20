@@ -186,6 +186,28 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public IEnumerable<Trip> Get()
         {
+            var trips = new List<Trip>();
+            using (var reader = _connection.BeginBinaryExport("COPY trip TO STDOUT (FORMAT BINARY)"))
+            {
+                while (reader.StartRow() > 0)
+                {
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    trips.Add(new Trip()
+                    {
+                        Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        RouteId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ServiceId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        Headsign = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ShortName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        Direction = (DirectionType?)reader.ReadIntSafe(),
+                        BlockId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        ShapeId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        AccessibilityType = (WheelchairAccessibilityType?)reader.ReadIntSafe()
+                    });
+                }
+            }
+            return trips;
+
             string sql = "SELECT id, route_id, service_id, trip_headsign, trip_short_name, direction_id, block_id, shape_id, wheelchair_accessible FROM trip WHERE FEED_ID = :id;";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));

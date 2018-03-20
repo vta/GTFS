@@ -61,6 +61,7 @@
     <Compile Include="Collections\PostgreSQLStopTimeCollection.cs" />
     <Compile Include="Collections\PostgreSQLTransferCollection.cs" />
     <Compile Include="Collections\PostgreSQLTripCollection.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="PostgreSQLGTFSFeed.cs" />
     <Compile Include="PostgreSQLGTFSFeedDB.cs" />
     <Compile Include="PostgreSQLReaderEnumerable.cs" />
