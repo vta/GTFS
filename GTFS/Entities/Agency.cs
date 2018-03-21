@@ -76,6 +76,12 @@ namespace GTFS.Entities
         public string FareURL { get; set; }
 
         /// <summary>
+        /// Contains a single valid email address actively monitored by the agency’s customer service department. This email address will be considered a direct contact point where transit riders can reach a customer service representative at the agency.
+        /// </summary>
+        [FieldName("agency_email")]
+        public string Email { get; set; }
+
+        /// <summary>
         /// Returns a description of this trip.
         /// </summary>
         /// <returns></returns>
@@ -100,6 +106,7 @@ namespace GTFS.Entities
                 hash = hash * 89 + this.Phone.GetHashCodeEmptyWhenNull();
                 hash = hash * 89 + this.Timezone.GetHashCodeEmptyWhenNull();
                 hash = hash * 89 + this.URL.GetHashCodeEmptyWhenNull();
+                hash = hash * 89 + this.Email.GetHashCodeEmptyWhenNull();
                 return hash;
             }
         }
@@ -118,7 +125,8 @@ namespace GTFS.Entities
                     (this.Name ?? string.Empty) == (other.Name ?? string.Empty) &&
                     (this.Phone ?? string.Empty) == (other.Phone ?? string.Empty) &&
                     (this.Timezone ?? string.Empty) == (other.Timezone ?? string.Empty) &&
-                    (this.URL ?? string.Empty) == (other.URL ?? string.Empty);
+                    (this.URL ?? string.Empty) == (other.URL ?? string.Empty) &&
+                    (this.Email ?? string.Empty) == (other.Email ?? string.Empty);
             }
             return false;
         }

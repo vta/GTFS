@@ -43,20 +43,32 @@ namespace GTFS
         /// <param name="target"></param>
         public void Write(T feed, IEnumerable<IGTFSTargetFile> target)
         {
+            // order files by id
+            var agenciesToWrite = feed.Agencies.OrderBy(x => x.Id).ToList();
+            var calendarDatesToWrite = feed.CalendarDates.OrderBy(x => x.ServiceId).OrderBy(y => y.ExceptionType).OrderBy(z => z.Date).ToList();
+            var calendarsToWrite = feed.Calendars.OrderBy(x => x.ServiceId).ToList();
+            var fareAttributesToWrite = feed.FareAttributes.OrderBy(x => x.FareId).ToList();
+            var fareRulesToWrite = feed.FareRules.OrderBy(x => x.RouteId).ToList();
+            var frequenciesToWrite = feed.Frequencies.OrderBy(x => x.TripId).ToList();
+            var routesToWrite = feed.Routes.OrderBy(x => x.Id).ToList();
+            var stopsToWrite = feed.Stops.OrderBy(x => x.Id).ToList();
+            var stopTimesToWrite = feed.StopTimes.OrderBy(x => x.TripId).ToList();
+            var tripsToWrite = feed.Trips.OrderBy(x => x.Id).ToList();
+
             // write files on-by-one.
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), feed.Agencies);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar_dates"), feed.CalendarDates);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar"), feed.Calendars);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "fare_attributes"), feed.FareAttributes);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "fare_rules"), feed.FareRules);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), agenciesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar_dates"), calendarDatesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar"), calendarsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "fare_attributes"), fareAttributesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "fare_rules"), fareRulesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "feed_info"), feed.GetFeedInfo());
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "frequencies"), feed.Frequencies);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "routes"), feed.Routes);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "frequencies"), frequenciesToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "routes"), routesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "shapes"), feed.Shapes);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stops"), feed.Stops);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), feed.StopTimes);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stops"), stopsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), stopTimesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "transfers"), feed.Transfers);
-            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), feed.Trips);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), tripsToWrite);
         }
 
         /// <summary>
@@ -141,6 +153,19 @@ namespace GTFS
             var serviceIds = tripsToWrite.Select(x => x.ServiceId).ToList();
             var calendarsToWrite = feed.Calendars.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
             var calendarDatesToWrite = feed.CalendarDates.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
+
+            // order files by id
+            agenciesToWrite = agenciesToWrite.OrderBy(x => x.Id).ToList();
+            calendarDatesToWrite = calendarDatesToWrite.OrderBy(x => x.ServiceId).OrderBy(y => y.ExceptionType).OrderBy(z => z.Date).ToList();
+            calendarsToWrite = calendarsToWrite.OrderBy(x => x.ServiceId).ToList();
+            fareAttributesToWrite = fareAttributesToWrite.OrderBy(x => x.FareId).ToList();
+            fareRulesToWrite = fareRulesToWrite.OrderBy(x => x.RouteId).ToList();
+            frequenciesToWrite = frequenciesToWrite.OrderBy(x => x.TripId).ToList();
+            routesToWrite = routesToWrite.OrderBy(x => x.Id).ToList();
+            stopsToWrite = stopsToWrite.OrderBy(x => x.Id).ToList();
+            stopTimesToWrite = stopTimesToWrite.OrderBy(x => x.TripId).ToList();
+            tripsToWrite = tripsToWrite.OrderBy(x => x.Id).ToList();
+
             // write files on-by-one.
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), agenciesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "calendar_dates"), calendarDatesToWrite);
@@ -167,7 +192,7 @@ namespace GTFS
             if (agenciesFile != null)
             {
                 bool initialized = false;
-                var data = new string[7];
+                var data = new string[8];
                 foreach (var agency in agencies)
                 {
                     if (!initialized)
@@ -185,6 +210,7 @@ namespace GTFS
                         data[4] = "agency_lang";
                         data[5] = "agency_phone";
                         data[6] = "agency_fare_url";
+                        data[7] = "agency_email";
                         agenciesFile.Write(data);
                         initialized = true;
                     }
@@ -197,6 +223,7 @@ namespace GTFS
                     data[4] = this.WriteFieldString("agency", "agency_lang", agency.LanguageCode);
                     data[5] = this.WriteFieldString("agency", "agency_phone", agency.Phone);
                     data[6] = this.WriteFieldString("agency", "agency_fare_url", agency.FareURL);
+                    data[7] = this.WriteFieldString("agency", "agency_email", agency.Email);
                     agenciesFile.Write(data);
                 }
                 agenciesFile.Close();
@@ -950,11 +977,11 @@ namespace GTFS
                 {
                     case DropOffType.Regular:
                         return "0";
-                    case DropOffType.NoPickup:
+                    case DropOffType.NoDropOff:
                         return "1";
-                    case DropOffType.PhoneForPickup:
+                    case DropOffType.PhoneForDropOff:
                         return "2";
-                    case DropOffType.DriverForPickup:
+                    case DropOffType.DriverForDropOff:
                         return "3";
                 }
             }

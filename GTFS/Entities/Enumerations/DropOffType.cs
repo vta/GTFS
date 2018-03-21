@@ -34,14 +34,14 @@ namespace GTFS.Entities.Enumerations
         /// <summary>
         /// No drop off available.
         /// </summary>
-        NoPickup,
+        NoDropOff,
         /// <summary>
         /// Must phone agency to arrange drop off.
         /// </summary>
-        PhoneForPickup,
+        PhoneForDropOff,
         /// <summary>
         /// Must coordinate with driver to arrange drop off.
         /// </summary>
-        DriverForPickup
+        DriverForDropOff
     }
 }

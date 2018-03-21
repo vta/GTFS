@@ -129,8 +129,8 @@ namespace GTFS.Entities
                 hash = hash * 59 + this.DepartureTime.GetHashCode();
                 hash = hash * 59 + this.DropOffType.GetHashCode();
                 hash = hash * 59 + this.PickupType.GetHashCode();
-                hash = hash * 59 + this.ShapeDistTravelled.GetHashCode();
-                hash = hash * 59 + this.StopHeadsign.GetHashCode();
+                hash = hash * 59 + this.ShapeDistTravelled.GetHashCodeEmptyWhenNull();
+                hash = hash * 59 + this.StopHeadsign.GetHashCodeEmptyWhenNull();
                 hash = hash * 59 + this.StopId.GetHashCodeEmptyWhenNull();
                 hash = hash * 59 + this.StopSequence.GetHashCode();
                 hash = hash * 59 + this.TripId.GetHashCodeEmptyWhenNull();

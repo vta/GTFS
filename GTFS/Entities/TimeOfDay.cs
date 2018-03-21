@@ -71,6 +71,93 @@ namespace GTFS.Entities
             };
         }
 
+        public static TimeOfDay FromDateTime(DateTime date)
+        {
+            return FromTimeSpan(date.TimeOfDay);
+        }
+
+        public static TimeOfDay FromTimeSpan(TimeSpan ts)
+        {
+            return FromTotalSeconds(Convert.ToInt32(ts.TotalSeconds));
+        }
+
+        /// <summary>
+        /// Creates a new time of day from a string in the HH:MM:SS format.
+        /// </summary>
+        public static TimeOfDay FromString(string timeString)
+        {
+            try
+            {
+                TimeOfDay tod = new TimeOfDay();
+                var tokens = timeString.Split(':');
+                for (int i = 0; i < tokens.Length; i++)
+                {
+                    if (tokens[i].Contains(" "))//adds a 0 to the end of the token if it only contains a single number
+                    {
+                        tokens[i] = tokens[i].Replace(' ', '0');
+                    }
+                    else if (tokens[i] == "")//replaces all the chars in the token to 0's if it is empty
+                    {
+                        tokens[i] = "00";
+                    }
+                }
+                tod.Hours = int.Parse(tokens[0]);
+                tod.Minutes = int.Parse(tokens[1]);
+                tod.Seconds = int.Parse(tokens[2]);
+                if (tod.Seconds >= 60)
+                {
+                    tod.Minutes += (tod.Seconds / 60);
+                    tod.Seconds = tod.Seconds % 60;
+                }
+                if (tod.Minutes >= 60)
+                {
+                    tod.Hours += (tod.Minutes / 60);
+                    tod.Minutes = tod.Minutes % 60;
+                }
+
+                return tod;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"Failed to parse the given string '{timeString}' to a tod: {ex.Message}");
+            }
+        }
+
+        public static bool operator >(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds > b.TotalSeconds;
+        }
+
+        public static bool operator <(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds < b.TotalSeconds;
+        }
+
+        public static bool operator >=(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds >= b.TotalSeconds;
+        }
+
+        public static bool operator <=(TimeOfDay a, TimeOfDay b)
+        {
+            return a.TotalSeconds <= b.TotalSeconds;
+        }
+
+        public static bool operator ==(TimeOfDay a, TimeOfDay b)
+        {
+            if (Object.ReferenceEquals(a, null) || Object.ReferenceEquals(b, null))
+            {
+                return Object.ReferenceEquals(a, null) && Object.ReferenceEquals(b, null);
+            }
+
+            return a.TotalSeconds == b.TotalSeconds;
+        }
+
+        public static bool operator !=(TimeOfDay a, TimeOfDay b)
+        {
+            return !(a == b);
+        }
+
         /// <summary>
         /// Serves as a hash function.
         /// </summary>

@@ -108,9 +108,9 @@ namespace GTFS.Entities.Collections
             return _transfers.GetEnumerator();
         }
 
-        public void AddRange(IEnumerable<Transfer> transfer)
+        public void AddRange(IEnumerable<Transfer> transfers)
         {
-            throw new NotImplementedException();
+            _transfers.AddRange(transfers);
         }
     }
 }

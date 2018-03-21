@@ -82,8 +82,8 @@ namespace GTFS.Entities
             unchecked
             {
                 int hash = 23;
+                hash = hash * 29 + this.FareId.GetHashCode();
                 hash = hash * 29 + (this.CurrencyType ?? string.Empty).GetHashCode();
-                hash = hash * 29 + (this.FareId ?? string.Empty).GetHashCode();
                 hash = hash * 29 + this.PaymentMethod.GetHashCode();
                 hash = hash * 29 + (this.Price ?? string.Empty).GetHashCode();
                 hash = hash * 29 + (this.TransferDuration ?? string.Empty).GetHashCode();
@@ -100,8 +100,8 @@ namespace GTFS.Entities
             var other = (obj as FareAttribute);
             if (other != null)
             {
-                return (this.CurrencyType ?? string.Empty) == (other.CurrencyType ?? string.Empty) &&
-                    (this.FareId ?? string.Empty) == (other.CurrencyType ?? string.Empty) &&
+                return this.FareId == other.FareId &&
+                    (this.CurrencyType ?? string.Empty) == (other.CurrencyType ?? string.Empty) &&
                     this.PaymentMethod == other.PaymentMethod &&
                     (this.Price ?? string.Empty) == (other.Price ?? string.Empty) &&
                     (this.TransferDuration ?? string.Empty) == (other.TransferDuration ?? string.Empty) &&

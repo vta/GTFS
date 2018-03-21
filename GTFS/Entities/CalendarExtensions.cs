@@ -32,6 +32,7 @@ namespace GTFS.Entities
     {
         /// <summary>
         /// Returns true if the calendar covers the given date.
+        /// Note: this also checks for the dayofweek of the given date!
         /// </summary>
         /// <returns></returns>
         public static bool CoversDate(this Calendar calendar, DateTime date)
@@ -429,6 +430,89 @@ namespace GTFS.Entities
                 return (byte)(diffMask & mask);
             } // day >= startDay and day.AddDays(7) <= calendar.EndDate.
             return mask;
+        }
+
+        /// <summary>
+        /// Returns the calendar entities in this list that covers the specified DayOfWeek. If the DateTime is specified it will also restrict the list of calendar's to cover the specified date.
+        /// </summary>
+        /// <param name="calendars"></param>
+        /// <param name="dow"></param>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static List<Calendar> GetServicesForDayOfWeek(this List<Calendar> calendars, DayOfWeek dow, DateTime dt = new DateTime())
+        {
+            var outList = new List<Calendar>();
+
+            bool checkForDate = dt != new DateTime();
+
+            foreach (var calendar in calendars)
+            {
+                if (calendar.ContainsDay(dow))
+                {
+                    if ((checkForDate && calendar.StartDate <= dt && calendar.EndDate >= dt) || !checkForDate)
+                    {
+                        outList.Add(calendar);
+                    }
+                }
+            }
+            return outList;
+        }
+
+        /// <summary>
+        /// Returns true if this Calendar is true for the specified DayOfWeek.
+        /// </summary>
+        /// <param name="_self"></param>
+        /// <param name="day"></param>
+        /// <returns></returns>
+        public static bool ContainsDay(this Calendar _self, DayOfWeek day)
+        {
+            switch (day)
+            {
+                case DayOfWeek.Sunday:
+                    return _self.Sunday;
+                case DayOfWeek.Monday:
+                    return _self.Monday;
+                case DayOfWeek.Tuesday:
+                    return _self.Tuesday;
+                case DayOfWeek.Wednesday:
+                    return _self.Wednesday;
+                case DayOfWeek.Thursday:
+                    return _self.Thursday;
+                case DayOfWeek.Friday:
+                    return _self.Friday;
+                case DayOfWeek.Saturday:
+                    return _self.Saturday;
+                default:
+                    break;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the calendars in this list that covers the specified date and its DayOfWeek.
+        /// </summary>
+        /// <param name="calendars"></param>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static List<Calendar> GetServicesForDate(this List<Calendar> calendars, DateTime dt)
+        {
+            var outList = new List<Calendar>();
+            foreach (var calendar in calendars)
+            {
+                if (calendar.CoversDate(dt) && calendar.ContainsDay(dt.DayOfWeek)) outList.Add(calendar);
+            }
+            return outList;
+        }
+
+        /// <summary>
+        /// Checks if all the values, except the id, in the 2 Calendars are equal.
+        /// </summary>
+        /// <param name="service1"></param>
+        /// <param name="service2"></param>
+        /// <returns></returns>
+        public static bool Equals_IgnoreIds(this Calendar service1, Calendar service2)
+        {
+            return service1.Monday == service2.Monday && service1.Tuesday == service2.Tuesday && service1.Wednesday == service2.Wednesday && service1.Thursday == service2.Thursday && service1.Friday == service2.Friday && service1.Saturday == service2.Saturday && service1.Sunday == service2.Sunday && service1.StartDate == service2.StartDate && service1.EndDate == service2.EndDate;
         }
     }
 }
