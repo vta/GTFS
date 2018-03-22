@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
 
@@ -36,7 +37,9 @@ namespace GTFS.DB.SQLite
         /// <summary>
         /// Holds a connection.
         /// </summary>
-        public SQLiteConnection _connection;
+        private SQLiteConnection _connection;
+
+        DbConnection IGTFSFeedDB._connection { get => _connection; }
 
         /// <summary>
         /// Returns the data source (filename of the db)
