@@ -27,6 +27,15 @@ namespace GTFS.DB.PostgreSQL
         }
 
         /// <summary>
+        /// Returns the data source in full (location of the db)
+        /// </summary>
+        public string GetFullDataSource()
+        {
+            string connStr = _connection.ConnectionString;
+            return connStr;
+        }
+
+        /// <summary>
         /// Creates a new db.
         /// </summary>
         public PostgreSQLGTFSFeedDB(string connectionString)

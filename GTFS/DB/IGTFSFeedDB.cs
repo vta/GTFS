@@ -65,5 +65,10 @@ namespace GTFS.DB
         /// <param name="id"></param>
         /// <returns></returns>
         IGTFSFeed GetFeed(int id);
+
+        /// <summary>
+        /// Returns the data source of the DB
+        /// </summary>
+        string GetFullDataSource();
     }
 }
