@@ -22,6 +22,19 @@ namespace GTFS.DB.PostgreSQL
             }
         }
 
+        public static double? ReadDoubleSafe(this NpgsqlBinaryExporter reader)
+        {
+            if (!reader.IsNull)
+            {
+                return reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real);
+            }
+            else
+            {
+                reader.Skip();
+                return null;
+            }
+        }
+
         public static string ReadStringSafe(this NpgsqlBinaryExporter reader)
         {
             if (!reader.IsNull)

@@ -124,7 +124,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                         Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
                         Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
                         Sequence = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                        DistanceTravelled = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real)
+                        DistanceTravelled = reader.ReadDoubleSafe()
                     });
                 }
             }

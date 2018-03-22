@@ -178,8 +178,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
                         Type = (RouteTypeExtended)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
                         Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Color = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                        TextColor = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)
+                        Color = reader.ReadIntSafe(),
+                        TextColor = reader.ReadIntSafe()
                     });
                 }
             }
