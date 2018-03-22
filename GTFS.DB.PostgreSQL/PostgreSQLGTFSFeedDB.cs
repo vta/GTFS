@@ -80,6 +80,8 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS cleaned_stops ( stop_id TEXT);");
             // CREATE TABLE TO STORE LOGS OF EDITS
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS log ( timestamp TEXT, action TEXT, route_id TEXT, pc_name TEXT, pc_ip TEXT, note TEXT);");
+            // CREATE TABLE TO STORE POLYGONS
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS polygons ( id TEXT NOT NULL, poly_pt_lat REAL, poly_pt_lon REAL, poly_pt_seq INTEGER );");
             // CREATE DATABASE INDEXES FOR EFFICIENT LOOKUP
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
