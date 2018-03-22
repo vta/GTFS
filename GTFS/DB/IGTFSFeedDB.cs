@@ -23,6 +23,7 @@
 using GTFS.Entities;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 
@@ -70,5 +71,55 @@ namespace GTFS.DB
         /// Returns the data source of the DB
         /// </summary>
         string GetFullDataSource();
+
+        /// <summary>
+        /// Holds the DB connection.
+        /// </summary>
+        DbConnection _connection { get; }
+
+        /// <summary>
+        /// Sort all tables in the DB
+        /// </summary>
+        void SortAllTables();
+
+        /// <summary>
+        /// Deletes and recreates the routes table in a sorted order - may take time
+        /// </summary>
+        void SortRoutes();
+
+        /// <summary>
+        /// Deletes and recreates the trips table in a sorted order - may take time
+        /// </summary>
+        void SortTrips();
+
+        /// <summary>
+        /// Deletes and recreates the stops table in a sorted order - may take time
+        /// </summary>
+        void SortStops();
+
+        /// <summary>
+        /// Deletes and recreates the stop_times table in a sorted order - may take time
+        /// </summary>
+        void SortStopTimes();
+
+        /// <summary>
+        /// Deletes and recreates the frequencies table in a sorted order - may take time
+        /// </summary>
+        void SortFrequencies();
+
+        /// <summary>
+        /// Deletes and recreates the calendars table in a sorted order (first by date then by exception_type) - may take time
+        /// </summary>
+        void SortCalendars();
+
+        /// <summary>
+        /// Deletes and recreates the calendar_dates table in a sorted order (first by date then by exception_type) - may take time
+        /// </summary>
+        void SortCalendarDates();
+
+        /// <summary>
+        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// </summary>
+        void SortPolygons();        
     }
 }

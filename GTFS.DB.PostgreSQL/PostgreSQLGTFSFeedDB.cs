@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
+using System.Data.Common;
 
 namespace GTFS.DB.PostgreSQL
 {
@@ -16,7 +17,9 @@ namespace GTFS.DB.PostgreSQL
         /// <summary>
         /// Holds a connection.
         /// </summary>
-        public NpgsqlConnection _connection;
+        private NpgsqlConnection _connection;
+
+        DbConnection IGTFSFeedDB._connection { get => _connection; }
 
         /// <summary>
         /// Returns the data source (filename of the db)
