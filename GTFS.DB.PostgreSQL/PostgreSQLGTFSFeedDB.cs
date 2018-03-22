@@ -21,6 +21,11 @@ namespace GTFS.DB.PostgreSQL
 
         DbConnection IGTFSFeedDB._connection { get => _connection; }
 
+        public DbParameter CreateParameter(string name, DbType type)
+        {
+            return new NpgsqlParameter(name, type);
+        }
+
         /// <summary>
         /// Returns the data source (filename of the db)
         /// </summary>

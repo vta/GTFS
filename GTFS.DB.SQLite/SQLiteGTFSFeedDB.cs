@@ -41,6 +41,11 @@ namespace GTFS.DB.SQLite
 
         DbConnection IGTFSFeedDB._connection { get => _connection; }
 
+        public DbParameter CreateParameter(string name, DbType type)
+        {
+            return new SQLiteParameter(name, type);
+        }
+
         /// <summary>
         /// Returns the data source (filename of the db)
         /// </summary>

@@ -23,6 +23,7 @@
 using GTFS.Entities;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
@@ -76,6 +77,11 @@ namespace GTFS.DB
         /// Holds the DB connection.
         /// </summary>
         DbConnection _connection { get; }
+
+        /// <summary>
+        /// Create a query parameter for the particular DB implementation
+        /// </summary>
+        DbParameter CreateParameter(string name, DbType type);
 
         /// <summary>
         /// Sort all tables in the DB

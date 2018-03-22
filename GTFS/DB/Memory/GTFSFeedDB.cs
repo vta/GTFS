@@ -22,6 +22,7 @@
 
 using GTFS.Entities;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 
@@ -140,6 +141,11 @@ namespace GTFS.DB.Memory
         }
 
         public void SortPolygons()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public DbParameter CreateParameter(string name, DbType type)
         {
             throw new System.NotImplementedException();
         }
