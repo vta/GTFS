@@ -18,7 +18,15 @@ namespace GTFS.DB.PostgreSQL
 
         public string ConnectionString { get; }
 
-        public DbConnection Connection { get => new NpgsqlConnection(ConnectionString); }
+        public DbConnection Connection
+        {
+            get
+            {
+                var _conn = new NpgsqlConnection(ConnectionString);
+                _conn.Open();
+                return _conn;
+            }
+        }
 
         public DbParameter CreateParameter(string name, DbType type)
         {
@@ -38,8 +46,10 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public PostgreSQLGTFSFeedDB(string connectionString)
         {
-            _connection = new NpgsqlConnection(ConnectionString);
             ConnectionString = connectionString;
+            _connection = new NpgsqlConnection(connectionString);
+            _connection.Open();
+
             // build database.
             this.RebuildDB();
         }

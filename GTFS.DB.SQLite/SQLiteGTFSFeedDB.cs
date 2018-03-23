@@ -41,7 +41,7 @@ namespace GTFS.DB.SQLite
 
         public string ConnectionString { get; }
 
-        public DbConnection Connection { get => new SQLiteConnection(ConnectionString, true); }
+        public DbConnection Connection { get=> new SQLiteConnection(ConnectionString, true).OpenAndReturn(); }
 
 
         public DbParameter CreateParameter(string name, DbType type)
