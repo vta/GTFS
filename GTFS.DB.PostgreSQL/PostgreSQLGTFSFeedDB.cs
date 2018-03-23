@@ -96,13 +96,13 @@ namespace GTFS.DB.PostgreSQL
         public void RebuildTriggers()
         {
             this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_route_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET route_version = route_version + 1; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
+                                       UPDATE public.cache_versions SET route_version = route_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
             this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_trip_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET trip_version = trip_version + 1; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
+                                       UPDATE public.cache_versions SET trip_version = trip_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
             this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_stop_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET stop_version = stop_version + 1; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
+                                       UPDATE public.cache_versions SET stop_version = stop_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
             this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_shape_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET shape_version = shape_version + 1; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
+                                       UPDATE public.cache_versions SET shape_version = shape_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
 
             this.ExecuteNonQuery(@"CREATE TRIGGER route_watcher AFTER INSERT OR DELETE OR UPDATE ON public.route FOR EACH ROW
                                     EXECUTE PROCEDURE public.log_route_changes();");
@@ -160,6 +160,9 @@ namespace GTFS.DB.PostgreSQL
                 command.CommandText = sql;
                 command.Parameters.Add(new NpgsqlParameter("id", DbType.Int64));
                 command.Parameters[0].Value = id;
+
+                Console.WriteLine(_connection.FullState);
+                //Console.WriteLine(_connection.tra)
 
                 using (var reader = command.ExecuteReader())
                 { // ok, feed was found!
