@@ -243,6 +243,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<StopTime> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var stopTimes = new List<StopTime>();
             using (var reader = _connection.BeginBinaryExport("COPY stop_time TO STDOUT (FORMAT BINARY)"))
             {
@@ -263,6 +267,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch stoptimes: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return stopTimes;
         }
 

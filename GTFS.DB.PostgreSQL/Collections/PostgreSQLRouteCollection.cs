@@ -163,6 +163,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Route> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var routes = new List<Route>();
             using (var reader = _connection.BeginBinaryExport("COPY route TO STDOUT (FORMAT BINARY)"))
             {
@@ -183,6 +187,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch routes: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return routes;
         }
 

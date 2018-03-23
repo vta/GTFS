@@ -186,6 +186,10 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public IEnumerable<Trip> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var trips = new List<Trip>();
             using (var reader = _connection.BeginBinaryExport("COPY trip TO STDOUT (FORMAT BINARY)"))
             {
@@ -206,6 +210,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch trips: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return trips;
         }
 

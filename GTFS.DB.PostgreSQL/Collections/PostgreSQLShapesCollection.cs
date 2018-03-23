@@ -112,6 +112,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Shape> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var shapePoints = new List<Shape>();
             using (var reader = _connection.BeginBinaryExport("COPY shape TO STDOUT (FORMAT BINARY)"))
             {
@@ -128,6 +132,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch shapes: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return shapePoints;
         }
 

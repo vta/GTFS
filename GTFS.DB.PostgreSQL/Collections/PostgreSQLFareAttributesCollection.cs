@@ -112,6 +112,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<FareAttribute> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var fareAttributes = new List<FareAttribute>();
             using (var reader = _connection.BeginBinaryExport("COPY fare_attribute TO STDOUT (FORMAT BINARY)"))
             {
@@ -129,6 +133,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch fareattributes: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return fareAttributes;
         }
 

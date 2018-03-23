@@ -134,6 +134,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<FareRule> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var fareRules = new List<FareRule>();
             using (var reader = _connection.BeginBinaryExport("COPY fare_rule TO STDOUT (FORMAT BINARY)"))
             {
@@ -150,6 +154,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch farerules: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return fareRules;
         }
 

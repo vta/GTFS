@@ -108,6 +108,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Frequency> Get()
         {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            #endif
             var frequencies = new List<Frequency>();
             using (var reader = _connection.BeginBinaryExport("COPY frequency TO STDOUT (FORMAT BINARY)"))
             {
@@ -124,6 +128,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($"Fetch frequencies: {stopwatch.ElapsedMilliseconds} ms");
+            #endif
             return frequencies;
         }
 
