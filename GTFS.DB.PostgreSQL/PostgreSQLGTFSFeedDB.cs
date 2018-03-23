@@ -152,26 +152,8 @@ namespace GTFS.DB.PostgreSQL
         /// <returns></returns>
         public IGTFSFeed GetFeed(int id)
         {
-            string sql = "SELECT id FROM feed WHERE ID = :id";
-            var ids = new List<int>();
-            using (var command = _connection.CreateCommand())
-            {
-                command.CommandText = sql;
-                command.Parameters.Add(new NpgsqlParameter("id", DbType.Int64));
-                command.Parameters[0].Value = id;
-
-                Console.WriteLine(_connection.FullState);
-                //Console.WriteLine(_connection.tra)
-
-                using (var reader = command.ExecuteReader())
-                { // ok, feed was found!
-                    while (reader.Read())
-                    {
-                        return new PostgreSQLGTFSFeed(_connection, id);
-                    }
-                }
-            }
-            return null;
+            // Might as well just return, whether it exists or not
+            return new PostgreSQLGTFSFeed(_connection, id);
         }
 
         public IEnumerable<int> GetFeeds()
