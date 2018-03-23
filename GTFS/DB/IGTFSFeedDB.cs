@@ -74,9 +74,14 @@ namespace GTFS.DB
         string GetFullDataSource();
 
         /// <summary>
-        /// Holds the DB connection.
+        /// Returns a new DB connection
         /// </summary>
-        DbConnection _connection { get; }
+        DbConnection Connection { get; }
+
+        /// <summary>
+        /// Returns the connection string
+        /// </summary>
+        string ConnectionString { get; }
 
         /// <summary>
         /// Create a query parameter for the particular DB implementation

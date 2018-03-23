@@ -39,7 +39,10 @@ namespace GTFS.DB.SQLite
         /// </summary>
         private SQLiteConnection _connection;
 
-        DbConnection IGTFSFeedDB._connection { get => _connection; }
+        public string ConnectionString { get; }
+
+        public DbConnection Connection { get => new SQLiteConnection(ConnectionString, true); }
+
 
         public DbParameter CreateParameter(string name, DbType type)
         {
@@ -80,6 +83,7 @@ namespace GTFS.DB.SQLite
         /// </summary>
         public SQLiteGTFSFeedDB(string connectionString)
         {
+            ConnectionString = connectionString;
             _connection = new SQLiteConnection(connectionString, true);
             _connection.Open();
 

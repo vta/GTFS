@@ -14,12 +14,11 @@ namespace GTFS.DB.PostgreSQL
     /// </summary>
     public class PostgreSQLGTFSFeedDB : IGTFSFeedDB
     {
-        /// <summary>
-        /// Holds a connection.
-        /// </summary>
-        private NpgsqlConnection _connection;
+        private NpgsqlConnection _connection { get; }
 
-        DbConnection IGTFSFeedDB._connection { get => _connection; }
+        public string ConnectionString { get; }
+
+        public DbConnection Connection { get => new NpgsqlConnection(ConnectionString); }
 
         public DbParameter CreateParameter(string name, DbType type)
         {
@@ -27,20 +26,11 @@ namespace GTFS.DB.PostgreSQL
         }
 
         /// <summary>
-        /// Returns the data source (filename of the db)
-        /// </summary>
-        public string GetDataSource()
-        {
-            return _connection.DataSource;
-        }
-
-        /// <summary>
         /// Returns the data source in full (location of the db)
         /// </summary>
         public string GetFullDataSource()
         {
-            string connStr = _connection.ConnectionString;
-            return connStr;
+            return ConnectionString;
         }
 
         /// <summary>
@@ -48,9 +38,8 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public PostgreSQLGTFSFeedDB(string connectionString)
         {
-            _connection = new NpgsqlConnection(connectionString);
-            _connection.Open();
-
+            _connection = new NpgsqlConnection(ConnectionString);
+            ConnectionString = connectionString;
             // build database.
             this.RebuildDB();
         }

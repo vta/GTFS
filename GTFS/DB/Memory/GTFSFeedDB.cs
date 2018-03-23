@@ -38,7 +38,9 @@ namespace GTFS.DB.Memory
         /// </summary>
         private List<IGTFSFeed> _feeds = new List<IGTFSFeed>();
 
-        public DbConnection _connection => throw new System.NotImplementedException();
+        public DbConnection Connection => throw new System.NotImplementedException();
+
+        public string ConnectionString => throw new System.NotImplementedException();
 
         /// <summary>
         /// Adds a new empty feed to this db.
