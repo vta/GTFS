@@ -189,6 +189,7 @@ namespace GTFS.DB.PostgreSQL.Collections
             #if DEBUG
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
+            Console.Write($"Fetching trips...");
             #endif
             var trips = new List<Trip>();
             using (var reader = _connection.BeginBinaryExport("COPY trip TO STDOUT (FORMAT BINARY)"))
@@ -212,7 +213,7 @@ namespace GTFS.DB.PostgreSQL.Collections
             }
             #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine($"Fetch trips: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
             #endif
             return trips;
         }

@@ -115,6 +115,7 @@ namespace GTFS.DB.PostgreSQL.Collections
             #if DEBUG
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
+            Console.Write($"Fetching shapes...");
             #endif
             var shapePoints = new List<Shape>();
             using (var reader = _connection.BeginBinaryExport("COPY shape TO STDOUT (FORMAT BINARY)"))
@@ -134,7 +135,7 @@ namespace GTFS.DB.PostgreSQL.Collections
             }
             #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine($"Fetch shapes: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
             #endif
             return shapePoints;
         }

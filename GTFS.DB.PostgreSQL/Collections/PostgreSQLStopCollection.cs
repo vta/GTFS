@@ -47,6 +47,12 @@ namespace GTFS.DB.PostgreSQL.Collections
         private int _id;
 
         /// <summary>
+        /// Caches the stops in memory
+        /// </summary>
+        private static List<Stop> CachedStops { get; set; }
+        private static int CacheVersion { get; set; }
+
+        /// <summary>
         /// Creates a new SQLite GTFS feed.
         /// </summary>
         /// <param name="connection"></param>
@@ -311,33 +317,42 @@ namespace GTFS.DB.PostgreSQL.Collections
             #if DEBUG
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
+            Console.Write($"Fetching stops...");
             #endif
             var stops = new List<Stop>();
-            using (var reader = _connection.BeginBinaryExport("COPY stop TO STDOUT (FORMAT BINARY)"))
+            if (CachedStops != null)
             {
-                while (reader.StartRow() > 0)
-                {
-                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
-                    stops.Add(new Stop()
-                    {
-                        Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Code = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Name = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
-                        Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
-                        Zone = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        LocationType = (LocationType?)reader.ReadIntSafe(),
-                        ParentStation = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Timezone = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        WheelchairBoarding = reader.ReadStringSafe()
-                    });
-                }
+                stops = CachedStops;
             }
+            else
+            {
+                using (var reader = _connection.BeginBinaryExport("COPY stop TO STDOUT (FORMAT BINARY)"))
+                {
+                    while (reader.StartRow() > 0)
+                    {
+                        var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                        stops.Add(new Stop()
+                        {
+                            Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Code = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Name = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                            Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                            Zone = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            LocationType = (LocationType?)reader.ReadIntSafe(),
+                            ParentStation = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Timezone = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            WheelchairBoarding = reader.ReadStringSafe()
+                        });
+                    }
+                }
+                CachedStops = stops;
+            }            
             #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine($"Fetch stops: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
             #endif
             return stops;
         }
