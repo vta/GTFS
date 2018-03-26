@@ -88,7 +88,10 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
 
-            //this.RebuildTriggers();
+            if (!TableExists("cache_versions"))
+            {
+                this.RebuildTriggers();
+            }
         }
 
         public void RebuildTriggers()
@@ -113,6 +116,25 @@ namespace GTFS.DB.PostgreSQL
                                     EXECUTE PROCEDURE public.log_stop_changes();");
             this.ExecuteNonQuery(@"CREATE TRIGGER shape_watcher AFTER INSERT OR DELETE OR UPDATE ON public.shape FOR EACH ROW
                                     EXECUTE PROCEDURE public.log_shape_changes();");
+        }
+
+        public bool TableExists(string tableName)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT EXISTS ( SELECT 1 FROM information_schema.tables WHERE table_name = :tableName)";
+                command.Parameters.Add(new NpgsqlParameter(@":tableName", DbType.String));
+                command.Parameters[0].Value = tableName;
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var exists = Convert.ToBoolean(reader["exists"]);
+                        return exists;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
