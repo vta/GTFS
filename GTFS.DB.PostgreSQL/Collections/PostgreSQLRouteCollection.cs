@@ -47,6 +47,29 @@ namespace GTFS.DB.PostgreSQL.Collections
         private int _id;
 
         /// <summary>
+        /// Caches the routes in memory
+        /// </summary>
+        private static List<Route> CachedRoutes { get; set; }
+        private static int CacheVersion { get; set; } = -1;
+        private int GetCurrentCacheVersion()
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT route_version FROM cache_versions;";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var str = Convert.ToString(reader["route_version"]);
+                        int.TryParse(str, out int currentVersion);
+                        return currentVersion;
+                    }
+                }
+            }
+            return 0;
+        }
+
+        /// <summary>
         /// Creates a new SQLite GTFS feed.
         /// </summary>
         /// <param name="connection"></param>
@@ -169,24 +192,37 @@ namespace GTFS.DB.PostgreSQL.Collections
             Console.Write($"Fetching routes...");
             #endif
             var routes = new List<Route>();
-            using (var reader = _connection.BeginBinaryExport("COPY route TO STDOUT (FORMAT BINARY)"))
+            var currentVersion = GetCurrentCacheVersion();
+            if (currentVersion == CacheVersion)
             {
-                while (reader.StartRow() > 0)
+                #if DEBUG
+                Console.Write($" Found cached routes...");
+                #endif
+                routes = CachedRoutes;
+            }
+            else
+            {
+                using (var reader = _connection.BeginBinaryExport("COPY route TO STDOUT (FORMAT BINARY)"))
                 {
-                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
-                    routes.Add(new Route()
+                    while (reader.StartRow() > 0)
                     {
-                        Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        AgencyId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        ShortName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        LongName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Type = (RouteTypeExtended)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                        Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Color = reader.ReadIntSafe(),
-                        TextColor = reader.ReadIntSafe()
-                    });
+                        var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                        routes.Add(new Route()
+                        {
+                            Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            AgencyId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            ShortName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            LongName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Type = (RouteTypeExtended)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                            Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                            Color = reader.ReadIntSafe(),
+                            TextColor = reader.ReadIntSafe()
+                        });
+                    }
                 }
+                CachedRoutes = routes;
+                CacheVersion = currentVersion;
             }
             #if DEBUG
             stopwatch.Stop();

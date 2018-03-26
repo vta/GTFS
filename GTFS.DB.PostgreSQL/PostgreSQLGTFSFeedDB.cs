@@ -88,12 +88,14 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
 
-            
             //this.RebuildTriggers();
         }
 
         public void RebuildTriggers()
         {
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS cache_versions ( route_version BIGINT, trip_version BIGINT, stop_version BIGINT, shape_version BIGINT);");
+            this.ExecuteNonQuery("INSERT INTO cache_versions VALUES (0, 0, 0, 0);");
+
             this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_route_changes() RETURNS trigger AS $BODY$ BEGIN
                                        UPDATE public.cache_versions SET route_version = route_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
             this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_trip_changes() RETURNS trigger AS $BODY$ BEGIN

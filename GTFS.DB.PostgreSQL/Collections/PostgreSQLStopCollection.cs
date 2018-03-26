@@ -50,7 +50,24 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// Caches the stops in memory
         /// </summary>
         private static List<Stop> CachedStops { get; set; }
-        private static int CacheVersion { get; set; }
+        private static int CacheVersion { get; set; } = -1;
+        private int GetCurrentCacheVersion()
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT stop_version FROM cache_versions;";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var str = Convert.ToString(reader["stop_version"]);
+                        int.TryParse(str, out int currentVersion);
+                        return currentVersion;
+                    }
+                }
+            }
+            return 0;
+        }
 
         /// <summary>
         /// Creates a new SQLite GTFS feed.
@@ -320,8 +337,12 @@ namespace GTFS.DB.PostgreSQL.Collections
             Console.Write($"Fetching stops...");
             #endif
             var stops = new List<Stop>();
-            if (CachedStops != null)
+            var currentVersion = GetCurrentCacheVersion();
+            if (currentVersion == CacheVersion)
             {
+                #if DEBUG
+                Console.Write($" Found cached stops...");
+                #endif
                 stops = CachedStops;
             }
             else
@@ -349,6 +370,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     }
                 }
                 CachedStops = stops;
+                CacheVersion = currentVersion;
             }            
             #if DEBUG
             stopwatch.Stop();
