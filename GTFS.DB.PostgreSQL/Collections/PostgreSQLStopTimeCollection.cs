@@ -280,7 +280,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<StopTime> GetForTrip(string tripId)
         {
-            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled FROM stop_time WHERE FEED_ID = :id AND trip_id = :trip_id";
+            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled FROM stop_time WHERE FEED_ID = :id AND trip_id = :trip_id ORDER BY stop_sequence";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
