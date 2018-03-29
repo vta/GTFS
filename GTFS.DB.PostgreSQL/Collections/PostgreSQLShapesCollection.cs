@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using Dapper;
 using GTFS.Entities;
 using GTFS.Entities.Collections;
 using Npgsql;
@@ -134,18 +135,12 @@ namespace GTFS.DB.PostgreSQL.Collections
             {
                 var shapePoints = group.ToList();
                 var shape = new PostgisLineString(group.Select(x => new Coordinate2D(x.Longitude, x.Latitude)));
-
                 using (var command = _connection.CreateCommand())
                 {
                     command.CommandText = @"INSERT INTO shape_gis VALUES (:feed_id, :id, :shape)";
-                    command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                    command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                    command.Parameters.Add(new NpgsqlParameter(@"shape", NpgsqlDbType.Geometry));
-
-                    command.Parameters[0].Value = _id;
-                    command.Parameters[1].Value = group.Key;
-                    command.Parameters[2].Value = shape;
-
+                    command.Parameters.AddWithValue(@"feed_id", NpgsqlDbType.Integer, _id);
+                    command.Parameters.AddWithValue(@"id", NpgsqlDbType.Text, group.Key);
+                    command.Parameters.AddWithValue(@"shape", NpgsqlDbType.Geometry, shape);
                     command.ExecuteNonQuery();
                 }
             }
@@ -157,6 +152,9 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<Shape> Get()
         {
+            var queryString = @"SELECT id, shape FROM shape_gis";
+            var result = _connection.Query(queryString);
+            
             #if DEBUG
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();

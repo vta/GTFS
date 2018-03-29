@@ -59,6 +59,10 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         private void RebuildDB()
         {
+            // CREATE SPATIAL EXTENSION AND SPATIAL TABLE
+            this.ExecuteNonQuery("CREATE EXTENSION IF NOT EXISTS postgis;");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS shape_gis ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, shape GEOMETRY);");
+
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS feed ( ID INTEGER NOT NULL PRIMARY KEY, feed_publisher_name TEXT, feed_publisher_url TEXT, feed_lang TEXT,  feed_start_date TEXT, feed_end_date TEXT, feed_version TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS agency ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, agency_name TEXT, agency_url TEXT, agency_timezone TEXT, agency_lang TEXT, agency_phone TEXT, agency_fare_url TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS calendar ( FEED_ID INTEGER NOT NULL, service_id TEXT NOT NULL, monday INTEGER, tuesday INTEGER, wednesday INTEGER, thursday INTEGER, friday INTEGER, saturday INTEGER, sunday INTEGER, start_date BIGINT, end_date BIGINT );");
@@ -87,10 +91,7 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
-            // CREATE SPATIAL EXTENSION AND SPATIAL TABLE
-            this.ExecuteNonQuery("CREATE EXTENSION IF NOT EXISTS postgis;");
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS shape_gis ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, shape GEOMETRY);");
-
+            
             if (!TableExists("cache_versions"))
             {
                 this.RebuildTriggers();
@@ -180,7 +181,7 @@ namespace GTFS.DB.PostgreSQL
         public IGTFSFeed GetFeed(int id)
         {
             // Might as well just return, whether it exists or not
-            return new PostgreSQLGTFSFeed(_connection, id);
+            return new PostgreSQLGTFSFeed((NpgsqlConnection)Connection, id);
         }
 
         public IEnumerable<int> GetFeeds()
