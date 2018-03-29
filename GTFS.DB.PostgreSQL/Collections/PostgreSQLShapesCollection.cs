@@ -116,7 +116,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entities"></param>
         public void AddRange(IEntityCollection<Shape> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY shape (feed_id, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) FROM STDIN (FORMAT BINARY)"))
+            /*using (var writer = _connection.BeginBinaryImport("COPY shape (feed_id, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var shapePoint in entities)
                 {
@@ -128,7 +128,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(shapePoint.Sequence, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(shapePoint.DistanceTravelled, NpgsqlTypes.NpgsqlDbType.Real);
                 }
-            }
+            }*/
 
             var shapeGroups = entities.GroupBy(x => x.Id);
             foreach (var group in shapeGroups)
@@ -146,6 +146,13 @@ namespace GTFS.DB.PostgreSQL.Collections
             }
         }
 
+
+        internal class GeometryDbModel
+        {
+            public string id { get; set; }
+            public PostgisLineString shape { get; set; }
+        }
+
         /// <summary>
         /// Returns all entities.
         /// </summary>
@@ -153,7 +160,20 @@ namespace GTFS.DB.PostgreSQL.Collections
         public IEnumerable<Shape> Get()
         {
             var queryString = @"SELECT id, shape FROM shape_gis";
-            var result = _connection.Query(queryString);
+            var result = _connection.Query<GeometryDbModel>(queryString);
+            var shpPoints = new List<Shape>();
+            foreach (var shape in result)
+            {
+                uint i = 1;
+                shpPoints.AddRange(shape.shape.Select(x => new Shape()
+                {
+                    Id = shape.id,
+                    Latitude = x.Y,
+                    Longitude = x.X,
+                    Sequence = i++
+                }));
+            }
+            return shpPoints;
             
             #if DEBUG
             var stopwatch = new System.Diagnostics.Stopwatch();
