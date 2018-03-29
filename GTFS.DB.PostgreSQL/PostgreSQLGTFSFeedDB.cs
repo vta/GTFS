@@ -87,6 +87,9 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
+            // CREATE SPATIAL EXTENSION AND SPATIAL TABLE
+            this.ExecuteNonQuery("CREATE EXTENSION IF NOT EXISTS postgis;");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS shape_gis ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, shape GEOMETRY);");
 
             if (!TableExists("cache_versions"))
             {

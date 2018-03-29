@@ -23,6 +23,7 @@
 using GTFS.Entities;
 using GTFS.Entities.Collections;
 using Npgsql;
+using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -125,6 +126,27 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(shapePoint.Longitude, NpgsqlTypes.NpgsqlDbType.Real);
                     writer.Write(shapePoint.Sequence, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(shapePoint.DistanceTravelled, NpgsqlTypes.NpgsqlDbType.Real);
+                }
+            }
+
+            var shapeGroups = entities.GroupBy(x => x.Id);
+            foreach (var group in shapeGroups)
+            {
+                var shapePoints = group.ToList();
+                var shape = new PostgisLineString(group.Select(x => new Coordinate2D(x.Longitude, x.Latitude)));
+
+                using (var command = _connection.CreateCommand())
+                {
+                    command.CommandText = @"INSERT INTO shape_gis VALUES (:feed_id, :id, :shape)";
+                    command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                    command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
+                    command.Parameters.Add(new NpgsqlParameter(@"shape", NpgsqlDbType.Geometry));
+
+                    command.Parameters[0].Value = _id;
+                    command.Parameters[1].Value = group.Key;
+                    command.Parameters[2].Value = shape;
+
+                    command.ExecuteNonQuery();
                 }
             }
         }
