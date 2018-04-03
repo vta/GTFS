@@ -22,6 +22,8 @@
 
 using GTFS.Entities;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 
 namespace GTFS.DB.Memory
@@ -35,6 +37,10 @@ namespace GTFS.DB.Memory
         /// Holds all the feeds that have been added.
         /// </summary>
         private List<IGTFSFeed> _feeds = new List<IGTFSFeed>();
+
+        public DbConnection Connection => throw new System.NotImplementedException();
+
+        public string ConnectionString => throw new System.NotImplementedException();
 
         /// <summary>
         /// Adds a new empty feed to this db.
@@ -89,6 +95,61 @@ namespace GTFS.DB.Memory
         public IGTFSFeed GetFeed(int id)
         {
             return _feeds[id];
+        }
+
+        public string GetFullDataSource()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortAllTables()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortRoutes()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortTrips()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortStops()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortStopTimes()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortFrequencies()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortCalendars()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortCalendarDates()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SortPolygons()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public DbParameter CreateParameter(string name, DbType type)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

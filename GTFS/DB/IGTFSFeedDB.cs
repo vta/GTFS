@@ -23,6 +23,8 @@
 using GTFS.Entities;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 
@@ -65,5 +67,70 @@ namespace GTFS.DB
         /// <param name="id"></param>
         /// <returns></returns>
         IGTFSFeed GetFeed(int id);
+
+        /// <summary>
+        /// Returns the data source of the DB
+        /// </summary>
+        string GetFullDataSource();
+
+        /// <summary>
+        /// Returns a new DB connection
+        /// </summary>
+        DbConnection Connection { get; }
+
+        /// <summary>
+        /// Returns the connection string
+        /// </summary>
+        string ConnectionString { get; }
+
+        /// <summary>
+        /// Create a query parameter for the particular DB implementation
+        /// </summary>
+        DbParameter CreateParameter(string name, DbType type);
+
+        /// <summary>
+        /// Sort all tables in the DB
+        /// </summary>
+        void SortAllTables();
+
+        /// <summary>
+        /// Deletes and recreates the routes table in a sorted order - may take time
+        /// </summary>
+        void SortRoutes();
+
+        /// <summary>
+        /// Deletes and recreates the trips table in a sorted order - may take time
+        /// </summary>
+        void SortTrips();
+
+        /// <summary>
+        /// Deletes and recreates the stops table in a sorted order - may take time
+        /// </summary>
+        void SortStops();
+
+        /// <summary>
+        /// Deletes and recreates the stop_times table in a sorted order - may take time
+        /// </summary>
+        void SortStopTimes();
+
+        /// <summary>
+        /// Deletes and recreates the frequencies table in a sorted order - may take time
+        /// </summary>
+        void SortFrequencies();
+
+        /// <summary>
+        /// Deletes and recreates the calendars table in a sorted order (first by date then by exception_type) - may take time
+        /// </summary>
+        void SortCalendars();
+
+        /// <summary>
+        /// Deletes and recreates the calendar_dates table in a sorted order (first by date then by exception_type) - may take time
+        /// </summary>
+        void SortCalendarDates();
+
+        /// <summary>
+        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// </summary>
+        void SortPolygons();        
     }
 }

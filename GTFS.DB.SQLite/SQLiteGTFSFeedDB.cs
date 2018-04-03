@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
 
@@ -36,7 +37,17 @@ namespace GTFS.DB.SQLite
         /// <summary>
         /// Holds a connection.
         /// </summary>
-        public SQLiteConnection _connection;
+        private SQLiteConnection _connection;
+
+        public string ConnectionString { get; }
+
+        public DbConnection Connection { get=> new SQLiteConnection(ConnectionString, true).OpenAndReturn(); }
+
+
+        public DbParameter CreateParameter(string name, DbType type)
+        {
+            return new SQLiteParameter(name, type);
+        }
 
         /// <summary>
         /// Returns the data source (filename of the db)
@@ -72,6 +83,7 @@ namespace GTFS.DB.SQLite
         /// </summary>
         public SQLiteGTFSFeedDB(string connectionString)
         {
+            ConnectionString = connectionString;
             _connection = new SQLiteConnection(connectionString, true);
             _connection.Open();
 
@@ -215,6 +227,10 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [stop_time] ( [FEED_ID] INTEGER NOT NULL, [trip_id] TEXT NOT NULL, [arrival_time] INTEGER, [departure_time] INTEGER, [stop_id] TEXT, [stop_sequence] INTEGER, [stop_headsign] TEXT, [pickup_type] INTEGER, [drop_off_type] INTEGER, [shape_dist_traveled] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [transfer] ( [FEED_ID] INTEGER NOT NULL, [from_stop_id] TEXT, [to_stop_id] TEXT, [transfer_type] INTEGER, [min_transfer_time] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [trip] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [route_id] TEXT, [service_id] TEXT, [trip_headsign] TEXT, [trip_short_name] TEXT, [direction_id] INTEGER, [block_id] TEXT, [shape_id] TEXT, [wheelchair_accessible] INTEGER );");
+            // CREATE TABLE TO STORE RESERVED IDS
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [reservedids] ( [base_name] TEXT, [reserved_id] TEXT);");
+            // CREATE TABLE TO STORE PREFERENCES
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [preferences] ( [preference] TEXT, [value] TEXT);");
             // CREATE TABLE TO STORE GPX FILENAMES AND TABLE TO STORE CLEANED STOP IDS
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [gpx_filenames] ( [route_id] TEXT, [gpx_filename] TEXT);");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [cleaned_stops] ( [stop_id] TEXT);");
@@ -241,20 +257,23 @@ namespace GTFS.DB.SQLite
         /// <returns>True if th</returns>
         private bool TableExists(string tableName)
         {
-            var cmd = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection);
-            var dr = cmd.ExecuteReader();
-            while (dr.Read())
+            using (var command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection))
             {
-                var value = dr.GetValue(0);
-                if (tableName.Equals(value))
+                using (var reader = command.ExecuteReader())
                 {
-                    dr.Close();
-                    return true;
+                    while (reader.Read())
+                    {
+                        var value = reader.GetValue(0);
+                        if (tableName.Equals(value))
+                        {
+                            reader.Close();
+                            return true;
+                        }
+                    }
+                    reader.Close();
+                    return false;
                 }
             }
-
-            dr.Close();
-            return false;
         }
 
         /// <summary>
@@ -265,20 +284,24 @@ namespace GTFS.DB.SQLite
         /// <returns>True if the given table contains a column with the given name.</returns>
         private bool ColumnExists(string tableName, string columnName)
         {
-            var cmd = new SQLiteCommand("PRAGMA table_info(" + tableName + ")", _connection);
-            var dr = cmd.ExecuteReader();
-            while (dr.Read())
+            using (var command = new SQLiteCommand("PRAGMA table_info(" + tableName + ")", _connection))
             {
-                var value = dr.GetValue(1);//column 1 from the result contains the column names
-                if (columnName.Equals(value))
+                using (var reader = command.ExecuteReader())
                 {
-                    dr.Close();
-                    return true;
+                    while (reader.Read())
+                    {
+                        var value = reader.GetValue(1);//column 1 from the result contains the column names
+                        if (columnName.Equals(value))
+                        {
+                            reader.Close();
+                            return true;
+                        }
+                    }
+
+                    reader.Close();
+                    return false;
                 }
             }
-
-            dr.Close();
-            return false;
         }
 
         /// <summary>
@@ -406,7 +429,7 @@ namespace GTFS.DB.SQLite
         }
 
         /// <summary>
-        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// Deletes and recreates the polygons table in a sorted order (first by id then by poly_pt_seq) - may take time
         /// </summary>
         public void SortPolygons()//TODO: test!
         {
