@@ -257,20 +257,23 @@ namespace GTFS.DB.SQLite
         /// <returns>True if th</returns>
         private bool TableExists(string tableName)
         {
-            var cmd = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection);
-            var dr = cmd.ExecuteReader();
-            while (dr.Read())
+            using (var command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection))
             {
-                var value = dr.GetValue(0);
-                if (tableName.Equals(value))
+                using (var reader = command.ExecuteReader())
                 {
-                    dr.Close();
-                    return true;
+                    while (reader.Read())
+                    {
+                        var value = reader.GetValue(0);
+                        if (tableName.Equals(value))
+                        {
+                            reader.Close();
+                            return true;
+                        }
+                    }
+                    reader.Close();
+                    return false;
                 }
             }
-
-            dr.Close();
-            return false;
         }
 
         /// <summary>
@@ -281,20 +284,24 @@ namespace GTFS.DB.SQLite
         /// <returns>True if the given table contains a column with the given name.</returns>
         private bool ColumnExists(string tableName, string columnName)
         {
-            var cmd = new SQLiteCommand("PRAGMA table_info(" + tableName + ")", _connection);
-            var dr = cmd.ExecuteReader();
-            while (dr.Read())
+            using (var command = new SQLiteCommand("PRAGMA table_info(" + tableName + ")", _connection))
             {
-                var value = dr.GetValue(1);//column 1 from the result contains the column names
-                if (columnName.Equals(value))
+                using (var reader = command.ExecuteReader())
                 {
-                    dr.Close();
-                    return true;
+                    while (reader.Read())
+                    {
+                        var value = reader.GetValue(1);//column 1 from the result contains the column names
+                        if (columnName.Equals(value))
+                        {
+                            reader.Close();
+                            return true;
+                        }
+                    }
+
+                    reader.Close();
+                    return false;
                 }
             }
-
-            dr.Close();
-            return false;
         }
 
         /// <summary>
