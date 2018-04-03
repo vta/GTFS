@@ -301,6 +301,9 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("ALTER TABLE frequency_sorted RENAME TO frequency");
         }
 
+        /// <summary>
+        /// Deletes and recreates the calendars table in a sorted order - may take time
+        /// </summary>
         public void SortCalendars()
         {
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar_sorted] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [monday] INTEGER, [tuesday] INTEGER, [wednesday] INTEGER, [thursday] INTEGER, [friday] INTEGER, [saturday] INTEGER, [sunday] INTEGER, [start_date] INTEGER, [end_date] INTEGER );");
@@ -321,7 +324,7 @@ namespace GTFS.DB.PostgreSQL
         }
 
         /// <summary>
-        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// Deletes and recreates the polygons table in a sorted order (first by id then by poly_pt_seq) - may take time
         /// </summary>
         public void SortPolygons()//TODO: test!
         {

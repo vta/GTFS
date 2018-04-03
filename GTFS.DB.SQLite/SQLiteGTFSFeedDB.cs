@@ -422,7 +422,7 @@ namespace GTFS.DB.SQLite
         }
 
         /// <summary>
-        /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
+        /// Deletes and recreates the polygons table in a sorted order (first by id then by poly_pt_seq) - may take time
         /// </summary>
         public void SortPolygons()//TODO: test!
         {
