@@ -389,7 +389,18 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public int RemoveForStop(string stopId)
         {
-            throw new NotImplementedException();
+            string sql = "DELETE FROM stop_time WHERE FEED_ID = :feed_id AND stop_id = :stop_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                command.Parameters.Add(new NpgsqlParameter(@"stop_id", DbType.String));
+
+                command.Parameters[0].Value = _id;
+                command.Parameters[1].Value = stopId;
+
+                return command.ExecuteNonQuery();
+            }
         }
 
         /// <summary>
