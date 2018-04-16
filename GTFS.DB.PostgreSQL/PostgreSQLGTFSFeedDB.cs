@@ -87,35 +87,6 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stop_idx ON stop (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS shape_idx ON shape (id)");
             this.ExecuteNonQuery("CREATE INDEX IF NOT EXISTS stoptimes_idx ON stop_time (trip_id)");
-
-            if (!TableExists("cache_versions"))
-            {
-                this.RebuildTriggers();
-            }
-        }
-
-        public void RebuildTriggers()
-        {
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS cache_versions ( route_version BIGINT, trip_version BIGINT, stop_version BIGINT, shape_version BIGINT);");
-            this.ExecuteNonQuery("INSERT INTO cache_versions VALUES (0, 0, 0, 0);");
-
-            this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_route_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET route_version = route_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
-            this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_trip_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET trip_version = trip_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
-            this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_stop_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET stop_version = stop_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
-            this.ExecuteNonQuery(@"CREATE OR REPLACE FUNCTION log_shape_changes() RETURNS trigger AS $BODY$ BEGIN
-                                       UPDATE public.cache_versions SET shape_version = shape_version + 1; RETURN NEW; END; $BODY$ LANGUAGE plpgsql VOLATILE;");
-
-            this.ExecuteNonQuery(@"CREATE TRIGGER route_watcher AFTER INSERT OR DELETE OR UPDATE ON public.route FOR EACH ROW
-                                    EXECUTE PROCEDURE public.log_route_changes();");
-            this.ExecuteNonQuery(@"CREATE TRIGGER trip_watcher AFTER INSERT OR DELETE OR UPDATE ON public.trip FOR EACH ROW
-                                    EXECUTE PROCEDURE public.log_trip_changes();");
-            this.ExecuteNonQuery(@"CREATE TRIGGER stop_watcher AFTER INSERT OR DELETE OR UPDATE ON public.stop FOR EACH ROW
-                                    EXECUTE PROCEDURE public.log_stop_changes();");
-            this.ExecuteNonQuery(@"CREATE TRIGGER shape_watcher AFTER INSERT OR DELETE OR UPDATE ON public.shape FOR EACH ROW
-                                    EXECUTE PROCEDURE public.log_shape_changes();");
         }
 
         public bool TableExists(string tableName)

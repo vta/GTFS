@@ -45,30 +45,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// Holds the id.
         /// </summary>
         private int _id;
-
-        /// <summary>
-        /// Caches the trips in memory
-        /// </summary>
-        private static List<Trip> CachedTrips { get; set; }
-        private static int CacheVersion { get; set; } = -1;
-        private int GetCurrentCacheVersion()
-        {
-            using (var command = _connection.CreateCommand())
-            {
-                command.CommandText = "SELECT trip_version FROM cache_versions;";
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var str = Convert.ToString(reader["trip_version"]);
-                        int.TryParse(str, out int currentVersion);
-                        return currentVersion;
-                    }
-                }
-            }
-            return 0;
-        }
-
+        
         /// <summary>
         /// Creates a new SQLite GTFS feed.
         /// </summary>
@@ -215,37 +192,24 @@ namespace GTFS.DB.PostgreSQL.Collections
             Console.Write($"Fetching trips...");
             #endif
             var trips = new List<Trip>();
-            var currentVersion = GetCurrentCacheVersion();
-            if (currentVersion == CacheVersion)
+            using (var reader = _connection.BeginBinaryExport("COPY trip TO STDOUT (FORMAT BINARY)"))
             {
-                #if DEBUG
-                Console.Write($" Found cached trips...");
-                #endif
-                trips = CachedTrips;
-            }
-            else
-            {
-                using (var reader = _connection.BeginBinaryExport("COPY trip TO STDOUT (FORMAT BINARY)"))
+                while (reader.StartRow() > 0)
                 {
-                    while (reader.StartRow() > 0)
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    trips.Add(new Trip()
                     {
-                        var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
-                        trips.Add(new Trip()
-                        {
-                            Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            RouteId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            ServiceId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Headsign = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            ShortName = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Direction = (DirectionType?)reader.ReadIntSafe(),
-                            BlockId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            ShapeId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            AccessibilityType = (WheelchairAccessibilityType?)reader.ReadIntSafe()
-                        });
-                    }
+                        Id = reader.ReadStringSafe(),
+                        RouteId = reader.ReadStringSafe(),
+                        ServiceId = reader.ReadStringSafe(),
+                        Headsign = reader.ReadStringSafe(),
+                        ShortName = reader.ReadStringSafe(),
+                        Direction = (DirectionType?)reader.ReadIntSafe(),
+                        BlockId = reader.ReadStringSafe(),
+                        ShapeId = reader.ReadStringSafe(),
+                        AccessibilityType = (WheelchairAccessibilityType?)reader.ReadIntSafe()
+                    });
                 }
-                CachedTrips = trips;
-                CacheVersion = currentVersion;
             }
             #if DEBUG
             stopwatch.Stop();

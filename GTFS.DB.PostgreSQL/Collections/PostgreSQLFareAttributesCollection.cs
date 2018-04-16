@@ -124,12 +124,12 @@ namespace GTFS.DB.PostgreSQL.Collections
                     var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
                     fareAttributes.Add(new FareAttribute()
                     {
-                        FareId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        Price = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        CurrencyType = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        FareId = reader.ReadStringSafe(),
+                        Price = reader.ReadStringSafe(),
+                        CurrencyType = reader.ReadStringSafe(),
                         PaymentMethod = (PaymentMethodType)reader.ReadIntSafe(),
                         Transfers = (uint?)reader.ReadIntSafe(),
-                        TransferDuration = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text)
+                        TransferDuration = reader.ReadStringSafe()
                     });
                 }
             }

@@ -255,15 +255,15 @@ namespace GTFS.DB.PostgreSQL.Collections
                     var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
                     stopTimes.Add(new StopTime()
                     {
-                        TripId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        TripId = reader.ReadStringSafe(),
                         ArrivalTime = TimeOfDay.FromTotalSeconds(reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)),
                         DepartureTime = TimeOfDay.FromTotalSeconds(reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)),
-                        StopId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        StopId = reader.ReadStringSafe(),
                         StopSequence = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                        StopHeadsign = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        StopHeadsign = reader.ReadStringSafe(),
                         PickupType = (PickupType?)reader.ReadIntSafe(),
                         DropOffType = (DropOffType?)reader.ReadIntSafe(),
-                        ShapeDistTravelled = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text)
+                        ShapeDistTravelled = reader.ReadStringSafe()
                     });
                 }
             }
