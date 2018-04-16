@@ -120,10 +120,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                     var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
                     frequencies.Add(new Frequency()
                     {
-                        TripId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        StartTime = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        EndTime = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        HeadwaySecs = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
+                        TripId = reader.ReadStringSafe(),
+                        StartTime = reader.ReadStringSafe(),
+                        EndTime = reader.ReadStringSafe(),
+                        HeadwaySecs = reader.ReadStringSafe(),
                         ExactTimes = reader.ReadIntSafe() == 1
                     });
                 }

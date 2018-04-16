@@ -146,11 +146,11 @@ namespace GTFS.DB.PostgreSQL.Collections
                     var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
                     fareRules.Add(new FareRule()
                     {
-                        FareId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        RouteId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        OriginId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        DestinationId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                        ContainsId = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text)
+                        FareId = reader.ReadStringSafe(),
+                        RouteId = reader.ReadStringSafe(),
+                        OriginId = reader.ReadStringSafe(),
+                        DestinationId = reader.ReadStringSafe(),
+                        ContainsId = reader.ReadStringSafe()
                     });
                 }
             }

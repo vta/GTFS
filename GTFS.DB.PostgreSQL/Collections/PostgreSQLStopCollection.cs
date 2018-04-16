@@ -47,29 +47,6 @@ namespace GTFS.DB.PostgreSQL.Collections
         private int _id;
 
         /// <summary>
-        /// Caches the stops in memory
-        /// </summary>
-        private static List<Stop> CachedStops { get; set; }
-        private static int CacheVersion { get; set; } = -1;
-        private int GetCurrentCacheVersion()
-        {
-            using (var command = _connection.CreateCommand())
-            {
-                command.CommandText = "SELECT stop_version FROM cache_versions;";
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var str = Convert.ToString(reader["stop_version"]);
-                        int.TryParse(str, out int currentVersion);
-                        return currentVersion;
-                    }
-                }
-            }
-            return 0;
-        }
-
-        /// <summary>
         /// Creates a new SQLite GTFS feed.
         /// </summary>
         /// <param name="connection"></param>
@@ -337,41 +314,28 @@ namespace GTFS.DB.PostgreSQL.Collections
             Console.Write($"Fetching stops...");
             #endif
             var stops = new List<Stop>();
-            var currentVersion = GetCurrentCacheVersion();
-            if (currentVersion == CacheVersion)
+            using (var reader = _connection.BeginBinaryExport("COPY stop TO STDOUT (FORMAT BINARY)"))
             {
-                #if DEBUG
-                Console.Write($" Found cached stops...");
-                #endif
-                stops = CachedStops;
-            }
-            else
-            {
-                using (var reader = _connection.BeginBinaryExport("COPY stop TO STDOUT (FORMAT BINARY)"))
+                while (reader.StartRow() > 0)
                 {
-                    while (reader.StartRow() > 0)
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    stops.Add(new Stop()
                     {
-                        var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
-                        stops.Add(new Stop()
-                        {
-                            Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Code = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Name = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Description = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
-                            Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
-                            Zone = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Url = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            LocationType = (LocationType?)reader.ReadIntSafe(),
-                            ParentStation = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Timezone = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            WheelchairBoarding = reader.ReadStringSafe()
-                        });
-                    }
+                        Id = reader.ReadStringSafe(),
+                        Code = reader.ReadStringSafe(),
+                        Name = reader.ReadStringSafe(),
+                        Description = reader.ReadStringSafe(),
+                        Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                        Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                        Zone = reader.ReadStringSafe(),
+                        Url = reader.ReadStringSafe(),
+                        LocationType = (LocationType?)reader.ReadIntSafe(),
+                        ParentStation = reader.ReadStringSafe(),
+                        Timezone = reader.ReadStringSafe(),
+                        WheelchairBoarding = reader.ReadStringSafe()
+                    });
                 }
-                CachedStops = stops;
-                CacheVersion = currentVersion;
-            }            
+            }
             #if DEBUG
             stopwatch.Stop();
             Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");

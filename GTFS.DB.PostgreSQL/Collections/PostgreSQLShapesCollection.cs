@@ -46,29 +46,6 @@ namespace GTFS.DB.PostgreSQL.Collections
         private int _id;
 
         /// <summary>
-        /// Caches the shapes in memory
-        /// </summary>
-        private static List<Shape> CachedShapes { get; set; }
-        private static int CacheVersion { get; set; } = -1;
-        private int GetCurrentCacheVersion()
-        {
-            using (var command = _connection.CreateCommand())
-            {
-                command.CommandText = "SELECT shape_version FROM cache_versions;";
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var str = Convert.ToString(reader["shape_version"]);
-                        int.TryParse(str, out int currentVersion);
-                        return currentVersion;
-                    }
-                }
-            }
-            return 0;
-        }
-
-        /// <summary>
         /// Creates a new SQLite GTFS feed.
         /// </summary>
         /// <param name="connection"></param>
@@ -141,33 +118,20 @@ namespace GTFS.DB.PostgreSQL.Collections
             Console.Write($"Fetching shapes...");
             #endif
             var shapePoints = new List<Shape>();
-            var currentVersion = GetCurrentCacheVersion();
-            if (currentVersion == CacheVersion)
+            using (var reader = _connection.BeginBinaryExport("COPY shape TO STDOUT (FORMAT BINARY)"))
             {
-                #if DEBUG
-                Console.Write($" Found cached shapes...");
-                #endif
-                shapePoints = CachedShapes;
-            }
-            else
-            {
-                using (var reader = _connection.BeginBinaryExport("COPY shape TO STDOUT (FORMAT BINARY)"))
+                while (reader.StartRow() > 0)
                 {
-                    while (reader.StartRow() > 0)
+                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
+                    shapePoints.Add(new Shape()
                     {
-                        var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
-                        shapePoints.Add(new Shape()
-                        {
-                            Id = reader.Read<string>(NpgsqlTypes.NpgsqlDbType.Text),
-                            Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
-                            Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
-                            Sequence = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                            DistanceTravelled = reader.ReadDoubleSafe()
-                        });
-                    }
+                        Id = reader.ReadStringSafe(),
+                        Latitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                        Longitude = reader.Read<double>(NpgsqlTypes.NpgsqlDbType.Real),
+                        Sequence = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                        DistanceTravelled = reader.ReadDoubleSafe()
+                    });
                 }
-                CachedShapes = shapePoints;
-                CacheVersion = currentVersion;
             }
             #if DEBUG
             stopwatch.Stop();
