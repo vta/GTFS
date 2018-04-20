@@ -38,7 +38,7 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public string GetFullDataSource()
         {
-            return $"{_connection.Database} (PostgreSQL)";
+            return $"{_connection.Database}";
         }
 
         /// <summary>
