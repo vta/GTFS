@@ -277,7 +277,7 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public void SortCalendars()
         {
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS calendar_sorted ( FEED_ID INTEGER NOT NULL, service_id TEXT NOT NULL, monday INTEGER, tuesday INTEGER, wednesday INTEGER, thursday INTEGER, friday INTEGER, saturday INTEGER, sunday INTEGER, start_date INTEGER, end_date INTEGER );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS calendar_sorted ( FEED_ID INTEGER NOT NULL, service_id TEXT NOT NULL, monday INTEGER, tuesday INTEGER, wednesday INTEGER, thursday INTEGER, friday INTEGER, saturday INTEGER, sunday INTEGER, start_date BIGINT, end_date BIGINT );");
             this.ExecuteNonQuery("INSERT INTO calendar_sorted (FEED_ID, service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) SELECT FEED_ID, service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date FROM calendar ORDER BY service_id ASC;");
             this.ExecuteNonQuery("DROP TABLE calendar");
             this.ExecuteNonQuery("ALTER TABLE calendar_sorted RENAME TO calendar");
@@ -288,7 +288,7 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public void SortCalendarDates()
         {
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS calendar_date_sorted ( FEED_ID INTEGER NOT NULL, service_id TEXT NOT NULL, date INTEGER, exception_type INTEGER );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS calendar_date_sorted ( FEED_ID INTEGER NOT NULL, service_id TEXT NOT NULL, date BIGINT, exception_type INTEGER );");
             this.ExecuteNonQuery("INSERT INTO calendar_date_sorted (FEED_ID, service_id, date, exception_type) SELECT FEED_ID, service_id, date, exception_type FROM calendar_date ORDER BY date, exception_type ASC;");
             this.ExecuteNonQuery("DROP TABLE calendar_date");
             this.ExecuteNonQuery("ALTER TABLE calendar_date_sorted RENAME TO calendar_date");
