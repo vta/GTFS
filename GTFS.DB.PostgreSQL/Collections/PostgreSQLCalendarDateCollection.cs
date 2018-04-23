@@ -182,5 +182,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.ExecuteNonQuery();
             }
         }
+
+        public IEnumerable<string> GetIds()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

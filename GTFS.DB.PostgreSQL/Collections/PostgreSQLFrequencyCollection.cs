@@ -56,6 +56,10 @@ namespace GTFS.DB.PostgreSQL.Collections
             _id = id;
         }
 
+        public PostgreSQLFrequencyCollection()
+        {
+        }
+
         /// <summary>
         /// Adds an entity.
         /// </summary>
@@ -186,6 +190,11 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         public void RemoveAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> GetIds()
         {
             throw new NotImplementedException();
         }

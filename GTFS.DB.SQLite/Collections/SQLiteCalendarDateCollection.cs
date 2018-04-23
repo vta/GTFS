@@ -190,5 +190,10 @@ namespace GTFS.DB.SQLite.Collections
                 command.ExecuteNonQuery();
             }
         }
+
+        public IEnumerable<string> GetIds()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

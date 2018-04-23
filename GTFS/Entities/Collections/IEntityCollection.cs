@@ -49,6 +49,12 @@ namespace GTFS.Entities.Collections
         IEnumerable<T> Get();
 
         /// <summary>
+        /// Returns all entity ids.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<string> GetIds();
+
+        /// <summary>
         /// Returns all entities for the given id.
         /// </summary>
         /// <param name="entityId"></param>

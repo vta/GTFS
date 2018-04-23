@@ -194,5 +194,10 @@ namespace GTFS.DB.PostgreSQL.Collections
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<string> GetIds()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

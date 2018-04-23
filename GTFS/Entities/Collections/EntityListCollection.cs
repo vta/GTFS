@@ -138,5 +138,14 @@ namespace GTFS.Entities.Collections
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Get all entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

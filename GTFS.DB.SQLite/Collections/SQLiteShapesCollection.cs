@@ -224,6 +224,27 @@ namespace GTFS.DB.SQLite.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.Get().GetEnumerator();
-        }        
+        }
+
+        /// <summary>
+        /// Returns entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {   
+            var shapeIds = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT(id) FROM shape";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        shapeIds.Add(Convert.ToString(reader["id"]));
+                    }
+                }
+            }
+            return shapeIds;
+        }
     }
 }

@@ -224,6 +224,36 @@ namespace GTFS.DB.PostgreSQL.Collections
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.Get().GetEnumerator();
-        }        
+        }
+
+        /// <summary>
+        /// Returns entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            Console.Write($"Fetching shape ids...");
+            #endif
+            var shapeIds = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT(id) FROM shape";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        shapeIds.Add(Convert.ToString(reader["id"]));
+                    }
+                }
+            }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
+            #endif
+            return shapeIds;
+        }
     }
 }
