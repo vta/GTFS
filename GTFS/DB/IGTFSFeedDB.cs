@@ -84,6 +84,11 @@ namespace GTFS.DB
         string ConnectionString { get; }
 
         /// <summary>
+        /// The Tag for this DB
+        /// </summary>
+        object Tag { get; set; }
+
+        /// <summary>
         /// Create a query parameter for the particular DB implementation
         /// </summary>
         DbParameter CreateParameter(string name, DbType type);

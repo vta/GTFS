@@ -28,6 +28,8 @@ namespace GTFS.DB.PostgreSQL
             }
         }
 
+        public object Tag { get; set; }
+
         public DbParameter CreateParameter(string name, DbType type)
         {
             return new NpgsqlParameter(name, type);

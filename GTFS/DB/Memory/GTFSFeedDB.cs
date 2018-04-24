@@ -42,6 +42,12 @@ namespace GTFS.DB.Memory
 
         public string ConnectionString => throw new System.NotImplementedException();
 
+        public object Tag
+        {
+            get { throw new System.NotImplementedException(); }
+            set { throw new System.NotImplementedException(); }
+        }
+
         /// <summary>
         /// Adds a new empty feed to this db.
         /// </summary>
