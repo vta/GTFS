@@ -32,6 +32,7 @@ namespace GTFS.Entities
     [FileName("calendar_date")]
     public class CalendarDate : GTFSEntity, IComparable
     {
+        private string _serviceId { get; set; }
         /// <summary>
         /// Gets or sets an ID that uniquely identifies a set of dates when a service exception is available for one or more routes. Each (service_id, date) pair can only appear once in calendar_dates.txt. If the a service_id value appears in both the calendar.txt and calendar_dates.txt files, the information in calendar_dates.txt modifies the service information specified in calendar.txt. This field is referenced by the trips.txt file.
         /// </summary>
@@ -39,10 +40,11 @@ namespace GTFS.Entities
         [FieldName("service_id")]
         public string ServiceId
         {
-            get { return this.ServiceId; }
-            set { this.ServiceId = value; OnEntityChanged(); }
+            get { return _serviceId; }
+            set { _serviceId = value; OnEntityChanged(); }
         }
 
+        private DateTime _date { get; set; }
         /// <summary>
         /// Gets or sets a particular date when service availability is different than the norm. You can use the exception_type field to indicate whether service is available on the specified date.
         /// </summary>
@@ -50,10 +52,11 @@ namespace GTFS.Entities
         [FieldName("date")]
         public DateTime Date
         {
-            get { return this.Date; }
-            set { this.Date = value; OnEntityChanged(); }
+            get { return _date; }
+            set { _date = value; OnEntityChanged(); }
         }
 
+        private ExceptionType _exceptionType { get; set; }
         /// <summary>
         /// Gets or sets the exception type that indicates whether service is available on the date specified in the date field.
         /// </summary>
@@ -61,8 +64,8 @@ namespace GTFS.Entities
         [FieldName("exception_type")]
         public ExceptionType ExceptionType
         {
-            get { return this.ExceptionType; }
-            set { this.ExceptionType = value; OnEntityChanged(); }
+            get { return _exceptionType; }
+            set { _exceptionType = value; OnEntityChanged(); }
         }
 
         /// <summary>

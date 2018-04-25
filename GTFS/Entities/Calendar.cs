@@ -31,6 +31,7 @@ namespace GTFS.Entities
     [FileName("calendar")]
     public class Calendar : GTFSEntity, IComparable
     {
+        private string _serviceId { get; set; }
         /// <summary>
         /// Gets or sets an ID that uniquely identifies a set of dates when service is available for one or more routes. Each service_id value can appear at most once in a calendar file. This value is dataset unique. It is referenced by the trips.txt file.
         /// </summary>
@@ -38,8 +39,8 @@ namespace GTFS.Entities
         [FieldName("service_id")]
         public string ServiceId
         {
-            get { return this.ServiceId; }
-            set { this.ServiceId = value; OnEntityChanged(); }
+            get { return _serviceId; }
+            set { _serviceId = value; OnEntityChanged(); }
         }
 
         /// <summary>
@@ -124,6 +125,7 @@ namespace GTFS.Entities
             set { this[DayOfWeek.Sunday] = value; OnEntityChanged(); }
         }
 
+        private DateTime _startDate { get; set; }
         /// <summary>
         /// Gets or sets the start date for the service.
         /// </summary>
@@ -131,10 +133,11 @@ namespace GTFS.Entities
         [FieldName("start_date")]
         public DateTime StartDate
         {
-            get { return this.StartDate; }
-            set { this.StartDate = value; OnEntityChanged(); }
+            get { return _startDate; }
+            set { _startDate = value; OnEntityChanged(); }
         }
 
+        private DateTime _endDate { get; set; }
         /// <summary>
         /// Gets or sets the end date for the service. This date is included in the service interval.
         /// </summary>
@@ -142,8 +145,8 @@ namespace GTFS.Entities
         [FieldName("end_date")]
         public DateTime EndDate
         {
-            get { return this.EndDate; }
-            set { this.EndDate = value; OnEntityChanged(); }
+            get { return _endDate; }
+            set { _endDate = value; OnEntityChanged(); }
         }
 
 
