@@ -37,21 +37,33 @@ namespace GTFS.Entities
         /// </summary>
         [Required]
         [FieldName("service_id")]
-        public string ServiceId { get; set; }
+        public string ServiceId
+        {
+            get { return this.ServiceId; }
+            set { this.ServiceId = value; OnEntityChanged(); }
+        }
 
         /// <summary>
         /// Gets or sets a particular date when service availability is different than the norm. You can use the exception_type field to indicate whether service is available on the specified date.
         /// </summary>
         [Required]
         [FieldName("date")]
-        public DateTime Date { get; set; }
+        public DateTime Date
+        {
+            get { return this.Date; }
+            set { this.Date = value; OnEntityChanged(); }
+        }
 
         /// <summary>
         /// Gets or sets the exception type that indicates whether service is available on the date specified in the date field.
         /// </summary>
         [Required]
         [FieldName("exception_type")]
-        public ExceptionType ExceptionType { get; set; }
+        public ExceptionType ExceptionType
+        {
+            get { return this.ExceptionType; }
+            set { this.ExceptionType = value; OnEntityChanged(); }
+        }
 
         /// <summary>
         /// Returns a description of this trip.
