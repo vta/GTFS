@@ -198,12 +198,32 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void RemoveAll()
         {
-            throw new NotImplementedException();
+            string sql = "DELETE from calendar WHERE FEED_ID = :feed_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+
+                command.Parameters[0].Value = _id;
+                command.ExecuteNonQuery();
+            }
         }
 
         public IEnumerable<string> GetIds()
         {
-            throw new NotImplementedException();
+            var serviceIds = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT(service_id) FROM calendar";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        serviceIds.Add(Convert.ToString(reader["service_id"]));
+                    }
+                }
+            }
+            return serviceIds;
         }
     }
 }
