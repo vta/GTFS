@@ -211,7 +211,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public IEnumerable<string> GetIds()
         {
-            var shapeIds = new List<string>();
+            var serviceIds = new List<string>();
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = "SELECT DISTINCT(service_id) FROM calendar";
@@ -219,11 +219,11 @@ namespace GTFS.DB.PostgreSQL.Collections
                 {
                     while (reader.Read())
                     {
-                        shapeIds.Add(Convert.ToString(reader["service_id"]));
+                        serviceIds.Add(Convert.ToString(reader["service_id"]));
                     }
                 }
             }
-            return shapeIds;
+            return serviceIds;
         }
     }
 }
