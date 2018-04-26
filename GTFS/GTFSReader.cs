@@ -1235,6 +1235,12 @@ namespace GTFS
                 case "shape_dist_traveled":
                     stopTime.ShapeDistTravelled = this.ParseFieldString(header.Name, fieldName, value);
                     break;
+                case "passenger_boarding":
+                    stopTime.PassengerBoarding = this.ParseFieldUInt(header.Name, fieldName, value).Value;
+                    break;
+                case "passenger_alighting":
+                    stopTime.PassengerAlighting = this.ParseFieldUInt(header.Name, fieldName, value).Value;
+                    break;
             }
         }
 

@@ -63,7 +63,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="stopTime"></param>
         public void Add(StopTime stopTime)
         {
-            string sql = "INSERT INTO stop_time VALUES (:feed_id, :trip_id, :arrival_time, :departure_time, :stop_id, :stop_sequence, :stop_headsign, :pickup_type, :drop_off_type, :shape_dist_traveled);";
+            string sql = "INSERT INTO stop_time VALUES (:feed_id, :trip_id, :arrival_time, :departure_time, :stop_id, :stop_sequence, :stop_headsign, :pickup_type, :drop_off_type, :shape_dist_traveled, :passenger_boarding, :passenger_alighting);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -77,6 +77,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"pickup_type", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"drop_off_type", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"passenger_boarding", DbType.Int32));
+                command.Parameters.Add(new NpgsqlParameter(@"passenger_alighting", DbType.Int32));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = stopTime.TripId;
@@ -88,6 +90,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[7].Value = stopTime.PickupType.HasValue ? (int?)stopTime.PickupType.Value : null;
                 command.Parameters[8].Value = stopTime.DropOffType.HasValue ? (int?)stopTime.DropOffType.Value : null;
                 command.Parameters[9].Value = stopTime.ShapeDistTravelled;
+                command.Parameters[10].Value = stopTime.PassengerBoarding;
+                command.Parameters[11].Value = stopTime.PassengerAlighting;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 command.ExecuteNonQuery();
@@ -96,7 +100,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEnumerable<StopTime> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY stop_time (feed_id, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled) FROM STDIN (FORMAT BINARY)"))
+            using (var writer = _connection.BeginBinaryImport("COPY stop_time (feed_id, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var stopTime in entities)
                 {
@@ -111,13 +115,15 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(stopTime.PickupType, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(stopTime.DropOffType, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(stopTime.ShapeDistTravelled, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stopTime.PassengerBoarding, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.PassengerAlighting, NpgsqlTypes.NpgsqlDbType.Integer);
                 }
             }
         }
 
         public bool Update(string stopId, string tripId, StopTime newEntity)
         {
-            string sql = "UPDATE stop_time SET FEED_ID=:feed_id, trip_id=:trip_id, arrival_time=:arrival_time, departure_time=:departure_time, stop_id=:stop_id, stop_sequence=:stop_sequence, stop_headsign=:stop_headsign, pickup_type=:pickup_type, drop_off_type=:drop_off_type, shape_dist_traveled=:shape_dist_traveled WHERE stop_id=:oldStopId AND trip_id=:oldTripId;";
+            string sql = "UPDATE stop_time SET FEED_ID=:feed_id, trip_id=:trip_id, arrival_time=:arrival_time, departure_time=:departure_time, stop_id=:stop_id, stop_sequence=:stop_sequence, stop_headsign=:stop_headsign, pickup_type=:pickup_type, drop_off_type=:drop_off_type, shape_dist_traveled=:shape_dist_traveled, passenger_boarding=:passenger_boarding, passenger_alighting=:passenger_alighting WHERE stop_id=:oldStopId AND trip_id=:oldTripId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -131,6 +137,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"pickup_type", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"drop_off_type", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"passenger_boarding", DbType.Int32));
+                command.Parameters.Add(new NpgsqlParameter(@"passenger_alighting", DbType.Int32));
                 command.Parameters.Add(new NpgsqlParameter(@"oldStopId", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"oldTripId", DbType.String));
 
@@ -144,8 +152,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[7].Value = newEntity.PickupType;
                 command.Parameters[8].Value = newEntity.DropOffType;
                 command.Parameters[9].Value = newEntity.ShapeDistTravelled;
-                command.Parameters[10].Value = stopId;
-                command.Parameters[11].Value = tripId;
+                command.Parameters[10].Value = newEntity.PassengerBoarding;
+                command.Parameters[11].Value = newEntity.PassengerAlighting;
+                command.Parameters[12].Value = stopId;
+                command.Parameters[13].Value = tripId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 return command.ExecuteNonQuery() > 0;
@@ -154,7 +164,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public bool Update(string stopId, string tripId, uint stopSequence, StopTime newEntity)
         {
-            string sql = "UPDATE stop_time SET FEED_ID=:feed_id, trip_id=:trip_id, arrival_time=:arrival_time, departure_time=:departure_time, stop_id=:stop_id, stop_sequence=:stop_sequence, stop_headsign=:stop_headsign, pickup_type=:pickup_type, drop_off_type=:drop_off_type, shape_dist_traveled=:shape_dist_traveled WHERE stop_id=:oldStopId AND trip_id=:oldTripId AND stop_sequence=:oldStopSequence;";
+            string sql = "UPDATE stop_time SET FEED_ID=:feed_id, trip_id=:trip_id, arrival_time=:arrival_time, departure_time=:departure_time, stop_id=:stop_id, stop_sequence=:stop_sequence, stop_headsign=:stop_headsign, pickup_type=:pickup_type, drop_off_type=:drop_off_type, shape_dist_traveled=:shape_dist_traveled, passenger_boarding=:passenger_boarding, passenger_alighting=:passenger_alighting WHERE stop_id=:oldStopId AND trip_id=:oldTripId AND stop_sequence=:oldStopSequence;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -168,6 +178,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"pickup_type", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"drop_off_type", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"shape_dist_traveled", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"passenger_boarding", DbType.Int32));
+                command.Parameters.Add(new NpgsqlParameter(@"passenger_alighting", DbType.Int32));
                 command.Parameters.Add(new NpgsqlParameter(@"oldStopId", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"oldTripId", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"oldStopSequence", DbType.String));
@@ -182,9 +194,11 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[7].Value = newEntity.PickupType;
                 command.Parameters[8].Value = newEntity.DropOffType;
                 command.Parameters[9].Value = newEntity.ShapeDistTravelled;
-                command.Parameters[10].Value = stopId;
-                command.Parameters[11].Value = tripId;
-                command.Parameters[12].Value = stopSequence;
+                command.Parameters[10].Value = newEntity.PassengerBoarding;
+                command.Parameters[11].Value = newEntity.PassengerAlighting;
+                command.Parameters[12].Value = stopId;
+                command.Parameters[13].Value = tripId;
+                command.Parameters[14].Value = stopSequence;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 return command.ExecuteNonQuery() > 0;
@@ -263,7 +277,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                         StopHeadsign = reader.ReadStringSafe(),
                         PickupType = (PickupType?)reader.ReadIntSafe(),
                         DropOffType = (DropOffType?)reader.ReadIntSafe(),
-                        ShapeDistTravelled = reader.ReadStringSafe()
+                        ShapeDistTravelled = reader.ReadStringSafe(),
+                        PassengerBoarding = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
+                        PassengerAlighting = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)
                     });
                 }
             }
@@ -280,7 +296,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<StopTime> GetForTrip(string tripId)
         {
-            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled FROM stop_time WHERE FEED_ID = :id AND trip_id = :trip_id ORDER BY stop_sequence";
+            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :id AND trip_id = :trip_id ORDER BY stop_sequence";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -299,7 +315,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                     StopHeadsign = x.IsDBNull(5) ? null : x.GetString(5),
                     PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
                     DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
-                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8)
+                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
+                    PassengerBoarding = (uint)x.GetInt32(9),
+                    PassengerAlighting = (uint)x.GetInt32(10)
                 };
             });
         }
@@ -359,7 +377,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<StopTime> GetForStop(string stopId)
         {
-            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled FROM stop_time WHERE FEED_ID = :id AND stop_id = :stop_id";
+            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :id AND stop_id = :stop_id";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -378,7 +396,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                     StopHeadsign = x.IsDBNull(5) ? null : x.GetString(5),
                     PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
                     DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
-                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8)
+                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
+                    PassengerBoarding = (uint)x.GetInt32(9),
+                    PassengerAlighting = (uint)x.GetInt32(10)
                 };
             });
         }
