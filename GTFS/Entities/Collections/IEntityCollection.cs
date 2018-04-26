@@ -69,6 +69,13 @@ namespace GTFS.Entities.Collections
         bool Remove(string entityId);
 
         /// <summary>
+        /// Removes a range of entities by their IDs
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        void RemoveRange(IEnumerable<string> entityIds);
+
+        /// <summary>
         /// Removes all entities
         /// </summary>
         /// <param name="entityId"></param>

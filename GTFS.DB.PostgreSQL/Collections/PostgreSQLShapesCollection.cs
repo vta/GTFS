@@ -191,6 +191,35 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         /// <summary>
+        /// Removes a range of entities by their IDs
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public void RemoveRange(IEnumerable<string> entityIds)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var entityId in entityIds)
+                    {
+                        string sql = "DELETE FROM shape WHERE FEED_ID = :feed_id AND id = :shape_id;";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new NpgsqlParameter(@"shape_id", DbType.String));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = entityId;
+
+                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }
+        }
+
+        /// <summary>
         /// Removes all entities
         /// </summary>
         /// <returns></returns>
