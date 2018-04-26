@@ -278,8 +278,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         PickupType = (PickupType?)reader.ReadIntSafe(),
                         DropOffType = (DropOffType?)reader.ReadIntSafe(),
                         ShapeDistTravelled = reader.ReadStringSafe(),
-                        PassengerBoarding = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                        PassengerAlighting = (uint)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer)
+                        PassengerBoarding = (int)reader.ReadIntSafe(),
+                        PassengerAlighting = (int)reader.ReadIntSafe()
                     });
                 }
             }
@@ -316,8 +316,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                     PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
                     DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
                     ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
-                    PassengerBoarding = (uint)x.GetInt32(9),
-                    PassengerAlighting = (uint)x.GetInt32(10)
+                    PassengerBoarding = x.IsDBNull(9) ? null : (int?)x.GetInt32(9),
+                    PassengerAlighting = x.IsDBNull(10) ? null : (int?)x.GetInt32(10)
                 };
             });
         }
@@ -397,8 +397,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                     PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
                     DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
                     ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
-                    PassengerBoarding = (uint)x.GetInt32(9),
-                    PassengerAlighting = (uint)x.GetInt32(10)
+                    PassengerBoarding = x.IsDBNull(9) ? null : (int?)x.GetInt32(9),
+                    PassengerAlighting = x.IsDBNull(10) ? null : (int?)x.GetInt32(10)
                 };
             });
         }

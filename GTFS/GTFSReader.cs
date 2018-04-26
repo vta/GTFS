@@ -1236,10 +1236,10 @@ namespace GTFS
                     stopTime.ShapeDistTravelled = this.ParseFieldString(header.Name, fieldName, value);
                     break;
                 case "passenger_boarding":
-                    stopTime.PassengerBoarding = this.ParseFieldUInt(header.Name, fieldName, value).Value;
+                    stopTime.PassengerBoarding = this.ParseFieldInt(header.Name, fieldName, value).Value;
                     break;
                 case "passenger_alighting":
-                    stopTime.PassengerAlighting = this.ParseFieldUInt(header.Name, fieldName, value).Value;
+                    stopTime.PassengerAlighting = this.ParseFieldInt(header.Name, fieldName, value).Value;
                     break;
             }
         }
@@ -1742,6 +1742,31 @@ namespace GTFS
 
             uint result;
             if(!uint.TryParse(value, out result))
+            { // parsing failed!
+                throw new GTFSParseException(name, fieldName, value);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Parses a positive integer field.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        protected virtual int? ParseFieldInt(string name, string fieldName, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            { // there is no value.
+                return null;
+            }
+
+            // clean first.
+            value = this.CleanFieldValue(value);
+
+            int result;
+            if (!int.TryParse(value, out result))
             { // parsing failed!
                 throw new GTFSParseException(name, fieldName, value);
             }
