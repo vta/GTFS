@@ -92,7 +92,19 @@ namespace GTFS.Entities
         public string ShapeDistTravelled { get; set; }
 
         /// <summary>
-        /// Returns a description of this trip.
+        /// Gets or sets number of passengers that boarded at this stop during this trip.
+        /// </summary>
+        [FieldName("passenger_boarding")]
+        public int? PassengerBoarding { get; set; }
+
+        /// <summary>
+        /// Gets or sets number of passengers that alighted at this stop during this trip.
+        /// </summary>
+        [FieldName("passenger_alighting")]
+        public int? PassengerAlighting { get; set; }
+
+        /// <summary>
+        /// Returns a description of this StopTime's times.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -134,6 +146,8 @@ namespace GTFS.Entities
                 hash = hash * 59 + this.StopId.GetHashCodeEmptyWhenNull();
                 hash = hash * 59 + this.StopSequence.GetHashCode();
                 hash = hash * 59 + this.TripId.GetHashCodeEmptyWhenNull();
+                hash = hash * 59 + this.PassengerBoarding != null ? this.PassengerBoarding.GetHashCode() : 0;
+                hash = hash * 59 + this.PassengerAlighting != null ? this.PassengerAlighting.GetHashCode() : 0;
                 return hash;
             }
         }
@@ -154,7 +168,9 @@ namespace GTFS.Entities
                     (this.StopHeadsign ?? string.Empty) == (other.StopHeadsign ?? string.Empty) &&
                     (this.StopId ?? string.Empty) == (other.StopId ?? string.Empty) &&
                     this.StopSequence == other.StopSequence &&
-                    (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty);
+                    (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty) &&
+                    (this.PassengerBoarding ?? 0) == (other.PassengerBoarding ?? 0) &&
+                    (this.PassengerAlighting ?? 0) == (other.PassengerAlighting ?? 0);
             }
             return false;
         }
