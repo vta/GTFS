@@ -193,7 +193,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <summary>
         /// Removes a range of entities by their IDs
         /// </summary>
-        /// <param name="entityId"></param>
+        /// <param name="entityIds"></param>
         /// <returns></returns>
         public void RemoveRange(IEnumerable<string> entityIds)
         {
