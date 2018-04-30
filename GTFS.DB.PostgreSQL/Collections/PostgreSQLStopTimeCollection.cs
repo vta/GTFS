@@ -278,8 +278,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         PickupType = (PickupType?)reader.ReadIntSafe(),
                         DropOffType = (DropOffType?)reader.ReadIntSafe(),
                         ShapeDistTravelled = reader.ReadStringSafe(),
-                        PassengerBoarding = (int)reader.ReadIntSafe(),
-                        PassengerAlighting = (int)reader.ReadIntSafe()
+                        PassengerBoarding = (int?)reader.ReadIntSafe(),
+                        PassengerAlighting = (int?)reader.ReadIntSafe()
                     });
                 }
             }
