@@ -176,7 +176,25 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public void RemoveRange(IEnumerable<string> entityIds)
         {
-            throw new NotImplementedException();
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var entityId in entityIds)
+                    {
+                        string sql = "DELETE FROM frequency WHERE FEED_ID = :feed_id AND trip_id = :trip_id;";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"trip_id", DbType.String));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = entityId;
+
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }
         }
 
         /// <summary>
