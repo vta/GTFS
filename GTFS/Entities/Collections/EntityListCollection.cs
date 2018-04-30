@@ -104,6 +104,16 @@ namespace GTFS.Entities.Collections
         }
 
         /// <summary>
+        /// Removes a range of entities by their IDs
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public void RemoveRange(IEnumerable<string> entityIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Returns an enumerator that iterates through the entities.
         /// </summary>
         /// <returns></returns>
