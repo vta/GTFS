@@ -399,7 +399,7 @@ namespace GTFS.DB.SQLite
         public void SortStopTimes()
         {
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [stop_time_sorted] ( [FEED_ID] INTEGER NOT NULL, [trip_id] TEXT NOT NULL, [arrival_time] INTEGER, [departure_time] INTEGER, [stop_id] TEXT, [stop_sequence] INTEGER, [stop_headsign] TEXT, [pickup_type] INTEGER, [drop_off_type] INTEGER, [shape_dist_traveled] TEXT, [passenger_boarding] INTEGER, [passenger_alighting] INTEGER );");
-            this.ExecuteNonQuery("INSERT INTO stop_time_sorted (FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type,shape_dist_traveled) SELECT FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time ORDER BY trip_id ASC, stop_sequence ASC;");
+            this.ExecuteNonQuery("INSERT INTO stop_time_sorted (FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type,shape_dist_traveled,passenger_boarding,passenger_alighting) SELECT FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time ORDER BY trip_id ASC, stop_sequence ASC;");
             this.ExecuteNonQuery("DROP TABLE stop_time");
             this.ExecuteNonQuery("ALTER TABLE stop_time_sorted RENAME TO stop_time");
         }
