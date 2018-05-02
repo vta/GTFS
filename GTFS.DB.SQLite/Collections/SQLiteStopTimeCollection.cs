@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Text;
 
 namespace GTFS.DB.SQLite.Collections
 {
@@ -309,6 +310,44 @@ namespace GTFS.DB.SQLite.Collections
             parameters[1].Value = tripId;
 
             return new SQLiteEnumerable<StopTime>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new StopTime()
+                {
+                    TripId = x.GetString(0),
+                    ArrivalTime = TimeOfDay.FromTotalSeconds(x.GetInt32(1)),
+                    DepartureTime = TimeOfDay.FromTotalSeconds(x.GetInt32(2)),
+                    StopId = x.GetString(3),
+                    StopSequence = (uint)x.GetInt32(4),
+                    StopHeadsign = x.IsDBNull(5) ? null : x.GetString(5),
+                    PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
+                    DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
+                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
+                    PassengerBoarding = x.IsDBNull(9) ? null : (int?)x.GetInt32(9),
+                    PassengerAlighting = x.IsDBNull(10) ? null : (int?)x.GetInt32(10)
+                };
+            });
+        }
+
+        /// <summary>
+        /// Gets all stop times for the given trips.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<StopTime> GetForTrips(IEnumerable<string> tripIds)
+        {
+            StringBuilder sql = new StringBuilder("SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :feed_id AND trip_id = :trip_id0");
+            var parameters = new List<SQLiteParameter>();
+            parameters.Add(new SQLiteParameter("feed_id", DbType.Int64));
+            parameters[0].Value = _id;
+            int i = 0;
+            foreach (var tripId in tripIds)
+            {
+                if (i > 0) sql.Append($" OR trip_id = :trip_id{i}");
+                parameters.Add(new SQLiteParameter($"trip_id{i}", DbType.String));
+                parameters[1 + i].Value = tripId;
+                i++;
+            }
+
+            return new SQLiteEnumerable<StopTime>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
             {
                 return new StopTime()
                 {

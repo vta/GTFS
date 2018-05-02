@@ -77,6 +77,12 @@ namespace GTFS.Entities.Collections
         IEnumerable<StopTime> GetForTrip(string tripId);
 
         /// <summary>
+        /// Gets all stop times for the given trips.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<StopTime> GetForTrips(IEnumerable<string> tripIds);
+
+        /// <summary>
         /// Removes all stop times for the given trip.
         /// </summary>
         /// <returns></returns>
