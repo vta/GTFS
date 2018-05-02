@@ -76,6 +76,18 @@ namespace GTFS.Entities.Collections
         }
 
         /// <summary>
+        /// Gets all stop times for the given trips.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<StopTime> GetForTrips(IEnumerable<string> tripIds)
+        {
+            return _entities.Where(e =>
+            {
+                return tripIds.Contains(e.TripId);
+            });
+        }
+
+        /// <summary>
         /// Removes all stop times for the given trip.
         /// </summary>
         /// <returns></returns>
