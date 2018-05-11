@@ -75,6 +75,7 @@ namespace GTFS.DB.SQLite
         {
             _connection = new SQLiteConnection("Data Source=:memory:;Version=3;New=True;", true);
             _connection.Open();
+            ConnectionString = _connection.ConnectionString;
 
             // build database.
             this.RebuildDB();
@@ -85,9 +86,9 @@ namespace GTFS.DB.SQLite
         /// </summary>
         public SQLiteGTFSFeedDB(string connectionString)
         {
-            ConnectionString = connectionString;
             _connection = new SQLiteConnection(connectionString, true);
             _connection.Open();
+            ConnectionString = connectionString;
 
             // build database.
             this.RebuildDB();
@@ -100,6 +101,7 @@ namespace GTFS.DB.SQLite
         {
             _connection = new SQLiteConnection(String.Format("Data Source={0};DefaultTimeout={1};Version={2};", dbFile.FullName, defaultTimeout, version));
             _connection.Open();
+            ConnectionString = _connection.ConnectionString;
 
             // build database.
             this.RebuildDB();
@@ -261,7 +263,7 @@ namespace GTFS.DB.SQLite
         /// </summary>
         /// <param name="tableName">The table in this database to look for.</param>
         /// <returns>True if th</returns>
-        private bool TableExists(string tableName)
+        public bool TableExists(string tableName)
         {
             using (var command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection))
             {

@@ -69,6 +69,13 @@ namespace GTFS.DB
         IGTFSFeed GetFeed(int id);
 
         /// <summary>
+        /// Checks if a table with the given name exists in this database.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        bool TableExists(string tableName);
+
+        /// <summary>
         /// Returns the data source of the DB
         /// </summary>
         string GetFullDataSource();

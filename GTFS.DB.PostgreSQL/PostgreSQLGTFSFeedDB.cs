@@ -99,6 +99,11 @@ namespace GTFS.DB.PostgreSQL
             if (!ColumnExists("stop_time", "passenger_alighting")) this.ExecuteNonQuery("ALTER TABLE stop_time ADD COLUMN passenger_alighting INTEGER;");
         }
 
+        /// <summary>
+        /// Checks if a table with the given name exists in this database.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
         public bool TableExists(string tableName)
         {
             using (var command = _connection.CreateCommand())
