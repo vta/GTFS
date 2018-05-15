@@ -73,9 +73,9 @@ namespace GTFS.DB.SQLite
         /// </summary>
         public SQLiteGTFSFeedDB()
         {
-            _connection = new SQLiteConnection("Data Source=:memory:;Version=3;New=True;", true);
+            ConnectionString = "Data Source=:memory:;Version=3;New=True;";
+            _connection = new SQLiteConnection(ConnectionString, true);
             _connection.Open();
-            ConnectionString = _connection.ConnectionString;
 
             // build database.
             this.RebuildDB();
@@ -86,9 +86,9 @@ namespace GTFS.DB.SQLite
         /// </summary>
         public SQLiteGTFSFeedDB(string connectionString)
         {
+            ConnectionString = connectionString;
             _connection = new SQLiteConnection(connectionString, true);
             _connection.Open();
-            ConnectionString = connectionString;
 
             // build database.
             this.RebuildDB();
@@ -99,9 +99,9 @@ namespace GTFS.DB.SQLite
         /// </summary>
         public SQLiteGTFSFeedDB(FileInfo dbFile, int defaultTimeout = 10, int version = 3)
         {
-            _connection = new SQLiteConnection(String.Format("Data Source={0};DefaultTimeout={1};Version={2};", dbFile.FullName, defaultTimeout, version));
+            ConnectionString = $"Data Source={dbFile.FullName};DefaultTimeout={defaultTimeout};Version={version};";
+            _connection = new SQLiteConnection(ConnectionString);
             _connection.Open();
-            ConnectionString = _connection.ConnectionString;
 
             // build database.
             this.RebuildDB();
@@ -113,7 +113,7 @@ namespace GTFS.DB.SQLite
         /// <returns></returns>
         public int AddFeed()
         {
-            string sqlInsertNewFeed = "INSERT INTO feed VALUES (null, null, null, null, null, null, null);";
+            string sqlInsertNewFeed = "INSERT INTO feed VALUES (1, null, null, null, null, null, null);";
             using(var command = _connection.CreateCommand())
             {
                 command.CommandText = sqlInsertNewFeed;

@@ -48,7 +48,7 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public PostgreSQLGTFSFeedDB(string connectionString)
         {
-            ConnectionString = connectionString;
+            ConnectionString = connectionString;//must assign it here, otherwise the password is missing from the connection string
             _connection = new NpgsqlConnection(connectionString);
             _connection.Open();
 
@@ -181,6 +181,7 @@ namespace GTFS.DB.PostgreSQL
         {
             int newId = this.AddFeed();
             feed.CopyTo(this.GetFeed(newId));
+            SortAllTables();
             return newId;
         }
 
@@ -197,7 +198,20 @@ namespace GTFS.DB.PostgreSQL
 
         public IEnumerable<int> GetFeeds()
         {
-            throw new NotImplementedException();
+            string sql = "SELECT id FROM feed";
+            var ids = new List<int>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ids.Add((int)reader.GetInt64(0));
+                    }
+                }
+            }
+            return ids;
         }
 
         /// <summary>
