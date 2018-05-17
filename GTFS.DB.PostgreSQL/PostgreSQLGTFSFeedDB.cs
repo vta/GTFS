@@ -48,7 +48,7 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public PostgreSQLGTFSFeedDB(string connectionString)
         {
-            ConnectionString = connectionString;
+            ConnectionString = connectionString;//must assign it here, otherwise the password is missing from the connection string
             _connection = new NpgsqlConnection(connectionString);
             _connection.Open();
 
@@ -99,6 +99,11 @@ namespace GTFS.DB.PostgreSQL
             if (!ColumnExists("stop_time", "passenger_alighting")) this.ExecuteNonQuery("ALTER TABLE stop_time ADD COLUMN passenger_alighting INTEGER;");
         }
 
+        /// <summary>
+        /// Checks if a table with the given name exists in this database.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
         public bool TableExists(string tableName)
         {
             using (var command = _connection.CreateCommand())
@@ -176,6 +181,7 @@ namespace GTFS.DB.PostgreSQL
         {
             int newId = this.AddFeed();
             feed.CopyTo(this.GetFeed(newId));
+            SortAllTables();
             return newId;
         }
 
@@ -192,7 +198,20 @@ namespace GTFS.DB.PostgreSQL
 
         public IEnumerable<int> GetFeeds()
         {
-            throw new NotImplementedException();
+            string sql = "SELECT id FROM feed";
+            var ids = new List<int>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ids.Add((int)reader.GetInt64(0));
+                    }
+                }
+            }
+            return ids;
         }
 
         /// <summary>

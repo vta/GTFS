@@ -103,6 +103,11 @@ namespace GTFS.DB.Memory
             return _feeds[id];
         }
 
+        public bool TableExists(string tableName)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string GetFullDataSource()
         {
             throw new System.NotImplementedException();
