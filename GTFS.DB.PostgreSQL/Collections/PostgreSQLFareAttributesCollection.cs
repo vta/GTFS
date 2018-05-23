@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 
 namespace GTFS.DB.PostgreSQL.Collections
 {
@@ -146,6 +147,16 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entityId"></param>
         /// <returns></returns>
         public IEnumerable<FareAttribute> Get(string entityId)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns the entities for the given id's.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public IEnumerable<FareAttribute> Get(List<string> entityIds)
         {
             throw new NotImplementedException();
         }
