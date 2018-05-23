@@ -191,6 +191,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                 parameters[1 + i].Value = entityId;
                 i++;
             }
+            sql.Append(" ORDER BY id, shape_pt_sequence");
 
             return new PostgreSQLEnumerable<Shape>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
             {
