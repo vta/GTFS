@@ -153,6 +153,11 @@ namespace GTFS.DB.Memory
             throw new System.NotImplementedException();
         }
 
+        public void SortShapes()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void SortPolygons()
         {
             throw new System.NotImplementedException();

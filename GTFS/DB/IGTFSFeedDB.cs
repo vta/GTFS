@@ -141,6 +141,11 @@ namespace GTFS.DB
         void SortCalendarDates();
 
         /// <summary>
+        /// Deletes and recreates the shapes table in a sorted order (first by id then by sequence) - will take time
+        /// </summary>
+        void SortShapes();
+
+        /// <summary>
         /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
         /// </summary>
         void SortPolygons();        

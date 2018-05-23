@@ -360,6 +360,8 @@ namespace GTFS.DB.SQLite
             SortFrequencies();
             SortCalendars();
             SortCalendarDates();
+            SortShapes();
+            SortPolygons();
         }
 
         /// <summary>
@@ -437,9 +439,20 @@ namespace GTFS.DB.SQLite
         }
 
         /// <summary>
+        /// Deletes and recreates the shapes table in a sorted order (first by id then by sequence) - will take time
+        /// </summary>
+        public void SortShapes()
+        {
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [shape_sorted] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [shape_pt_lat] REAL, [shape_pt_lon] REAL, [shape_pt_sequence] INTEGER, [shape_dist_traveled] REAL );");
+            this.ExecuteNonQuery("INSERT INTO shape_sorted (FEED_ID, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) SELECT FEED_ID, id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape ORDER BY id, shape_pt_sequence ASC;");
+            this.ExecuteNonQuery("DROP TABLE shape");
+            this.ExecuteNonQuery("ALTER TABLE shape_sorted RENAME TO shape");
+        }
+
+        /// <summary>
         /// Deletes and recreates the polygons table in a sorted order (first by id then by poly_pt_seq) - may take time
         /// </summary>
-        public void SortPolygons()//TODO: test!
+        public void SortPolygons()
         {
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [polygons_sorted] ( [id] TEXT NOT NULL, [poly_pt_lat] REAL, [poly_pt_lon] REAL, [poly_pt_seq] INTEGER );");
             this.ExecuteNonQuery("INSERT INTO polygons_sorted (id, poly_pt_lat, poly_pt_lon, poly_pt_seq) SELECT id, poly_pt_lat, poly_pt_lon, poly_pt_seq FROM polygons ORDER BY id ASC, poly_pt_seq ASC;");
