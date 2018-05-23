@@ -85,6 +85,16 @@ namespace GTFS.Entities.Collections
         }
 
         /// <summary>
+        /// Returns the entities for the given id's.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public IEnumerable<T> Get(List<string> entityIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Removes the entity with the given id.
         /// </summary>
         /// <param name="entityId"></param>

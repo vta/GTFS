@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 
 namespace GTFS.DB.PostgreSQL.Collections
 {
@@ -109,6 +110,41 @@ namespace GTFS.DB.PostgreSQL.Collections
             parameters[0].Value = _id;
 
             return new PostgreSQLEnumerable<CalendarDate>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new CalendarDate()
+                {
+                    ServiceId = x.GetString(0),
+                    Date = x.GetInt64(1).FromUnixTime(),
+                    ExceptionType = (ExceptionType)x.GetInt64(2)
+                };
+            });
+        }
+
+        /// <summary>
+        /// Returns the entities for the given id's.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public IEnumerable<CalendarDate> Get(List<string> entityIds)
+        {
+            if (entityIds.Count() == 0)
+            {
+                return new List<CalendarDate>();
+            }
+            var sql = new StringBuilder("SELECT service_id, date, exception_type FROM calendar_date WHERE FEED_ID = :feed_id AND service_id = :service_id0");
+            var parameters = new List<NpgsqlParameter>();
+            parameters.Add(new NpgsqlParameter("feed_id", DbType.Int64));
+            parameters[0].Value = _id;
+            int i = 0;
+            foreach (var entityId in entityIds)
+            {
+                if (i > 0) sql.Append($" OR service_id = :service_id{i}");
+                parameters.Add(new NpgsqlParameter($"service_id{i}", DbType.String));
+                parameters[1 + i].Value = entityId;
+                i++;
+            }
+
+            return new PostgreSQLEnumerable<CalendarDate>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
             {
                 return new CalendarDate()
                 {

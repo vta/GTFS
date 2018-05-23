@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 
 namespace GTFS.DB.PostgreSQL.Collections
 {
@@ -155,6 +156,43 @@ namespace GTFS.DB.PostgreSQL.Collections
             parameters[1].Value = entityId;
 
             return new PostgreSQLEnumerable<Shape>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new Shape()
+                {
+                    Id = x.GetString(0),
+                    Latitude = x.GetDouble(1),
+                    Longitude = x.GetDouble(2),
+                    Sequence = (uint)x.GetInt64(3),
+                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
+                };
+            });
+        }
+
+        /// <summary>
+        /// Returns the entities for the given id's.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public IEnumerable<Shape> Get(List<string> entityIds)
+        {
+            if (entityIds.Count() == 0)
+            {
+                return new List<Shape>();
+            }
+            var sql = new StringBuilder("SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :feed_id AND id = :id0");
+            var parameters = new List<NpgsqlParameter>();
+            parameters.Add(new NpgsqlParameter("feed_id", DbType.Int64));
+            parameters[0].Value = _id;
+            int i = 0;
+            foreach (var entityId in entityIds)
+            {
+                if (i > 0) sql.Append($" OR id = :id{i}");
+                parameters.Add(new NpgsqlParameter($"id{i}", DbType.String));
+                parameters[1 + i].Value = entityId;
+                i++;
+            }
+
+            return new PostgreSQLEnumerable<Shape>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
             {
                 return new Shape()
                 {

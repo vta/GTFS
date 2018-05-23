@@ -149,6 +149,16 @@ namespace GTFS.DB.SQLite.Collections
         }
 
         /// <summary>
+        /// Returns the entities for the given id's.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public IEnumerable<Frequency> Get(List<string> entityIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Removes all entities identified by the given id.
         /// </summary>
         /// <param name="entityId"></param>

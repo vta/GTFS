@@ -26,6 +26,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Linq;
+using System.Text;
 
 namespace GTFS.DB.SQLite.Collections
 {
@@ -146,6 +148,48 @@ namespace GTFS.DB.SQLite.Collections
             parameters[0].Value = _id;
 
             return new SQLiteEnumerable<Calendar>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new Calendar()
+                {
+                    ServiceId = x.GetString(0),
+                    Monday = x.IsDBNull(1) ? false : x.GetInt64(1) == 1,
+                    Tuesday = x.IsDBNull(2) ? false : x.GetInt64(2) == 1,
+                    Wednesday = x.IsDBNull(3) ? false : x.GetInt64(3) == 1,
+                    Thursday = x.IsDBNull(4) ? false : x.GetInt64(4) == 1,
+                    Friday = x.IsDBNull(5) ? false : x.GetInt64(5) == 1,
+                    Saturday = x.IsDBNull(6) ? false : x.GetInt64(6) == 1,
+                    Sunday = x.IsDBNull(7) ? false : x.GetInt64(7) == 1,
+                    StartDate = x.GetInt64(8).FromUnixTime(),
+                    EndDate = x.GetInt64(9).FromUnixTime()
+                };
+            });
+        }
+
+        /// <summary>
+        /// Returns the entities for the given id's.
+        /// </summary>
+        /// <param name="entityIds"></param>
+        /// <returns></returns>
+        public IEnumerable<Calendar> Get(List<string> entityIds)
+        {
+            if (entityIds.Count() == 0)
+            {
+                return new List<Calendar>();
+            }
+            var sql = new StringBuilder("SELECT service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date FROM calendar WHERE FEED_ID = :feed_id AND service_id = :service_id0");
+            var parameters = new List<SQLiteParameter>();
+            parameters.Add(new SQLiteParameter("feed_id", DbType.Int64));
+            parameters[0].Value = _id;
+            int i = 0;
+            foreach (var entityId in entityIds)
+            {
+                if (i > 0) sql.Append($" OR service_id = :service_id{i}");
+                parameters.Add(new SQLiteParameter($"service_id{i}", DbType.String));
+                parameters[1 + i].Value = entityId;
+                i++;
+            }
+
+            return new SQLiteEnumerable<Calendar>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
             {
                 return new Calendar()
                 {
