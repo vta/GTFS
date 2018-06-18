@@ -137,7 +137,19 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public bool Remove(string entityId)
         {
-            throw new NotImplementedException();
+            string sql = "DELETE FROM agency WHERE FEED_ID = :feed_id AND id = :agency_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                command.Parameters.Add(new NpgsqlParameter(@"agency_id", DbType.String));
+
+                command.Parameters[0].Value = _id;
+                command.Parameters[1].Value = entityId;
+
+                command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
+                return command.ExecuteNonQuery() > 0;
+            }
         }
 
         /// <summary>
@@ -164,6 +176,36 @@ namespace GTFS.DB.PostgreSQL.Collections
                     FareURL = x.IsDBNull(6) ? null : x.GetString(6)
                 };
             });
+        }
+
+        /// <summary>
+        /// Returns entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            Console.Write($"Fetching agency ids...");
+            #endif
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT(id) FROM agency";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["id"]));
+                    }
+                }
+            }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
+            #endif
+            return outList;
         }
 
         /// <summary>

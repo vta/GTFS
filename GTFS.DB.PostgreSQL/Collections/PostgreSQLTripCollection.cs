@@ -218,6 +218,36 @@ namespace GTFS.DB.PostgreSQL.Collections
             return trips;
         }
 
+        /// <summary>
+        /// Returns entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            Console.Write($"Fetching trip ids...");
+            #endif
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT(id) FROM trip";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["id"]));
+                    }
+                }
+            }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
+            #endif
+            return outList;
+        }
+
         public int Count
         {
             get { throw new NotImplementedException(); }

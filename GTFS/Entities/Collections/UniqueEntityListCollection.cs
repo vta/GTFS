@@ -117,6 +117,11 @@ namespace GTFS.Entities.Collections
             return _entities;
         }
 
+        public IEnumerable<string> GetIds()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Returns the number of entities.
         /// </summary>

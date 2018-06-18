@@ -162,6 +162,36 @@ namespace GTFS.DB.PostgreSQL.Collections
         }
 
         /// <summary>
+        /// Returns entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {
+            #if DEBUG
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            Console.Write($"Fetching fare ids...");
+            #endif
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT(fare_id) FROM fare_rule";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["fare_id"]));
+                    }
+                }
+            }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
+            #endif
+            return outList;
+        }
+
+        /// <summary>
         /// Returns the number of entities.
         /// </summary>
         public int Count
