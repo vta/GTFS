@@ -223,6 +223,27 @@ namespace GTFS.DB.SQLite.Collections
             });
         }
 
+        /// <summary>
+        /// Returns entity ids
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetIds()
+        {
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT id FROM trip";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["id"]));
+                    }
+                }
+            }
+            return outList;
+        }
+
         public int Count
         {
             get { throw new NotImplementedException(); }

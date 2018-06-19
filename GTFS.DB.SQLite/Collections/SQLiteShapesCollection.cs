@@ -182,30 +182,40 @@ namespace GTFS.DB.SQLite.Collections
             {
                 return new List<Shape>();
             }
-            var sql = new StringBuilder("SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :feed_id AND id = :id0");
-            var parameters = new List<SQLiteParameter>();
-            parameters.Add(new SQLiteParameter("feed_id", DbType.Int64));
-            parameters[0].Value = _id;
-            int i = 0;
-            foreach (var entityId in entityIds)
+
+            var results = new List<Shape>();
+
+            var groups = entityIds.SplitIntoGroupsByGroupIdx();
+            foreach (var group in groups)
             {
-                if (i > 0) sql.Append($" OR id = :id{i}");
-                parameters.Add(new SQLiteParameter($"id{i}", DbType.String));
-                parameters[1 + i].Value = entityId;
-                i++;
+                var sql = new StringBuilder("SELECT id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled FROM shape WHERE FEED_ID = :feed_id AND id = :id0");
+                var parameters = new List<SQLiteParameter>();
+                parameters.Add(new SQLiteParameter("feed_id", DbType.Int64));
+                parameters[0].Value = _id;
+                int i = 0;
+                foreach (var entityId in group.Value)
+                {
+                    if (i > 0) sql.Append($" OR id = :id{i}");
+                    parameters.Add(new SQLiteParameter($"id{i}", DbType.String));
+                    parameters[1 + i].Value = entityId;
+                    i++;
+                }
+
+                var result = new SQLiteEnumerable<Shape>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
+                {
+                    return new Shape()
+                    {
+                        Id = x.GetString(0),
+                        Latitude = x.GetDouble(1),
+                        Longitude = x.GetDouble(2),
+                        Sequence = (uint)x.GetInt64(3),
+                        DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
+                    };
+                });
+                results.AddRange(result);
             }
 
-            return new SQLiteEnumerable<Shape>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
-            {
-                return new Shape()
-                {
-                    Id = x.GetString(0),
-                    Latitude = x.GetDouble(1),
-                    Longitude = x.GetDouble(2),
-                    Sequence = (uint)x.GetInt64(3),
-                    DistanceTravelled = x.IsDBNull(4) ? null : (double?)x.GetDouble(4)
-                };
-            });
+            return results;
         }
 
         /// <summary>

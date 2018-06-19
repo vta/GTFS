@@ -333,36 +333,49 @@ namespace GTFS.DB.PostgreSQL.Collections
             {
                 return new List<StopTime>();
             }
-            var sql = new StringBuilder("SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :feed_id AND trip_id = :trip_id0");
-            var parameters = new List<NpgsqlParameter>();
-            parameters.Add(new NpgsqlParameter("feed_id", DbType.Int64));
-            parameters[0].Value = _id;
-            int i = 0;
-            foreach (var tripId in tripIds)
+
+            var results = new List<StopTime>();
+
+            var groups = tripIds.SplitIntoGroupsByGroupIdx();
+            foreach (var group in groups)
             {
-                if (i > 0) sql.Append($" OR trip_id = :trip_id{i}");
-                parameters.Add(new NpgsqlParameter($"trip_id{i}", DbType.String));
-                parameters[1 + i].Value = tripId;
-                i++;
+                var sql = new StringBuilder("SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :feed_id AND trip_id = :trip_id0");
+                var parameters = new List<NpgsqlParameter>();
+                parameters.Add(new NpgsqlParameter("feed_id", DbType.Int64));
+                parameters[0].Value = _id;
+                int i = 0;
+                foreach (var tripId in group.Value)
+                {
+                    if (i > 0) sql.Append($" OR trip_id = :trip_id{i}");
+                    parameters.Add(new NpgsqlParameter($"trip_id{i}", DbType.String));
+                    parameters[1 + i].Value = tripId;
+                    i++;
+                }
+
+                sql.Append(" ORDER BY trip_id ASC, stop_sequence ASC;");
+
+                var result = new PostgreSQLEnumerable<StopTime>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
+                {
+                    return new StopTime()
+                    {
+                        TripId = x.GetString(0),
+                        ArrivalTime = TimeOfDay.FromTotalSeconds(x.GetInt32(1)),
+                        DepartureTime = TimeOfDay.FromTotalSeconds(x.GetInt32(2)),
+                        StopId = x.GetString(3),
+                        StopSequence = (uint)x.GetInt32(4),
+                        StopHeadsign = x.IsDBNull(5) ? null : x.GetString(5),
+                        PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
+                        DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
+                        ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
+                        PassengerBoarding = x.IsDBNull(9) ? null : (int?)x.GetInt32(9),
+                        PassengerAlighting = x.IsDBNull(10) ? null : (int?)x.GetInt32(10)
+                    };
+                });
+
+                results.AddRange(result);
             }
 
-            return new PostgreSQLEnumerable<StopTime>(_connection, sql.ToString(), parameters.ToArray(), (x) =>
-            {
-                return new StopTime()
-                {
-                    TripId = x.GetString(0),
-                    ArrivalTime = TimeOfDay.FromTotalSeconds(x.GetInt32(1)),
-                    DepartureTime = TimeOfDay.FromTotalSeconds(x.GetInt32(2)),
-                    StopId = x.GetString(3),
-                    StopSequence = (uint)x.GetInt32(4),
-                    StopHeadsign = x.IsDBNull(5) ? null : x.GetString(5),
-                    PickupType = x.IsDBNull(6) ? null : (PickupType?)x.GetInt64(6),
-                    DropOffType = x.IsDBNull(7) ? null : (DropOffType?)x.GetInt64(7),
-                    ShapeDistTravelled = x.IsDBNull(8) ? null : x.GetString(8),
-                    PassengerBoarding = x.IsDBNull(9) ? null : (int?)x.GetInt32(9),
-                    PassengerAlighting = x.IsDBNull(10) ? null : (int?)x.GetInt32(10)
-                };
-            });
+            return results;
         }
 
         /// <summary>
@@ -420,7 +433,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public IEnumerable<StopTime> GetForStop(string stopId)
         {
-            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :id AND stop_id = :stop_id";
+            string sql = "SELECT trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time WHERE FEED_ID = :id AND stop_id = :stop_id ORDER BY trip_id ASC, stop_sequence ASC;";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;

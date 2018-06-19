@@ -24,6 +24,7 @@ using GTFS.Entities.Collections;
 using System;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace GTFS
 {
@@ -326,6 +327,30 @@ namespace GTFS
             {
                 throw new ArgumentOutOfRangeException("value", string.Format("The given string can is not a hex-color: {0}.", value));
             }
+        }
+
+        public static Dictionary<int, List<T>> SplitIntoGroupsByGroupIdx<T>(this IEnumerable<T> _self, int maxGroupCount = 900)
+        {
+            var dict = new Dictionary<int, List<T>>();
+            int groupIdx = 0;
+            int numElementsInCurrentGroup = 0;
+            foreach (var item in _self)
+            {
+                if (numElementsInCurrentGroup == maxGroupCount)
+                {
+                    groupIdx++;
+                    numElementsInCurrentGroup = 0;
+                }
+
+                if (!dict.ContainsKey(groupIdx))
+                {
+                    dict.Add(groupIdx, new List<T>());
+                }
+                dict[groupIdx].Add(item);
+                numElementsInCurrentGroup++;
+            }
+
+            return dict;
         }
     }
 }

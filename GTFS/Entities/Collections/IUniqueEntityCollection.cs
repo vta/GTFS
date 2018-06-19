@@ -89,6 +89,12 @@ namespace GTFS.Entities.Collections
         IEnumerable<T> Get();
 
         /// <summary>
+        /// Returns all entity ids.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<string> GetIds();
+
+        /// <summary>
         /// Returns the number of entities.
         /// </summary>
         int Count
