@@ -210,7 +210,7 @@ namespace GTFS.DB.SQLite.Collections
             var outList = new List<string>();
             using (var command = _connection.CreateCommand())
             {
-                command.CommandText = "SELECT DISTINCT(id) FROM route";
+                command.CommandText = "SELECT id FROM route";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())

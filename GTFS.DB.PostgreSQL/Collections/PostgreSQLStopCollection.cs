@@ -357,7 +357,7 @@ namespace GTFS.DB.PostgreSQL.Collections
             var outList = new List<string>();
             using (var command = _connection.CreateCommand())
             {
-                command.CommandText = "SELECT DISTINCT(id) FROM stop";
+                command.CommandText = "SELECT id FROM stop";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())

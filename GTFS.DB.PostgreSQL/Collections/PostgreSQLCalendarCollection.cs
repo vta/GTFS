@@ -286,7 +286,7 @@ namespace GTFS.DB.PostgreSQL.Collections
             var serviceIds = new List<string>();
             using (var command = _connection.CreateCommand())
             {
-                command.CommandText = "SELECT DISTINCT(service_id) FROM calendar";
+                command.CommandText = "SELECT service_id FROM calendar";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())

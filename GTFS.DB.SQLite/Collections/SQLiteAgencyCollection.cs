@@ -205,7 +205,7 @@ namespace GTFS.DB.SQLite.Collections
             var outList = new List<string>();
             using (var command = _connection.CreateCommand())
             {
-                command.CommandText = "SELECT DISTINCT(id) FROM agency";
+                command.CommandText = "SELECT id FROM agency";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
