@@ -202,10 +202,74 @@ namespace GTFS.Entities
         /// </summary>
         public override string ToString()
         {
-            string hours = Hours < 10 ? "0" + Hours : "" + Hours;
+            return ToString("hh:mm:ss");
+            /*string hours = Hours < 10 ? "0" + Hours : "" + Hours;
             string minutes = Minutes < 10 ? "0" + Minutes : "" + Minutes;
             string seconds = Seconds < 10 ? "0" + Seconds : "" + Seconds;
-            return String.Format("{0}:{1}:{2}", hours, minutes, seconds);
+            return String.Format("{0}:{1}:{2}", hours, minutes, seconds);*/
+        }
+
+        /// <summary>
+        /// D - days, HH - hours, MM - minutes, SS - seconds. If days is included, then the hours will by subtracted by 24*numdays
+        /// </summary>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public string ToString(string format)
+        {
+            var result = format.ToUpper();
+
+            if (result.Contains("D"))
+            {
+                int d = (int)Math.Floor(Hours / 24);
+                int h = Hours % 24;
+                result.Replace("D", d + "");
+                if (result.Contains("H"))
+                {
+                    if (result.Contains("HH"))
+                    {
+                        result = result.Replace("HH", (h < 10 ? "0" : "") + h);
+                    }
+                    else
+                    {
+                        result = result.Replace("H", h + "");
+                    }
+                }
+            }
+            else if (result.Contains("H"))
+            {
+                if (result.Contains("HH"))
+                {
+                    result = result.Replace("HH", (Hours < 10 ? "0" : "") + Hours);
+                }
+                else
+                {
+                    result = result.Replace("H", Hours + "");
+                }
+            }
+            if (result.Contains("M"))
+            {
+                if (result.Contains("MM"))
+                {
+                    result = result.Replace("MM", (Minutes < 10 ? "0" : "") + Minutes);
+                }
+                else
+                {
+                    result = result.Replace("M", Minutes + "");
+                }
+            }
+            if (result.Contains("S"))
+            {
+                if (result.Contains("SS"))
+                {
+                    result = result.Replace("SS", (Seconds < 10 ? "0" : "") + Seconds);
+                }
+                else
+                {
+                    result = result.Replace("S", Seconds + "");
+                }
+            }
+
+            return result;
         }
     }
 }
