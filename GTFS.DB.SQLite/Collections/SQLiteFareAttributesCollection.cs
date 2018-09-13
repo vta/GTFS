@@ -62,7 +62,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <param name="entity"></param>
         public void Add(FareAttribute entity)
         {
-            string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration);";
+            string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration, :agency_id);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -73,6 +73,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters.Add(new SQLiteParameter(@"payment_method", DbType.Int64));
                 command.Parameters.Add(new SQLiteParameter(@"transfers", DbType.Int64));
                 command.Parameters.Add(new SQLiteParameter(@"transfer_duration", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"agency_id", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.FareId;
@@ -81,6 +82,7 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters[4].Value = (int)entity.PaymentMethod;
                 command.Parameters[5].Value = entity.Transfers == null ? -1 : (int)entity.Transfers;
                 command.Parameters[6].Value = entity.TransferDuration;
+                command.Parameters[7].Value = entity.AgencyId;
 
                 command.ExecuteNonQuery();
             }
@@ -94,7 +96,7 @@ namespace GTFS.DB.SQLite.Collections
                 {
                     foreach (var entity in entities)
                     {
-                        string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration);";
+                        string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration, :agency_id);";
                         command.CommandText = sql;
                         command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
@@ -103,6 +105,7 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters.Add(new SQLiteParameter(@"payment_method", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"transfers", DbType.Int64));
                         command.Parameters.Add(new SQLiteParameter(@"transfer_duration", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"agency_id", DbType.String));
 
                         command.Parameters[0].Value = _id;
                         command.Parameters[1].Value = entity.FareId;
@@ -111,6 +114,7 @@ namespace GTFS.DB.SQLite.Collections
                         command.Parameters[4].Value = (int)entity.PaymentMethod;
                         command.Parameters[5].Value = entity.Transfers == null ? -1 : (int)entity.Transfers;
                         command.Parameters[6].Value = entity.TransferDuration;
+                        command.Parameters[7].Value = entity.AgencyId;
 
                         command.ExecuteNonQuery();
                     }
@@ -125,7 +129,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<FareAttribute> Get()
         {
-            string sql = "SELECT fare_id, price, currency_type, payment_method, transfers, transfer_duration FROM fare_attribute WHERE FEED_ID = :id";
+            string sql = "SELECT fare_id, price, currency_type, payment_method, transfers, transfer_duration, agency_id FROM fare_attribute WHERE FEED_ID = :id";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -139,7 +143,8 @@ namespace GTFS.DB.SQLite.Collections
                     CurrencyType = x.IsDBNull(1) ? null : x.GetString(2),
                     PaymentMethod = (PaymentMethodType)x.GetInt64(3),
                     Transfers = x.IsDBNull(4) ? null : (uint?)x.GetInt64(4),
-                    TransferDuration = x.IsDBNull(5) ? null : x.GetString(5)
+                    TransferDuration = x.IsDBNull(5) ? null : x.GetString(5),
+                    AgencyId = x.GetString(6)
                 };
             });
         }

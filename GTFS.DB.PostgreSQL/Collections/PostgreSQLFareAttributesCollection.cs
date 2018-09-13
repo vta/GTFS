@@ -64,7 +64,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entity"></param>
         public void Add(FareAttribute entity)
         {
-            string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration);";
+            string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration, :agency_id);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -75,6 +75,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"payment_method", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"transfers", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"transfer_duration", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"agency_id", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.FareId;
@@ -83,6 +84,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[4].Value = (int)entity.PaymentMethod;
                 command.Parameters[5].Value = entity.Transfers == null ? -1 : (int)entity.Transfers;
                 command.Parameters[6].Value = entity.TransferDuration;
+                command.Parameters[7].Value = entity.AgencyId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 command.ExecuteNonQuery();
@@ -91,7 +93,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEntityCollection<FareAttribute> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY fare_attribute (feed_id, fare_id, price, currency_type, payment_method, transfers, transfer_duration) FROM STDIN (FORMAT BINARY)"))
+            using (var writer = _connection.BeginBinaryImport("COPY fare_attribute (feed_id, fare_id, price, currency_type, payment_method, transfers, transfer_duration, agency_id) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var fareAttribute in entities)
                 {
@@ -103,6 +105,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(fareAttribute.PaymentMethod, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(fareAttribute.Transfers, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(fareAttribute.TransferDuration, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareAttribute.AgencyId, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }
@@ -130,7 +133,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         CurrencyType = reader.ReadStringSafe(),
                         PaymentMethod = (PaymentMethodType)reader.ReadIntSafe(),
                         Transfers = (uint?)reader.ReadIntSafe(),
-                        TransferDuration = reader.ReadStringSafe()
+                        TransferDuration = reader.ReadStringSafe(),
+                        AgencyId = reader.ReadStringSafe()
                     });
                 }
             }

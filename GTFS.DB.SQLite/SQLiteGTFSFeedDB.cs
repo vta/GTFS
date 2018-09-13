@@ -222,7 +222,7 @@ namespace GTFS.DB.SQLite
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [agency] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [agency_name] TEXT, [agency_url] TEXT, [agency_timezone], [agency_lang] TEXT, [agency_phone] TEXT, [agency_fare_url] TEXT, [agency_email] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [monday] INTEGER, [tuesday] INTEGER, [wednesday] INTEGER, [thursday] INTEGER, [friday] INTEGER, [saturday] INTEGER, [sunday] INTEGER, [start_date] INTEGER, [end_date] INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [calendar_date] ( [FEED_ID] INTEGER NOT NULL, [service_id] TEXT NOT NULL, [date] INTEGER, [exception_type] INTEGER );");
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [fare_attribute] ( [FEED_ID] INTEGER NOT NULL, [fare_id] TEXT NOT NULL, [price] TEXT, [currency_type] TEXT, [payment_method] INTEGER, [transfers] INTEGER, [transfer_duration] TEXT );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [fare_attribute] ( [FEED_ID] INTEGER NOT NULL, [fare_id] TEXT NOT NULL, [price] TEXT, [currency_type] TEXT, [payment_method] INTEGER, [transfers] INTEGER, [transfer_duration] TEXT, [agency_id] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [fare_rule] ( [FEED_ID] INTEGER NOT NULL, [fare_id] TEXT NOT NULL, [route_id] TEXT NOT NULL, [origin_id] TEXT, [destination_id] TEXT, [contains_id] TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [frequency] ( [FEED_ID] INTEGER NOT NULL, [trip_id] TEXT NOT NULL, [start_time] TEXT, [end_time] TEXT, [headway_secs] TEXT, [exact_times] INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [route] ( [FEED_ID] INTEGER NOT NULL, [id] TEXT NOT NULL, [agency_id] TEXT, [route_short_name] TEXT, [route_long_name] TEXT, [route_desc] TEXT, [route_type] INTEGER NOT NULL, [route_url] TEXT, [route_color] INTEGER, [route_text_color] INTEGER );");
@@ -250,12 +250,25 @@ namespace GTFS.DB.SQLite
 
             // Alter existing tables, if their structure is incorrect, for backwards compatibility
             //  1. add agency_email column to agency
-            if (!ColumnExists("agency", "agency_email")) this.ExecuteNonQuery("ALTER TABLE [agency] ADD [agency_email] TEXT;");
+            if (!ColumnExists("agency", "agency_email"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE [agency] ADD [agency_email] TEXT;");
+            }
             //  2. add passenger_boarding column to stop_time
-            if (!ColumnExists("stop_time", "passenger_boarding")) this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [passenger_boarding] INTEGER;");
+            if (!ColumnExists("stop_time", "passenger_boarding"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [passenger_boarding] INTEGER;");
+            }
             //  3. add passenger_alighting column to stop_time
-            if (!ColumnExists("stop_time", "passenger_alighting")) this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [passenger_alighting] INTEGER;");
-
+            if (!ColumnExists("stop_time", "passenger_alighting"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [passenger_alighting] INTEGER;");
+            }
+            //  4. add agency_id column to fare_attribute
+            if (!ColumnExists("fare_attribute", "agency_id"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE [fare_attribute] ADD [agency_id] TEXT;");
+            }
         }
 
         /// <summary>
