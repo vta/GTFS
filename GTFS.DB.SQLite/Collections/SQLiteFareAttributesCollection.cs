@@ -144,7 +144,7 @@ namespace GTFS.DB.SQLite.Collections
                     PaymentMethod = (PaymentMethodType)x.GetInt64(3),
                     Transfers = x.IsDBNull(4) ? null : (uint?)x.GetInt64(4),
                     TransferDuration = x.IsDBNull(5) ? null : x.GetString(5),
-                    AgencyId = x.GetString(6)
+                    AgencyId = x.IsDBNull(6) ? null : x.GetString(6),
                 };
             });
         }
