@@ -668,6 +668,8 @@ namespace GTFS
                         data[6] = "pickup_type";
                         data[7] = "drop_off_type";
                         data[8] = "shape_dist_traveled";
+                        /*data[9] = "passenger_boarding";
+                        data[10] = "passenger_alighting";*/
                         file.Write(data);
                         initialized = true;
                     }
@@ -682,6 +684,8 @@ namespace GTFS
                     data[6] = this.WriteFieldPickupType("stop_times", "pickup_type", entity.PickupType);
                     data[7] = this.WriteFieldDropOffType("stop_times", "drop_off_type", entity.DropOffType);
                     data[8] = this.WriteFieldString("stop_times", "shape_dist_traveled", entity.ShapeDistTravelled);
+                    /*data[9] = this.WriteFieldInt("stop_times", "passenger_boarding", entity.PassengerBoarding);
+                    data[10] = this.WriteFieldInt("stop_times", "passenger_alighting", entity.PassengerAlighting);*/
                     file.Write(data);
                 }
                 file.Close();
@@ -934,7 +938,23 @@ namespace GTFS
         /// <returns></returns>
         private string WriteFieldDouble(string name, string fieldName, double? value)
         {
-            if(value.HasValue)
+            if (value.HasValue)
+            {
+                return value.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Writes an integer.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string WriteFieldInt(string name, string fieldName, int? value)
+        {
+            if (value.HasValue)
             {
                 return value.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
             }
