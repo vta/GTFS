@@ -120,7 +120,10 @@ namespace GTFS.Entities.Collections
         /// <returns></returns>
         public void RemoveRange(IEnumerable<string> entityIds)
         {
-            throw new NotImplementedException();
+            foreach (var id in entityIds) // probably not the smartest implementation, but it should work
+            {
+                Remove(id);
+            };
         }
 
         /// <summary>

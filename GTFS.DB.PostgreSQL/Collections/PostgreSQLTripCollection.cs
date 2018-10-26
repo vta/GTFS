@@ -308,7 +308,16 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void RemoveAll()
         {
-            throw new NotImplementedException();
+            string sql = "DELETE FROM trip WHERE FEED_ID = :feed_id;";
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = sql;
+                command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+
+                command.Parameters[0].Value = _id;
+
+                command.ExecuteNonQuery();
+            }
         }
     }
 }
