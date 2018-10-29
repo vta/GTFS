@@ -82,7 +82,7 @@ namespace GTFS.Entities
         public string Email { get; set; }
 
         /// <summary>
-        /// Returns a description of this trip.
+        /// Returns a description of this agency.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
