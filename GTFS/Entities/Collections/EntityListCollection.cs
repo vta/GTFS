@@ -159,7 +159,7 @@ namespace GTFS.Entities.Collections
         /// <returns></returns>
         public void RemoveAll()
         {
-            throw new NotImplementedException();
+            _entities = new List<T>();
         }
 
         /// <summary>

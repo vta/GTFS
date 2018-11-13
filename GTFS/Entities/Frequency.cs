@@ -104,7 +104,7 @@ namespace GTFS.Entities
         /// </summary>
         public override string ToString()
         {
-            return $"{StartTime} - {EndTime} ({HeadwaySecs}){(ExactTimes != null && (bool)ExactTimes ? " - fixed" : "")}";
+            return $"{StartTime} - {EndTime} ({HeadwaySecs}){(ExactTimes != null && (bool)ExactTimes ? " - fixed times" : "")}";
         }
 
         /// <summary>
