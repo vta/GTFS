@@ -91,7 +91,7 @@ namespace GTFS.Entities
             if (other != null)
             {
                 return (this.EndTime ?? string.Empty) == (other.EndTime ?? string.Empty) &&
-                    this.ExactTimes == other.ExactTimes &&
+                    (this.ExactTimes ?? false) == (other.ExactTimes ?? false) &&
                     (this.HeadwaySecs ?? string.Empty) == (other.HeadwaySecs ?? string.Empty) &&
                     (this.StartTime ?? string.Empty) == (other.StartTime ?? string.Empty) &&
                     (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty);
@@ -104,7 +104,7 @@ namespace GTFS.Entities
         /// </summary>
         public override string ToString()
         {
-            return System.String.Format("{0} - {1} ({2})", StartTime, EndTime, HeadwaySecs);
+            return $"{StartTime} - {EndTime} ({HeadwaySecs}){(ExactTimes != null && (bool)ExactTimes ? " - fixed" : "")}";
         }
 
         /// <summary>
