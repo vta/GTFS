@@ -104,6 +104,12 @@ namespace GTFS.Entities
         public int? PassengerAlighting { get; set; }
 
         /// <summary>
+        /// Gets or sets number of through passengers in the trip up until this stop.
+        /// </summary>
+        [FieldName("through_passengers")]
+        public int? ThroughPassengers { get; set; }
+
+        /// <summary>
         /// Returns a description of this StopTime's times.
         /// </summary>
         /// <returns></returns>
@@ -148,6 +154,7 @@ namespace GTFS.Entities
                 hash = hash * 59 + this.TripId.GetHashCodeEmptyWhenNull();
                 hash = hash * 59 + this.PassengerBoarding != null ? this.PassengerBoarding.GetHashCode() : 0;
                 hash = hash * 59 + this.PassengerAlighting != null ? this.PassengerAlighting.GetHashCode() : 0;
+                hash = hash * 59 + this.ThroughPassengers != null ? this.ThroughPassengers.GetHashCode() : 0;
                 return hash;
             }
         }
@@ -170,7 +177,8 @@ namespace GTFS.Entities
                     this.StopSequence == other.StopSequence &&
                     (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty) &&
                     (this.PassengerBoarding ?? 0) == (other.PassengerBoarding ?? 0) &&
-                    (this.PassengerAlighting ?? 0) == (other.PassengerAlighting ?? 0);
+                    (this.PassengerAlighting ?? 0) == (other.PassengerAlighting ?? 0) &&
+                    (this.ThroughPassengers ?? 0) == (other.ThroughPassengers ?? 0);
             }
             return false;
         }
@@ -191,7 +199,10 @@ namespace GTFS.Entities
                 StopId = other.StopId,
                 StopSequence = other.StopSequence,
                 Tag = other.Tag,
-                TripId = other.TripId
+                TripId = other.TripId,
+                PassengerBoarding = other.PassengerBoarding,
+                PassengerAlighting = other.PassengerAlighting,
+                ThroughPassengers = other.ThroughPassengers
             };
         }
     }

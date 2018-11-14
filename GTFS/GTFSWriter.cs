@@ -669,12 +669,13 @@ namespace GTFS
                         data[7] = "drop_off_type";
                         data[8] = "shape_dist_traveled";
                         /*data[9] = "passenger_boarding";
-                        data[10] = "passenger_alighting";*/
+                        data[10] = "passenger_alighting";
+                        data[11] = "through_passengers";*/
                         file.Write(data);
                         initialized = true;
                     }
 
-                    // write agency details.
+                    // write stop time details.
                     data[0] = this.WriteFieldString("stop_times", "trip_id", entity.TripId);
                     data[1] = this.WriteFieldTimeOfDay("stop_times", "arrival_time", entity.ArrivalTime);
                     data[2] = this.WriteFieldTimeOfDay("stop_times", "departure_time", entity.DepartureTime);
@@ -685,7 +686,8 @@ namespace GTFS
                     data[7] = this.WriteFieldDropOffType("stop_times", "drop_off_type", entity.DropOffType);
                     data[8] = this.WriteFieldString("stop_times", "shape_dist_traveled", entity.ShapeDistTravelled);
                     /*data[9] = this.WriteFieldInt("stop_times", "passenger_boarding", entity.PassengerBoarding);
-                    data[10] = this.WriteFieldInt("stop_times", "passenger_alighting", entity.PassengerAlighting);*/
+                    data[10] = this.WriteFieldInt("stop_times", "passenger_alighting", entity.PassengerAlighting);
+                    data[11] = this.WriteFieldInt("stop_times", "through_passengers", entity.ThroughPassengers);*/
                     file.Write(data);
                 }
                 file.Close();
