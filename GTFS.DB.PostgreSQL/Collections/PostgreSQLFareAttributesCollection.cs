@@ -27,6 +27,7 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -241,7 +242,27 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public IEnumerable<string> GetIds()
         {
-            throw new NotImplementedException();
+            #if DEBUG
+            var stopwatch = Stopwatch.StartNew();
+            Console.Write($"Fetching fare attribute ids...");
+            #endif
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT fare_id FROM fare_attribute";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["fare_id"]));
+                    }
+                }
+            }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
+            #endif
+            return outList;
         }
     }
 }

@@ -79,6 +79,25 @@ namespace GTFS.Entities
         [FieldName("transfer_duration")]
         public string TransferDuration { get; set; }
 
+        /// <summary>
+        /// Creates a copy of the given fare attribute
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public static FareAttribute From(FareAttribute other)
+        {
+            return new FareAttribute()
+            {
+                AgencyId = other.AgencyId,
+                CurrencyType = other.CurrencyType,
+                FareId = other.FareId,
+                PaymentMethod = other.PaymentMethod,
+                Price = other.Price,
+                Tag = other.Tag,
+                TransferDuration = other.TransferDuration,
+                Transfers = other.Transfers
+            };
+        }
 
         /// <summary>
         /// Serves as a hash function.

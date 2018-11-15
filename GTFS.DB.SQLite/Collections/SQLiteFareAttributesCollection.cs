@@ -243,7 +243,19 @@ namespace GTFS.DB.SQLite.Collections
 
         public IEnumerable<string> GetIds()
         {
-            throw new NotImplementedException();
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT fare_id FROM fare_attribute";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["fare_id"]));
+                    }
+                }
+            }
+            return outList;
         }
     }
 }
