@@ -263,7 +263,26 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void RemoveRange(IEnumerable<string> entityIds)
         {
-            throw new NotImplementedException();
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var fareId in entityIds)
+                    {
+                        string sql = "DELETE FROM fare_rule WHERE FEED_ID = :feed_id AND fare_id = :fare_id;";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new NpgsqlParameter(@"fare_id", DbType.String));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = fareId;
+
+                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }
         }
 
         public void RemoveAll()
