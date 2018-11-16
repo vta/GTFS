@@ -670,7 +670,8 @@ namespace GTFS
                         data[8] = "shape_dist_traveled";
                         /*data[9] = "passenger_boarding";
                         data[10] = "passenger_alighting";
-                        data[11] = "through_passengers";*/
+                        data[11] = "through_passengers";
+                        data[12] = "total_passengers";*/
                         file.Write(data);
                         initialized = true;
                     }
@@ -687,7 +688,8 @@ namespace GTFS
                     data[8] = this.WriteFieldString("stop_times", "shape_dist_traveled", entity.ShapeDistTravelled);
                     /*data[9] = this.WriteFieldInt("stop_times", "passenger_boarding", entity.PassengerBoarding);
                     data[10] = this.WriteFieldInt("stop_times", "passenger_alighting", entity.PassengerAlighting);
-                    data[11] = this.WriteFieldInt("stop_times", "through_passengers", entity.ThroughPassengers);*/
+                    data[11] = this.WriteFieldInt("stop_times", "through_passengers", entity.ThroughPassengers);
+                    data[12] = this.WriteFieldInt("stop_times", "total_passengers", entity.TotalPassengers);*/
                     file.Write(data);
                 }
                 file.Close();

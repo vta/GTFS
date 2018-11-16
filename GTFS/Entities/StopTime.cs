@@ -110,6 +110,12 @@ namespace GTFS.Entities
         public int? ThroughPassengers { get; set; }
 
         /// <summary>
+        /// Gets or sets number of total passengers in the trip up until this stop.
+        /// </summary>
+        [FieldName("total_passengers")]
+        public int? TotalPassengers { get; set; }
+
+        /// <summary>
         /// Returns a description of this StopTime's times.
         /// </summary>
         /// <returns></returns>
@@ -155,6 +161,7 @@ namespace GTFS.Entities
                 hash = hash * 59 + this.PassengerBoarding != null ? this.PassengerBoarding.GetHashCode() : 0;
                 hash = hash * 59 + this.PassengerAlighting != null ? this.PassengerAlighting.GetHashCode() : 0;
                 hash = hash * 59 + this.ThroughPassengers != null ? this.ThroughPassengers.GetHashCode() : 0;
+                hash = hash * 59 + this.TotalPassengers != null ? this.TotalPassengers.GetHashCode() : 0;
                 return hash;
             }
         }
@@ -178,7 +185,8 @@ namespace GTFS.Entities
                     (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty) &&
                     (this.PassengerBoarding ?? 0) == (other.PassengerBoarding ?? 0) &&
                     (this.PassengerAlighting ?? 0) == (other.PassengerAlighting ?? 0) &&
-                    (this.ThroughPassengers ?? 0) == (other.ThroughPassengers ?? 0);
+                    (this.ThroughPassengers ?? 0) == (other.ThroughPassengers ?? 0) &&
+                    (this.TotalPassengers ?? 0) == (other.TotalPassengers ?? 0);
             }
             return false;
         }
@@ -202,7 +210,8 @@ namespace GTFS.Entities
                 TripId = other.TripId,
                 PassengerBoarding = other.PassengerBoarding,
                 PassengerAlighting = other.PassengerAlighting,
-                ThroughPassengers = other.ThroughPassengers
+                ThroughPassengers = other.ThroughPassengers,
+                TotalPassengers = other.TotalPassengers
             };
         }
     }
