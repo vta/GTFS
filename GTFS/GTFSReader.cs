@@ -1244,6 +1244,12 @@ namespace GTFS
                 case "passenger_alighting":
                     stopTime.PassengerAlighting = this.ParseFieldInt(header.Name, fieldName, value).Value;
                     break;
+                case "through_passengers":
+                    stopTime.ThroughPassengers = this.ParseFieldInt(header.Name, fieldName, value).Value;
+                    break;
+                case "total_passengers":
+                    stopTime.TotalPassengers = this.ParseFieldInt(header.Name, fieldName, value).Value;
+                    break;
             }
         }
 
