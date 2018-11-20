@@ -103,7 +103,7 @@ namespace GTFS.Entities
                 }
                 tod.Hours = int.Parse(tokens[0]);
                 tod.Minutes = int.Parse(tokens[1]);
-                tod.Seconds = int.Parse(tokens[2]);
+                tod.Seconds = tokens.Length > 2 ? int.Parse(tokens[2]) : 0;
                 if (tod.Seconds >= 60)
                 {
                     tod.Minutes += (tod.Seconds / 60);
