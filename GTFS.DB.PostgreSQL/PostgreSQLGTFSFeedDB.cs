@@ -68,7 +68,7 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS fare_attribute ( FEED_ID INTEGER NOT NULL, fare_id TEXT NOT NULL, price TEXT, currency_type TEXT, payment_method INTEGER, transfers INTEGER, transfer_duration TEXT, agency_id TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS fare_rule ( FEED_ID INTEGER NOT NULL, fare_id TEXT NOT NULL, route_id TEXT NOT NULL, origin_id TEXT, destination_id TEXT, contains_id TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS frequency ( FEED_ID INTEGER NOT NULL, trip_id TEXT NOT NULL, start_time TEXT, end_time TEXT, headway_secs TEXT, exact_times INTEGER );");
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS route ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, agency_id TEXT, route_short_name TEXT, route_long_name TEXT, route_desc TEXT, route_type INTEGER NOT NULL, route_url TEXT, route_color INTEGER, route_text_color INTEGER );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS route ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, agency_id TEXT, route_short_name TEXT, route_long_name TEXT, route_desc TEXT, route_type INTEGER NOT NULL, route_url TEXT, route_color INTEGER, route_text_color INTEGER, vehicle_capacity INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS shape ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, shape_pt_lat REAL, shape_pt_lon REAL, shape_pt_sequence INTEGER, shape_dist_traveled REAL );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, stop_code TEXT, stop_name TEXT, stop_desc TEXT, stop_lat REAL, stop_lon REAL, zone_id TEXT, stop_url TEXT, location_type INTEGER, parent_station TEXT, stop_timezone TEXT, wheelchair_boarding TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop_time ( FEED_ID INTEGER NOT NULL, trip_id TEXT NOT NULL, arrival_time INTEGER, departure_time INTEGER, stop_id TEXT, stop_sequence INTEGER, stop_headsign TEXT, pickup_type INTEGER, drop_off_type INTEGER, shape_dist_traveled TEXT, passenger_boarding INTEGER, passenger_alighting INTEGER, through_passengers INTEGER, total_passengers INTEGER );");
@@ -120,6 +120,11 @@ namespace GTFS.DB.PostgreSQL
             if (!ColumnExists("fare_attribute", "agency_id"))
             {
                 this.ExecuteNonQuery("ALTER TABLE fare_attribute ADD agency_id TEXT;");
+            }
+            //  4. add vehicle_capacity column to route
+            if (!ColumnExists("route", "vehicle_capacity"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE route ADD vehicle_capacity INTEGER;");
             }
         }
 

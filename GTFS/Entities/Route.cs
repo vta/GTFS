@@ -93,6 +93,12 @@ namespace GTFS.Entities
         public int? TextColor { get; set; }
 
         /// <summary>
+        /// The number of windows
+        /// </summary>
+        [FieldName("vehicle_capacity")]
+        public int? VehicleCapacity { get; set; }
+
+        /// <summary>
         /// Returns a description of this route.
         /// </summary>
         /// <returns></returns>
@@ -162,7 +168,8 @@ namespace GTFS.Entities
                 Tag = route.Tag,
                 TextColor = route.TextColor,
                 Type = route.Type,
-                Url = route.Url
+                Url = route.Url,
+                VehicleCapacity = route.VehicleCapacity
             };
         }
     }

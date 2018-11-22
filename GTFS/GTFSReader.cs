@@ -1009,6 +1009,9 @@ namespace GTFS
                 case "route_text_color":
                     route.TextColor = this.ParseFieldColor(header.Name, fieldName, value);
                     break;
+                case "vehicle_capacity":
+                    route.VehicleCapacity = this.ParseFieldInt(header.Name, fieldName, value).Value;
+                    break;
             }
         }
 

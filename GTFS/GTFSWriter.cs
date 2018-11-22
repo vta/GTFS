@@ -520,11 +520,12 @@ namespace GTFS
                         data[6] = "route_url";
                         data[7] = "route_color";
                         data[8] = "route_text_color";
+                        //data[9] = "vehicle_capacity";
                         file.Write(data);
                         initialized = true;
                     }
 
-                    // write agency details.
+                    // write route details.
                     data[0] = this.WriteFieldString("routes", "route_id", entity.Id);
                     data[1] = this.WriteFieldString("routes", "agency_id", entity.AgencyId);
                     data[2] = this.WriteFieldString("routes", "route_short_name", entity.ShortName, true);
@@ -534,6 +535,7 @@ namespace GTFS
                     data[6] = this.WriteFieldString("routes", "route_url", entity.Url);
                     data[7] = this.WriteFieldColor("routes", "route_color", entity.Color);
                     data[8] = this.WriteFieldColor("routes", "route_text_color", entity.TextColor);
+                    //data[9] = this.WriteFieldInt("routes", "vehicle_capacity", entity.VehicleCapacity);
                     file.Write(data);
                 }
                 file.Close();
