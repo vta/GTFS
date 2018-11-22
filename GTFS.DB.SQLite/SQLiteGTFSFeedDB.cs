@@ -253,36 +253,64 @@ namespace GTFS.DB.SQLite
             if (!ColumnExists("agency", "agency_email"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [agency] ADD [agency_email] TEXT;");
+                if (!ColumnExists("agency", "agency_email"))
+                {
+                    throw new Exception("Failed to create column 'agency_email' in table 'agency'");
+                }
             }
             //  2.1 add passenger_boarding column to stop_time
             if (!ColumnExists("stop_time", "passenger_boarding"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [passenger_boarding] INTEGER;");
+                if (!ColumnExists("stop_time", "passenger_boarding"))
+                {
+                    throw new Exception("Failed to create column 'passenger_boarding' in table 'stop_time'");
+                }
             }
             //  2.2 add passenger_alighting column to stop_time
             if (!ColumnExists("stop_time", "passenger_alighting"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [passenger_alighting] INTEGER;");
+                if (!ColumnExists("stop_time", "passenger_alighting"))
+                {
+                    throw new Exception("Failed to create column 'passenger_alighting' in table 'stop_time'");
+                }
             }
             //  2.3 add through_passengers column to stop_time
             if (!ColumnExists("stop_time", "through_passengers"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [through_passengers] INTEGER;");
+                if (!ColumnExists("stop_time", "through_passengers"))
+                {
+                    throw new Exception("Failed to create column 'through_passengers' in table 'stop_time'");
+                }
             }
             //  2.4 add total_passengers column to stop_time
             if (!ColumnExists("stop_time", "total_passengers"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [stop_time] ADD [total_passengers] INTEGER;");
+                if (!ColumnExists("stop_time", "total_passengers"))
+                {
+                    throw new Exception("Failed to create column 'total_passengers' in table 'stop_time'");
+                }
             }
             //  3. add agency_id column to fare_attribute
             if (!ColumnExists("fare_attribute", "agency_id"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [fare_attribute] ADD [agency_id] TEXT;");
+                if (!ColumnExists("fare_attribute", "agency_id"))
+                {
+                    throw new Exception("Failed to create column 'agency_id' in table 'fare_attribute'");
+                }
             }
             //  4. add vehicle_capacity column to route
             if (!ColumnExists("route", "vehicle_capacity"))
             {
                 this.ExecuteNonQuery("ALTER TABLE [route] ADD [vehicle_capacity] INTEGER;");
+                if (!ColumnExists("route", "vehilcle_capacity"))
+                {
+                    throw new Exception("Failed to create column 'vehicle_capacity' in table 'route'");
+                }
             }
         }
 
