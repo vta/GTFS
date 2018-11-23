@@ -337,8 +337,8 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public void SortRoutes()
         {
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS route_sorted ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, agency_id TEXT, route_short_name TEXT, route_long_name TEXT, route_desc TEXT, route_type INTEGER NOT NULL, route_url TEXT, route_color INTEGER, route_text_color INTEGER );");
-            this.ExecuteNonQuery("INSERT INTO route_sorted (FEED_ID, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color) SELECT FEED_ID, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color FROM route ORDER BY id ASC;");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS route_sorted ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, agency_id TEXT, route_short_name TEXT, route_long_name TEXT, route_desc TEXT, route_type INTEGER NOT NULL, route_url TEXT, route_color INTEGER, route_text_color INTEGER, vehicle_capacity INTEGER );");
+            this.ExecuteNonQuery("INSERT INTO route_sorted (FEED_ID, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color, vehicle_capacity) SELECT FEED_ID, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color, vehicle_capacity FROM route ORDER BY id ASC;");
             this.ExecuteNonQuery("DROP TABLE route");
             this.ExecuteNonQuery("ALTER TABLE route_sorted RENAME TO route");
         }
@@ -370,8 +370,8 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public void SortStopTimes()
         {
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop_time_sorted ( FEED_ID INTEGER NOT NULL, trip_id TEXT NOT NULL, arrival_time INTEGER, departure_time INTEGER, stop_id TEXT, stop_sequence INTEGER, stop_headsign TEXT, pickup_type INTEGER, drop_off_type INTEGER, shape_dist_traveled TEXT, passenger_boarding INTEGER, passenger_alighting INTEGER );");
-            this.ExecuteNonQuery("INSERT INTO stop_time_sorted (FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type,shape_dist_traveled,passenger_boarding,passenger_alighting) SELECT FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting FROM stop_time ORDER BY trip_id ASC, stop_sequence ASC;");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop_time_sorted ( FEED_ID INTEGER NOT NULL, trip_id TEXT NOT NULL, arrival_time INTEGER, departure_time INTEGER, stop_id TEXT, stop_sequence INTEGER, stop_headsign TEXT, pickup_type INTEGER, drop_off_type INTEGER, shape_dist_traveled TEXT, passenger_boarding INTEGER, passenger_alighting INTEGER, through_passengers INTEGER, total_passengers INTEGER );");
+            this.ExecuteNonQuery("INSERT INTO stop_time_sorted (FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type,shape_dist_traveled,passenger_boarding,passenger_alighting,through_passengers,total_passengers) SELECT FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting, through_passengers, total_passengers FROM stop_time ORDER BY trip_id ASC, stop_sequence ASC;");
             this.ExecuteNonQuery("DROP TABLE stop_time");
             this.ExecuteNonQuery("ALTER TABLE stop_time_sorted RENAME TO stop_time");
         }
