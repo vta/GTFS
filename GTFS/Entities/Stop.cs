@@ -114,7 +114,7 @@ namespace GTFS.Entities
         public override string ToString()
         {
             string stationText = "";
-            if (this.LocationType == Enumerations.LocationType.Station) stationText = " (station)";
+            if (this.LocationType == Enumerations.LocationType.Station) stationText = !this.Id.StartsWith("cluster_") ? " (station)" : " (cluster)";
             if (this.Name != "") return this.Name + stationText;
             else return this.Id + stationText;
         }
