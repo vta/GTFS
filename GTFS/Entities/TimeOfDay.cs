@@ -20,9 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+
 namespace GTFS.Entities
 {
-    using System;
     /// <summary>
     /// A stop time of day.
     /// </summary>
@@ -59,8 +60,13 @@ namespace GTFS.Entities
         /// </summary>
         public static TimeOfDay FromTotalSeconds(int totalSeconds)
         {
-            var hours = (int)System.Math.Floor(totalSeconds / 3600.0);
-            var minutes = (int)System.Math.Floor((totalSeconds - hours * 3600.0) / 60.0);
+            if (totalSeconds < 0)
+            {
+                throw new ArgumentException($"Total seconds '{totalSeconds}' must be >= 0.");
+            }
+
+            var hours = (int)Math.Floor(totalSeconds / 3600.0);
+            var minutes = (int)Math.Floor((totalSeconds - hours * 3600.0) / 60.0);
             var seconds = (int)(totalSeconds - hours * 3600.0 - minutes * 60.0);
 
             return new TimeOfDay()
@@ -88,7 +94,7 @@ namespace GTFS.Entities
         {
             try
             {
-                TimeOfDay tod = new TimeOfDay();
+                var tod = new TimeOfDay();
                 var tokens = timeString.Split(':');
                 for (int i = 0; i < tokens.Length; i++)
                 {
@@ -220,7 +226,7 @@ namespace GTFS.Entities
 
             if (result.Contains("D"))
             {
-                int d = (int)Math.Floor(Hours / 24);
+                int d = (int)Math.Floor((double)Hours / 24);
                 int h = Hours % 24;
                 result.Replace("D", d + "");
                 if (result.Contains("H"))

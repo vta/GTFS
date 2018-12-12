@@ -69,7 +69,19 @@ namespace GTFS
             };
             this.TimeOfDayReader = (timeOfDayString) =>
             {
-                if (timeOfDayString == null || !(timeOfDayString.Length == 8 || timeOfDayString.Length == 7)) { return new TimeOfDay() { Hours = 0, Minutes = 0, Seconds = 0 }; }
+                if (string.IsNullOrWhiteSpace(timeOfDayString))
+                {
+                    return new TimeOfDay()
+                    {
+                        Hours = 0,
+                        Minutes = 0,
+                        Seconds = 0
+                    };
+                }
+                else if (!(timeOfDayString.Length == 8 || timeOfDayString.Length == 7))
+                {
+                    throw new ArgumentException(string.Format("Invalid timeOfDayString: {0}", timeOfDayString));
+                }
 
                 var timeOfDay = new TimeOfDay();
                 if (timeOfDayString.Length == 8)
@@ -241,7 +253,7 @@ namespace GTFS
                 }
 
                 // check if there is a next file.
-                if(selectedFile == null)
+                if (selectedFile == null)
                 {
                     throw new Exception("Could not select a next file based on the current dependency tree and the current file list.");
                 }
@@ -842,7 +854,7 @@ namespace GTFS
 
             // parse/set all fields.
             FeedInfo feedInfo = new FeedInfo();
-            for(int idx = 0; idx < data.Length; idx++)
+            for (int idx = 0; idx < data.Length; idx++)
             {
                 this.ParseFeedInfoField(feed, header, feedInfo, header.GetColumn(idx), data[idx]);
             }
@@ -1113,7 +1125,7 @@ namespace GTFS
         /// <param name="value"></param>
         protected virtual void ParseStopField(T feed, GTFSSourceFileHeader header, Stop stop, string fieldName, string value)
         {
-            switch (fieldName)
+            switch (fieldName.Trim())
             {
                 case "stop_id":
                     stop.Id = this.ParseFieldString(header.Name, fieldName, value);
@@ -1129,7 +1141,7 @@ namespace GTFS
                     break;
                 case "stop_lat":
                     var parsedDouble = this.ParseFieldDouble(header.Name, fieldName, value);
-                    if(parsedDouble == null)
+                    if (parsedDouble == null)
                     {
                         throw new GTFSParseException(header.Name, fieldName, value);
                     }
@@ -1164,7 +1176,7 @@ namespace GTFS
                 case "stop_timezone":
                     stop.Timezone = this.ParseFieldString(header.Name, fieldName, value);
                     break;
-                case " wheelchair_boarding ":
+                case "wheelchair_boarding":
                     stop.WheelchairBoarding = this.ParseFieldString(header.Name, fieldName, value);
                     break;
             }

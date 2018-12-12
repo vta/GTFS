@@ -153,8 +153,6 @@ namespace GTFS.DB.SQLite.Collections
             }).FirstOrDefault();
         }
 
-
-
         public Trip Get(int idx)
         {
             throw new NotImplementedException();

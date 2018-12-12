@@ -103,21 +103,21 @@ namespace GTFS
         public static void CopyTo(this IGTFSFeed thisFeed, IGTFSFeed feed)
         {
             var feedInfo = thisFeed.GetFeedInfo();
-            if(feedInfo != null)
+            if (feedInfo != null)
             {
                 feed.SetFeedInfo(feedInfo);
             }
-            // changed all from individual adds to addrange to improve performance!
-            feed.Agencies.AddRange(thisFeed.Agencies);            
-            feed.CalendarDates.AddRange(thisFeed.CalendarDates);            
-            feed.Calendars.AddRange(thisFeed.Calendars);            
-            feed.FareAttributes.AddRange(thisFeed.FareAttributes);           
-            feed.FareRules.AddRange(thisFeed.FareRules);            
-            feed.Frequencies.AddRange(thisFeed.Frequencies);            
-            feed.Routes.AddRange(thisFeed.Routes);            
-            feed.Shapes.AddRange(thisFeed.Shapes);            
-            feed.Stops.AddRange(thisFeed.Stops);            
-            feed.StopTimes.AddRange(thisFeed.StopTimes);            
+
+            feed.Agencies.AddRange(thisFeed.Agencies);
+            feed.CalendarDates.AddRange(thisFeed.CalendarDates);
+            feed.Calendars.AddRange(thisFeed.Calendars);
+            feed.FareAttributes.AddRange(thisFeed.FareAttributes);
+            feed.FareRules.AddRange(thisFeed.FareRules);
+            feed.Frequencies.AddRange(thisFeed.Frequencies);
+            feed.Routes.AddRange(thisFeed.Routes);
+            feed.Shapes.AddRange(thisFeed.Shapes);
+            feed.Stops.AddRange(thisFeed.Stops);
+            feed.StopTimes.AddRange(thisFeed.StopTimes);
             feed.Transfers.AddRange(thisFeed.Transfers);           
             feed.Trips.AddRange(thisFeed.Trips);
         }
@@ -209,17 +209,17 @@ namespace GTFS
         {
             var radius_earth = 6371000;
 
-            var degToRandian = System.Math.PI / 180;
+            var degToRandian = Math.PI / 180;
             var lat1_rad = latitude1 * degToRandian;
             var lon1_rad = longitude1 * degToRandian;
             var lat2_rad = latitude2 * degToRandian;
             var lon2_rad = longitude2 * degToRandian;
             var dLat = (lat2_rad - lat1_rad);
             var dLon = (lon2_rad - lon1_rad);
-            var a = System.Math.Pow(System.Math.Sin(dLat / 2), 2) +
-                System.Math.Cos(lat1_rad) * System.Math.Cos(lat2_rad) *
-                System.Math.Pow(System.Math.Sin(dLon / 2), 2);
-            var c = 2 * System.Math.Atan2(System.Math.Sqrt(a), System.Math.Sqrt(1 - a));
+            var a = Math.Pow(Math.Sin(dLat / 2), 2) +
+                Math.Cos(lat1_rad) * Math.Cos(lat2_rad) *
+                Math.Pow(Math.Sin(dLon / 2), 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             var distance = radius_earth * c;
             return distance;
         }
@@ -329,6 +329,13 @@ namespace GTFS
             }
         }
 
+        /// <summary>
+        /// Splits the given list of entities into groups of size maxGroupCount.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="_self"></param>
+        /// <param name="maxGroupCount"></param>
+        /// <returns></returns>
         public static Dictionary<int, List<T>> SplitIntoGroupsByGroupIdx<T>(this IEnumerable<T> _self, int maxGroupCount = 900)
         {
             var dict = new Dictionary<int, List<T>>();

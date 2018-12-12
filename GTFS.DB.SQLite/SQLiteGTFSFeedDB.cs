@@ -72,13 +72,9 @@ namespace GTFS.DB.SQLite
         /// Creates a new db.
         /// </summary>
         public SQLiteGTFSFeedDB()
+            : this("Data Source=:memory:;Version=3;New=True;")
         {
-            ConnectionString = "Data Source=:memory:;Version=3;New=True;";
-            _connection = new SQLiteConnection(ConnectionString, true);
-            _connection.Open();
 
-            // build database.
-            this.RebuildDB();
         }
 
         /// <summary>
@@ -87,7 +83,7 @@ namespace GTFS.DB.SQLite
         public SQLiteGTFSFeedDB(string connectionString)
         {
             ConnectionString = connectionString;
-            _connection = new SQLiteConnection(connectionString, true);
+            _connection = new SQLiteConnection(ConnectionString, true);
             _connection.Open();
 
             // build database.
@@ -114,7 +110,7 @@ namespace GTFS.DB.SQLite
         public int AddFeed()
         {
             string sqlInsertNewFeed = "INSERT INTO feed VALUES (1, null, null, null, null, null, null);";
-            using(var command = _connection.CreateCommand())
+            using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sqlInsertNewFeed;
                 command.ExecuteNonQuery();
@@ -321,7 +317,7 @@ namespace GTFS.DB.SQLite
         /// <returns>True if th</returns>
         public bool TableExists(string tableName)
         {
-            using (var command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';", _connection))
+            using (var command = new SQLiteCommand($"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}';", _connection))
             {
                 using (var reader = command.ExecuteReader())
                 {
@@ -346,7 +342,7 @@ namespace GTFS.DB.SQLite
         /// <param name="tableName">The table in this database to check.</param>
         /// <param name="columnName">The column in the given table to look for.</param>
         /// <returns>True if the given table contains a column with the given name.</returns>
-        private bool ColumnExists(string tableName, string columnName)
+        public bool ColumnExists(string tableName, string columnName)
         {
             using (var command = new SQLiteCommand("PRAGMA table_info(" + tableName + ")", _connection))
             {
@@ -459,7 +455,7 @@ namespace GTFS.DB.SQLite
         public void SortStopTimes()
         {
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS [stop_time_sorted] ( [FEED_ID] INTEGER NOT NULL, [trip_id] TEXT NOT NULL, [arrival_time] INTEGER, [departure_time] INTEGER, [stop_id] TEXT, [stop_sequence] INTEGER, [stop_headsign] TEXT, [pickup_type] INTEGER, [drop_off_type] INTEGER, [shape_dist_traveled] TEXT, [passenger_boarding] INTEGER, [passenger_alighting] INTEGER, [through_passengers] INTEGER, [total_passengers] INTEGER );");
-            this.ExecuteNonQuery("INSERT INTO stop_time_sorted (FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type,drop_off_type,shape_dist_traveled,passenger_boarding,passenger_alighting,through_passengers,total_passengers) SELECT FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting, through_passengers, total_passengers FROM stop_time ORDER BY trip_id ASC, stop_sequence ASC;");
+            this.ExecuteNonQuery("INSERT INTO stop_time_sorted (FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting, through_passengers, total_passengers) SELECT FEED_ID, trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign, pickup_type, drop_off_type, shape_dist_traveled, passenger_boarding, passenger_alighting, through_passengers, total_passengers FROM stop_time ORDER BY trip_id ASC, stop_sequence ASC;");
             this.ExecuteNonQuery("DROP TABLE stop_time");
             this.ExecuteNonQuery("ALTER TABLE stop_time_sorted RENAME TO stop_time");
         }

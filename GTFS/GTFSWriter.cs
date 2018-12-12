@@ -75,27 +75,27 @@ namespace GTFS
         /// Writes the given feed to the given target files.
         /// </summary>
         /// <param name="feed"></param>
-        /// <param name="selectedIds"></param>
+        /// <param name="idsToWrite"></param>
         /// <param name="target"></param>
-        /// <param name="selectedAgencies"></param>
-        /// <param name="selectedRoutes"></param>
+        /// <param name="writeAgencies"></param>
+        /// <param name="writeRoutes"></param>
         /// <param name="onlyTripsWithShapes"></param>
-        public void Write(T feed, IEnumerable<string> selectedIds, IEnumerable<IGTFSTargetFile> target, bool selectedAgencies = false, bool selectedRoutes = false, bool onlyTripsWithShapes = false)
+        public void Write(T feed, IEnumerable<string> idsToWrite, IEnumerable<IGTFSTargetFile> target, bool writeAgencies = false, bool writeRoutes = false, bool onlyTripsWithShapes = false)
         {
-            if (!selectedAgencies && !selectedRoutes) throw new Exception("One of the 2 booleans must be true!");
-            if (selectedAgencies && selectedRoutes) throw new Exception("Only one of the 2 booleans may be true!");
+            if (!writeAgencies && !writeRoutes) throw new Exception("One of the 2 booleans must be true!");
+            if (writeAgencies && writeRoutes) throw new Exception("Only one of the 2 booleans may be true!");
 
             List<Agency> agenciesToWrite = new List<Agency>();
             List<Route> routesToWrite = new List<Route>();
 
-            if (selectedAgencies)
+            if (writeAgencies)
             {
-                agenciesToWrite = feed.Agencies.Where(x => selectedIds.Contains(x.Id)).ToList();
-                routesToWrite = feed.Routes.Where(x => selectedIds.Contains(x.AgencyId)).ToList();
+                agenciesToWrite = feed.Agencies.Where(x => idsToWrite.Contains(x.Id)).ToList();
+                routesToWrite = feed.Routes.Where(x => idsToWrite.Contains(x.AgencyId)).ToList();
             }
-            else if (selectedRoutes)
+            else if (writeRoutes)
             {
-                routesToWrite = feed.Routes.Where(x => selectedIds.Contains(x.Id)).ToList();
+                routesToWrite = feed.Routes.Where(x => idsToWrite.Contains(x.Id)).ToList();
                 foreach (Route route in routesToWrite)
                 {
                     Agency agency = feed.Agencies.Where(x => route.AgencyId == x.Id).ToList().First();
@@ -1024,7 +1024,7 @@ namespace GTFS
         /// <returns></returns>
         private string WriteFieldPickupType(string name, string fieldName, PickupType? value)
         {
-            if(value.HasValue)
+            if (value.HasValue)
             {
                 switch (value.Value)
                 {
@@ -1048,12 +1048,16 @@ namespace GTFS
         /// <param name="fieldName"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private string WriteFieldTimeOfDay(string name, string fieldName, TimeOfDay value)
+        private string WriteFieldTimeOfDay(string name, string fieldName, TimeOfDay? value)
         {
+            if (!value.HasValue)
+            {
+                return string.Empty;
+            }
             return string.Format("{0}:{1}:{2}",
-                value.Hours.ToString("00"),
-                value.Minutes.ToString("00"),
-                value.Seconds.ToString("00"));
+                value.Value.Hours.ToString("00"),
+                value.Value.Minutes.ToString("00"),
+                value.Value.Seconds.ToString("00"));
         }
 
         /// <summary>

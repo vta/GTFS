@@ -176,7 +176,7 @@ namespace GTFS.Entities
             {
                 return this.ArrivalTime.Equals(other.ArrivalTime) &&
                     this.DepartureTime.Equals(other.DepartureTime) &&
-                    this.DropOffType== other.DropOffType &&
+                    this.DropOffType == other.DropOffType &&
                     this.PickupType == other.PickupType &&
                     (this.ShapeDistTravelled ?? string.Empty) == (other.ShapeDistTravelled ?? string.Empty) &&
                     (this.StopHeadsign ?? string.Empty) == (other.StopHeadsign ?? string.Empty) &&
