@@ -186,7 +186,7 @@ namespace GTFS.DB.PostgreSQL
         /// <param name="tableName">The table in this database to check.</param>
         /// <param name="columnName">The column in the given table to look for.</param>
         /// <returns>True if the given table contains a column with the given name.</returns>
-        private bool ColumnExists(string tableName, string columnName)
+        public bool ColumnExists(string tableName, string columnName)
         {
             using (var command = _connection.CreateCommand())
             {
