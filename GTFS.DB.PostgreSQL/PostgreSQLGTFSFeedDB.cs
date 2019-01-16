@@ -79,7 +79,7 @@ namespace GTFS.DB.PostgreSQL
             // CREATE TABLE TO STORE USER PREFERENCES
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS preferences ( preference TEXT, value TEXT);");
             // CREATE TABLE TO STORE GPX FILENAMES AND TABLE TO STORE CLEANED STOP IDS
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS gpx_filenames ( route_id TEXT, gpx_filename TEXT);");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS gpx_filenames ( route_id TEXT, gpx_filename TEXT, track_version INTEGER);");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS cleaned_stops ( stop_id TEXT);");
             // CREATE TABLE TO STORE LOGS OF EDITS
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS log ( timestamp TEXT, action TEXT, route_id TEXT, pc_name TEXT, pc_ip TEXT, note TEXT);");
@@ -153,6 +153,11 @@ namespace GTFS.DB.PostgreSQL
                 //{
                 //    throw new Exception("Failed to create column 'vehicle_capacity' in table 'route'");
                 //}
+            }
+            // 5. add track_version column to gpx_filenames
+            if (!ColumnExists("gpx_filenames", "track_version"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE gpx_filenames ADD track_version INTEGER;");
             }
         }
 
