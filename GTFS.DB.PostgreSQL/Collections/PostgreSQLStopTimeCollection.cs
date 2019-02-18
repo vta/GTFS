@@ -300,6 +300,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            stopTimes = stopTimes.OrderBy(x => x.TripId).ThenBy(x => x.StopSequence).ToList();
             #if DEBUG
             stopwatch.Stop();
             Console.WriteLine($"Fetch stoptimes: {stopwatch.ElapsedMilliseconds} ms");

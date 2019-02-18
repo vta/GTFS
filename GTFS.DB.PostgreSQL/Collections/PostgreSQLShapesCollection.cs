@@ -134,6 +134,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     });
                 }
             }
+            shapePoints = shapePoints.OrderBy(x => x.Id).ThenBy(x => x.Sequence).ToList();
             #if DEBUG
             stopwatch.Stop();
             Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
