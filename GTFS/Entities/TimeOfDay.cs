@@ -164,6 +164,20 @@ namespace GTFS.Entities
             return !(a == b);
         }
 
+        public static TimeOfDay operator -(TimeOfDay a, TimeOfDay b)
+        {
+            if (b > a)
+            {
+                throw new ArgumentException("TimeOfDay b is larger that TimeOfDay a. The subtraction result will be negative which is not allowed.");
+            }
+            return TimeOfDay.FromTotalSeconds(a.TotalSeconds - b.TotalSeconds);
+        }
+
+        public static TimeOfDay operator +(TimeOfDay a, TimeOfDay b)
+        {
+            return TimeOfDay.FromTotalSeconds(a.TotalSeconds + b.TotalSeconds);
+        }
+
         /// <summary>
         /// Serves as a hash function.
         /// </summary>
