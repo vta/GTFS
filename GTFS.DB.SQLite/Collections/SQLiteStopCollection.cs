@@ -294,25 +294,12 @@ namespace GTFS.DB.SQLite.Collections
                 command.Parameters[12].Value = entity.WheelchairBoarding;
                 command.Parameters[13].Value = entityId;
 
-                if (command.ExecuteNonQuery() <= 0) return false;
-            }
-
-            //update cleaned_stops if the stop_id changed
-            if (!entityId.Equals(entity.Id))
-            {
-                sql = "UPDATE cleaned_stops SET stop_id=:stop_id WHERE stop_id=:entityId;";
-                using (var command = _connection.CreateCommand())
+                if (command.ExecuteNonQuery() <= 0)
                 {
-                    command.CommandText = sql;
-                    command.Parameters.Add(new SQLiteParameter(@"stop_id", DbType.String));
-                    command.Parameters.Add(new SQLiteParameter(@"entityId", DbType.String));
-
-                    command.Parameters[0].Value = entity.Id;
-                    command.Parameters[1].Value = entityId;
-
-                    command.ExecuteNonQuery();
+                    return false;
                 }
             }
+
             return true;
         }
 

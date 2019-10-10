@@ -278,24 +278,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[13].Value = entityId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                if (command.ExecuteNonQuery() <= 0) return false;
-            }
-
-            //update cleaned_stops if the stop_id changed
-            if (!entityId.Equals(entity.Id))
-            {
-                sql = "UPDATE cleaned_stops SET stop_id=:stop_id WHERE stop_id=:entityId;";
-                using (var command = _connection.CreateCommand())
+                if (command.ExecuteNonQuery() <= 0)
                 {
-                    command.CommandText = sql;
-                    command.Parameters.Add(new NpgsqlParameter(@"stop_id", DbType.String));
-                    command.Parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
-
-                    command.Parameters[0].Value = entity.Id;
-                    command.Parameters[1].Value = entityId;
-
-                    command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                    return command.ExecuteNonQuery() > 0;
+                    return false;
                 }
             }
 
