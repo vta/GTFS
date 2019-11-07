@@ -33,7 +33,7 @@ using System.Text;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of CalendarDates using an SQLite database.
+    /// Represents a collection of CalendarDates using a Postgres database.
     /// </summary>
     public class PostgreSQLCalendarDateCollection : IEntityCollection<CalendarDate>
     {

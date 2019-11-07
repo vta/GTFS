@@ -78,6 +78,8 @@
     <Compile Include="..\SharedAssemblyVersion.cs">
       <Link>Properties\SharedAssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\SQLitePathwayCollection.cs" />
+    <Compile Include="Collections\SQLiteLevelCollection.cs" />
     <Compile Include="Collections\SQLiteAgencyCollection.cs" />
     <Compile Include="Collections\SQLiteCalendarCollection.cs" />
     <Compile Include="Collections\SQLiteCalendarDateCollection.cs" />

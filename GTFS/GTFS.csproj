@@ -44,6 +44,10 @@
     <Compile Include="Attributes\RequiredAttribute.cs" />
     <Compile Include="DB\IGTFSFeedDB.cs" />
     <Compile Include="DB\Memory\GTFSFeedDB.cs" />
+    <Compile Include="Entities\Enumerations\IsBidirectional.cs" />
+    <Compile Include="Entities\Enumerations\PathwayMode.cs" />
+    <Compile Include="Entities\Pathway.cs" />
+    <Compile Include="Entities\Level.cs" />
     <Compile Include="Entities\Agency.cs" />
     <Compile Include="Entities\Calendar.cs" />
     <Compile Include="Entities\CalendarDate.cs" />

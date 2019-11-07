@@ -32,7 +32,7 @@ using System.Linq;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Transfers using an SQLite database.
+    /// Represents a collection of Transfers using a Postgres database.
     /// </summary>
     public class PostgreSQLTransferCollection : ITransferCollection
     {

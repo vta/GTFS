@@ -34,7 +34,7 @@ using System.Text;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of FareAttributes using an SQLite database.
+    /// Represents a collection of FareAttributes using a Postgres database.
     /// </summary>
     public class PostgreSQLFareAttributeCollection : IEntityCollection<FareAttribute>
     {

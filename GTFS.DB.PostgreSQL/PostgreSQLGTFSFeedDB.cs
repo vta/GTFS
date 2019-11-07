@@ -70,10 +70,12 @@ namespace GTFS.DB.PostgreSQL
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS frequency ( FEED_ID INTEGER NOT NULL, trip_id TEXT NOT NULL, start_time TEXT, end_time TEXT, headway_secs TEXT, exact_times INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS route ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, agency_id TEXT, route_short_name TEXT, route_long_name TEXT, route_desc TEXT, route_type INTEGER NOT NULL, route_url TEXT, route_color INTEGER, route_text_color INTEGER, vehicle_capacity INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS shape ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, shape_pt_lat REAL, shape_pt_lon REAL, shape_pt_sequence INTEGER, shape_dist_traveled REAL );");
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, stop_code TEXT, stop_name TEXT, stop_desc TEXT, stop_lat REAL, stop_lon REAL, zone_id TEXT, stop_url TEXT, location_type INTEGER, parent_station TEXT, stop_timezone TEXT, wheelchair_boarding TEXT );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, stop_code TEXT, stop_name TEXT, stop_desc TEXT, stop_lat REAL, stop_lon REAL, zone_id TEXT, stop_url TEXT, location_type INTEGER, parent_station TEXT, stop_timezone TEXT, wheelchair_boarding TEXT, level_id TEXT, platform_code TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop_time ( FEED_ID INTEGER NOT NULL, trip_id TEXT NOT NULL, arrival_time INTEGER, departure_time INTEGER, stop_id TEXT, stop_sequence INTEGER, stop_headsign TEXT, pickup_type INTEGER, drop_off_type INTEGER, shape_dist_traveled TEXT, passenger_boarding INTEGER, passenger_alighting INTEGER, through_passengers INTEGER, total_passengers INTEGER );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS transfer ( FEED_ID INTEGER NOT NULL, from_stop_id TEXT, to_stop_id TEXT, transfer_type INTEGER, min_transfer_time TEXT );");
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS trip ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, route_id TEXT, service_id TEXT, trip_headsign TEXT, trip_short_name TEXT, direction_id INTEGER, block_id TEXT, shape_id TEXT, wheelchair_accessible INTEGER );");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS pathway ( FEED_ID INTEGER NOT NULL, pathway_id TEXT NOT NULL, from_stop_id TEXT NOT NULL, to_stop_id TEXT NOT NULL, pathway_mode INTEGER NOT NULL, is_bidirectional INTEGER NOT NULL, length REAL, traversal_time INTEGER, stair_count INTEGER, max_slope REAL, min_width REAL, signposted_as TEXT, reversed_signposted_as TEXT);");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS level ( FEED_ID INTEGER NOT NULL, level_id TEXT NOT NULL, level_index REAL, level_name TEXT);");
             // CREATE TABLE TO STORE RESERVED IDS
             this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS reservedids ( base_name TEXT, reserved_id TEXT);");
             // CREATE TABLE TO STORE USER PREFERENCES
@@ -158,6 +160,16 @@ namespace GTFS.DB.PostgreSQL
             if (!ColumnExists("gpx_filenames", "track_version"))
             {
                 this.ExecuteNonQuery("ALTER TABLE gpx_filenames ADD track_version INTEGER;");
+            }
+            //  6.1 add level_id to stop
+            if (!ColumnExists("stop", "level_id"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE stop ADD level_id TEXT;");
+            }
+            //  6.2 add platform_code to stop
+            if (!ColumnExists("stop", "platform_code"))
+            {
+                this.ExecuteNonQuery("ALTER TABLE stop ADD platform_code TEXT;");
             }
         }
 
@@ -295,6 +307,8 @@ namespace GTFS.DB.PostgreSQL
             this.RemoveAll("stop_time", id);
             this.RemoveAll("transfer", id);
             this.RemoveAll("trip", id);
+            this.RemoveAll("level", id);
+            this.RemoveAll("pathway", id);
 
             string sql = "DELETE FROM feed WHERE ID = :id"; ;
             using (var command = _connection.CreateCommand())
@@ -364,8 +378,8 @@ namespace GTFS.DB.PostgreSQL
         /// </summary>
         public void SortStops()
         {
-            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop_sorted ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, stop_code TEXT, stop_name TEXT, stop_desc TEXT, stop_lat REAL, stop_lon REAL, zone_id TEXT, stop_url TEXT, location_type INTEGER, parent_station TEXT, stop_timezone TEXT, wheelchair_boarding TEXT );");
-            this.ExecuteNonQuery("INSERT INTO stop_sorted (FEED_ID, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding) SELECT FEED_ID, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding FROM stop ORDER BY id ASC;");
+            this.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS stop_sorted ( FEED_ID INTEGER NOT NULL, id TEXT NOT NULL, stop_code TEXT, stop_name TEXT, stop_desc TEXT, stop_lat REAL, stop_lon REAL, zone_id TEXT, stop_url TEXT, location_type INTEGER, parent_station TEXT, stop_timezone TEXT, wheelchair_boarding TEXT, level_id TEXT, platform_code TEXT );");
+            this.ExecuteNonQuery("INSERT INTO stop_sorted (FEED_ID, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, level_id, platform_code) SELECT FEED_ID, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, level_id, platform_code FROM stop ORDER BY id ASC;");
             this.ExecuteNonQuery("DROP TABLE stop");
             this.ExecuteNonQuery("ALTER TABLE stop_sorted RENAME TO stop");
         }

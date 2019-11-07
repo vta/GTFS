@@ -27,15 +27,14 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
 
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Routes using a Postgres database.
+    /// Represents a collection of Levels using a Postgres database.
     /// </summary>
-    public class PostgreSQLRouteCollection : IUniqueEntityCollection<Route>
+    public class PostgreSQLLevelCollection : IUniqueEntityCollection<Level>
     {
         /// <summary>
         /// Holds the connection.
@@ -52,7 +51,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="id"></param>
-        internal PostgreSQLRouteCollection(NpgsqlConnection connection, int id)
+        internal PostgreSQLLevelCollection(NpgsqlConnection connection, int id)
         {
             _connection = connection;
             _id = id;
@@ -62,59 +61,39 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// Adds an entity.
         /// </summary>
         /// <param name="entity"></param>
-        public void Add(Route entity)
+        public void Add(Level entity)
         {
-            string sql = "INSERT INTO route VALUES (:feed_id, :id, :agency_id, :route_short_name, :route_long_name, :route_desc, :route_type, :route_url, :route_color, :route_text_color, :vehicle_capacity);";
+            string sql = "INSERT INTO level VALUES (:feed_id, :level_id, :level_index, :level_name);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"agency_id", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_short_name", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_long_name", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_desc", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_type", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"route_url", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_color", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"route_text_color", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"vehicle_capacity", DbType.Int64));
+                command.Parameters.Add(new NpgsqlParameter(@"level_id", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"level_index", DbType.Double));
+                command.Parameters.Add(new NpgsqlParameter(@"level_name", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
-                command.Parameters[2].Value = entity.AgencyId;
-                command.Parameters[3].Value = entity.ShortName;
-                command.Parameters[4].Value = entity.LongName;
-                command.Parameters[5].Value = entity.Description;
-                command.Parameters[6].Value = (int)entity.Type;
-                command.Parameters[7].Value = entity.Url;
-                command.Parameters[8].Value = entity.Color;
-                command.Parameters[9].Value = entity.TextColor;
-                command.Parameters[10].Value = entity.VehicleCapacity;
+                command.Parameters[2].Value = entity.Index;
+                command.Parameters[3].Value = entity.Name;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 command.ExecuteNonQuery();
             }
         }
 
-        public void AddRange(IUniqueEntityCollection<Route> entities)
+
+        public void AddRange(IUniqueEntityCollection<Level> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY route (feed_id, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color, vehicle_capacity) FROM STDIN (FORMAT BINARY)"))
+            using (var writer = _connection.BeginBinaryImport("COPY level (feed_id, level_id, level_index, level_name) FROM STDIN (FORMAT BINARY)"))
             {
-                foreach (var route in entities)
+                foreach (var level in entities)
                 {
                     writer.StartRow();
                     writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(route.Id, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(route.AgencyId, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(route.ShortName, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(route.LongName, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(route.Description, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(route.Type, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(route.Url, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(route.Color, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(route.TextColor, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(route.VehicleCapacity, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(level.Id, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(level.Index, NpgsqlTypes.NpgsqlDbType.Real);
+                    writer.Write(level.Name, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }
@@ -124,7 +103,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        public Route Get(string entityId)
+        public Level Get(string entityId)
         {
             throw new NotImplementedException();
         }
@@ -134,7 +113,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// </summary>
         /// <param name="idx"></param>
         /// <returns></returns>
-        public Route Get(int idx)
+        public Level Get(int idx)
         {
             throw new NotImplementedException();
         }
@@ -146,12 +125,12 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public bool Remove(string entityId)
         {
-            string sql = "DELETE FROM route WHERE FEED_ID = :feed_id AND id = :route_id;";
+            string sql = "DELETE FROM level WHERE FEED_ID = :feed_id AND level_id = :level_id;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"route_id", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"level_id", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entityId;
@@ -165,38 +144,22 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// Returns all entities.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Route> Get()
+        public IEnumerable<Level> Get()
         {
-            #if DEBUG
-            var stopwatch = Stopwatch.StartNew();
-            Console.Write($"Fetching routes...");
-            #endif
-            var routes = new List<Route>();
-            using (var reader = _connection.BeginBinaryExport("COPY route TO STDOUT (FORMAT BINARY)"))
+            string sql = "SELECT level_id, level_index, level_name FROM level WHERE FEED_ID = :id";
+            var parameters = new List<NpgsqlParameter>();
+            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
+            parameters[0].Value = _id;
+
+            return new PostgreSQLEnumerable<Level>(_connection, sql, parameters.ToArray(), (x) =>
             {
-                while (reader.StartRow() > 0)
+                return new Level()
                 {
-                    var feedId = reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer);
-                    routes.Add(new Route()
-                    {
-                        Id = reader.ReadStringSafe(),
-                        AgencyId = reader.ReadStringSafe(),
-                        ShortName = reader.ReadStringSafe(),
-                        LongName = reader.ReadStringSafe(),
-                        Description = reader.ReadStringSafe(),
-                        Type = (RouteTypeExtended)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
-                        Url = reader.ReadStringSafe(),
-                        Color = reader.ReadIntSafe(),
-                        TextColor = reader.ReadIntSafe(),
-                        VehicleCapacity = reader.ReadIntSafe()
-                    });
-                }
-            }
-            #if DEBUG
-            stopwatch.Stop();
-            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
-            #endif
-            return routes;
+                    Id = x.GetString(0),
+                    Index = x.GetDouble(1),
+                    Name = x.IsDBNull(2) ? null : x.GetString(2)
+                };
+            });
         }
 
         /// <summary>
@@ -208,17 +171,17 @@ namespace GTFS.DB.PostgreSQL.Collections
             #if DEBUG
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
-            Console.Write($"Fetching route ids...");
+            Console.Write($"Fetching level ids...");
             #endif
             var outList = new List<string>();
             using (var command = _connection.CreateCommand())
             {
-                command.CommandText = "SELECT id FROM route";
+                command.CommandText = "SELECT level_id FROM level";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        outList.Add(Convert.ToString(reader["id"]));
+                        outList.Add(Convert.ToString(reader["level_id"]));
                     }
                 }
             }
@@ -236,7 +199,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         {
             get
             {
-                string sql = "SELECT count(id) FROM route;";
+                string sql = "SELECT count(level_id) FROM level;";
                 using (var command = _connection.CreateCommand())
                 {
                     command.CommandText = sql;
@@ -249,7 +212,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<Route> GetEnumerator()
+        public IEnumerator<Level> GetEnumerator()
         {
             return this.Get().GetEnumerator();
         }
@@ -263,37 +226,23 @@ namespace GTFS.DB.PostgreSQL.Collections
             return this.Get().GetEnumerator();
         }
 
-        public bool Update(string entityId, Route entity)
+        public bool Update(string entityId, Level entity)
         {
-            string sql = "UPDATE route SET FEED_ID=:feed_id, id=:id, agency_id=:agency_id, route_short_name=:route_short_name, route_long_name=:route_long_name, route_desc=:route_desc, route_type=:route_type, route_url=:route_url, route_color=:route_color, route_text_color=:route_text_color, vehicle_capacity=:vehicle_capacity WHERE id=:entityId;";
+            string sql = "UPDATE level SET FEED_ID=:feed_id, level_id=:level_id, level_index=:level_index, level_name=:level_name WHERE id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"id", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"agency_id", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_short_name", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_long_name", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_desc", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_type", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"route_url", DbType.String));
-                command.Parameters.Add(new NpgsqlParameter(@"route_color", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"route_text_color", DbType.Int64));
-                command.Parameters.Add(new NpgsqlParameter(@"vehicle_capacity", DbType.Int64));
+                command.Parameters.Add(new NpgsqlParameter(@"level_index", DbType.Double));
+                command.Parameters.Add(new NpgsqlParameter(@"level_name", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
-                command.Parameters[2].Value = entity.AgencyId;
-                command.Parameters[3].Value = entity.ShortName;
-                command.Parameters[4].Value = entity.LongName;
-                command.Parameters[5].Value = entity.Description;
-                command.Parameters[6].Value = (int)entity.Type;
-                command.Parameters[7].Value = entity.Url;
-                command.Parameters[8].Value = entity.Color;
-                command.Parameters[9].Value = entity.TextColor;
-                command.Parameters[10].Value = entity.VehicleCapacity;
-                command.Parameters[11].Value = entityId;
+                command.Parameters[2].Value = entity.Index;
+                command.Parameters[3].Value = entity.Name;
+                command.Parameters[4].Value = entityId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 return command.ExecuteNonQuery() > 0;
@@ -308,10 +257,10 @@ namespace GTFS.DB.PostgreSQL.Collections
                 {
                     foreach (var entityId in entityIds)
                     {
-                        string sql = "DELETE FROM route WHERE FEED_ID = :feed_id AND id = :route_id;";
+                        string sql = "DELETE FROM level WHERE FEED_ID = :feed_id AND level_id = :level_id;";
                         command.CommandText = sql;
                         command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new NpgsqlParameter(@"route_id", DbType.String));
+                        command.Parameters.Add(new NpgsqlParameter(@"level_id", DbType.String));
 
                         command.Parameters[0].Value = _id;
                         command.Parameters[1].Value = entityId;

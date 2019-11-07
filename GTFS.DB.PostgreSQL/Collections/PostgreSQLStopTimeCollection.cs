@@ -33,7 +33,7 @@ using System.Text;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of StopTimes using an SQLite database.
+    /// Represents a collection of StopTimes using a Postgres database.
     /// </summary>
     public class PostgreSQLStopTimeCollection : IStopTimeCollection
     {
@@ -85,8 +85,8 @@ namespace GTFS.DB.PostgreSQL.Collections
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = stopTime.TripId;
-                command.Parameters[2].Value = stopTime.ArrivalTime.TotalSeconds;
-                command.Parameters[3].Value = stopTime.DepartureTime.TotalSeconds;
+                command.Parameters[2].Value = stopTime.ArrivalTime.Value.TotalSeconds;
+                command.Parameters[3].Value = stopTime.DepartureTime.Value.TotalSeconds;
                 command.Parameters[4].Value = stopTime.StopId;
                 command.Parameters[5].Value = stopTime.StopSequence;
                 command.Parameters[6].Value = stopTime.StopHeadsign;
@@ -112,8 +112,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.StartRow();
                     writer.Write(_id, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(stopTime.TripId, NpgsqlTypes.NpgsqlDbType.Text);
-                    writer.Write(stopTime.ArrivalTime.TotalSeconds, NpgsqlTypes.NpgsqlDbType.Integer);
-                    writer.Write(stopTime.DepartureTime.TotalSeconds, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.ArrivalTime.Value.TotalSeconds, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(stopTime.DepartureTime.Value.TotalSeconds, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(stopTime.StopId, NpgsqlTypes.NpgsqlDbType.Text);
                     writer.Write(stopTime.StopSequence, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(stopTime.StopHeadsign, NpgsqlTypes.NpgsqlDbType.Text);
@@ -153,8 +153,8 @@ namespace GTFS.DB.PostgreSQL.Collections
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = newEntity.TripId;
-                command.Parameters[2].Value = newEntity.ArrivalTime.TotalSeconds;
-                command.Parameters[3].Value = newEntity.DepartureTime.TotalSeconds;
+                command.Parameters[2].Value = newEntity.ArrivalTime.Value.TotalSeconds;
+                command.Parameters[3].Value = newEntity.DepartureTime.Value.TotalSeconds;
                 command.Parameters[4].Value = newEntity.StopId;
                 command.Parameters[5].Value = newEntity.StopSequence;
                 command.Parameters[6].Value = newEntity.StopHeadsign;
@@ -199,8 +199,8 @@ namespace GTFS.DB.PostgreSQL.Collections
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = newEntity.TripId;
-                command.Parameters[2].Value = newEntity.ArrivalTime.TotalSeconds;
-                command.Parameters[3].Value = newEntity.DepartureTime.TotalSeconds;
+                command.Parameters[2].Value = newEntity.ArrivalTime.Value.TotalSeconds;
+                command.Parameters[3].Value = newEntity.DepartureTime.Value.TotalSeconds;
                 command.Parameters[4].Value = newEntity.StopId;
                 command.Parameters[5].Value = newEntity.StopSequence;
                 command.Parameters[6].Value = newEntity.StopHeadsign;
@@ -239,8 +239,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         
                         command.Parameters[0].Value = _id;
                         command.Parameters[1].Value = stopTime.TripId;
-                        command.Parameters[2].Value = stopTime.ArrivalTime.TotalSeconds;
-                        command.Parameters[3].Value = stopTime.DepartureTime.TotalSeconds;
+                        command.Parameters[2].Value = stopTime.ArrivalTime.Value.TotalSeconds;
+                        command.Parameters[3].Value = stopTime.DepartureTime.Value.TotalSeconds;
                         command.Parameters[4].Value = stopTime.StopId;
                         command.Parameters[5].Value = stopTime.StopSequence;
 

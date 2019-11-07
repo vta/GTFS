@@ -54,6 +54,8 @@ namespace GTFS
             var stopsToWrite = feed.Stops.OrderBy(x => x.Id).ToList();
             var stopTimesToWrite = feed.StopTimes.OrderBy(x => x.TripId).ToList();
             var tripsToWrite = feed.Trips.OrderBy(x => x.Id).ToList();
+            var levelsToWrite = feed.Levels.OrderBy(x => x.Id).ToList();
+            var pathwaysToWrite = feed.Pathways.OrderBy(x => x.Id).ToList();
 
             // write files on-by-one.
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), agenciesToWrite);
@@ -69,6 +71,8 @@ namespace GTFS
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), stopTimesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "transfers"), feed.Transfers);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), tripsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "levels"), levelsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "pathways"), pathwaysToWrite);
         }
 
         /// <summary>
@@ -85,8 +89,8 @@ namespace GTFS
             if (!writeAgencies && !writeRoutes) throw new Exception("One of the 2 booleans must be true!");
             if (writeAgencies && writeRoutes) throw new Exception("Only one of the 2 booleans may be true!");
 
-            List<Agency> agenciesToWrite = new List<Agency>();
-            List<Route> routesToWrite = new List<Route>();
+            var agenciesToWrite = new List<Agency>();
+            var routesToWrite = new List<Route>();
 
             if (writeAgencies)
             {
@@ -96,9 +100,9 @@ namespace GTFS
             else if (writeRoutes)
             {
                 routesToWrite = feed.Routes.Where(x => idsToWrite.Contains(x.Id)).ToList();
-                foreach (Route route in routesToWrite)
+                foreach (var route in routesToWrite)
                 {
-                    Agency agency = feed.Agencies.Where(x => route.AgencyId == x.Id).ToList().First();
+                    var agency = feed.Agencies.Where(x => route.AgencyId == x.Id).ToList().First();
                     if (!agenciesToWrite.Contains(agency))
                     {
                         agenciesToWrite.Add(agency);
@@ -112,8 +116,8 @@ namespace GTFS
             if (onlyTripsWithShapes) {
                 var allShapeIds = feed.Shapes.Select(x => x.Id).Distinct().ToList();
                 tripsToWrite = tripsToWrite.Where(x => allShapeIds.Contains(x.ShapeId)).ToList();
-                List<string> newRoutesToWriteIds = new List<string>();
-                foreach (Trip trip in tripsToWrite)
+                var newRoutesToWriteIds = new List<string>();
+                foreach (var trip in tripsToWrite)
                 {
                     if (!newRoutesToWriteIds.Contains(trip.RouteId))
                     {
@@ -127,15 +131,23 @@ namespace GTFS
             var tripIds = tripsToWrite.Select(x => x.Id).ToList();
             var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId)).ToList();
             var stopIds = stopTimesToWrite.Select(x => x.StopId).Distinct().ToList();
+            var fromStopIds = feed.Pathways.Select(x => x.FromStopId).ToList();
+            var toStopIds = feed.Pathways.Select(x => x.ToStopId).ToList();
+            stopIds.AddRange(fromStopIds);
+            stopIds.AddRange(toStopIds);
+            stopIds = stopIds.Distinct().ToList();
             var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id)).ToList();
             
-            //add stopsToWrite's stops' parent_stations not in stopsToWrite
-            var allStations = feed.Stops.Where(x => x.LocationType == LocationType.Station).ToList();
-            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.LocationType != LocationType.Station).ToList();
+            // add stopsToWrite's stops' parent_stations not in stopsToWrite
+            var allStations = feed.Stops.Where(x => x.IsTypeStation()).ToList();
+            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.IsTypeStop()).ToList();
             foreach (var stop in stopsToWrite_NotStations)
             {
                 var station = allStations.FirstOrDefault(x => x.Id.Equals(stop.ParentStation));
-                if (!stopsToWrite.Contains(station)) stopsToWrite.Add(station);
+                if (!stopsToWrite.Contains(station)) 
+                { 
+                    stopsToWrite.Add(station); 
+                }
             }
 
             var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId)).ToList();
@@ -148,6 +160,9 @@ namespace GTFS
             var serviceIds = tripsToWrite.Select(x => x.ServiceId).ToList();
             var calendarsToWrite = feed.Calendars.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
             var calendarDatesToWrite = feed.CalendarDates.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
+            var levelsToWrite = feed.Levels.ToList();
+            var pathwaysToWrite = feed.Pathways.ToList();
+            
 
             // remove null stops
             stopsToWrite = stopsToWrite.Where(x => x != null).ToList();
@@ -164,6 +179,8 @@ namespace GTFS
             stopTimesToWrite = stopTimesToWrite.OrderBy(x => x.TripId).ToList();
             shapesToWrite = shapesToWrite.OrderBy(x => x.Sequence).OrderBy(x => x.Id).ToList();
             tripsToWrite = tripsToWrite.OrderBy(x => x.Id).ToList();
+            levelsToWrite = levelsToWrite.OrderBy(x => x.Id).ToList();
+            pathwaysToWrite = pathwaysToWrite.OrderBy(x => x.Id).ToList();
 
             // write files on-by-one.
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "agency"), agenciesToWrite);
@@ -179,6 +196,102 @@ namespace GTFS
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "stop_times"), stopTimesToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "transfers"), transfersToWrite);
             this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "trips"), tripsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "levels"), levelsToWrite);
+            this.Write(target.FirstOrDefault<IGTFSTargetFile>((x) => x.Name == "pathways"), pathwaysToWrite);
+        }
+
+        /// <summary>
+        /// Writes all levels to the given levels file.
+        /// </summary>
+        /// <param name="levelsFile"></param>
+        /// <param name="levels"></param>
+        protected virtual void Write(IGTFSTargetFile levelsFile, IEnumerable<Level> levels)
+        {
+            if (levelsFile != null)
+            {
+                bool initialized = false;
+                var data = new string[3];
+                foreach (var level in levels)
+                {
+                    if (!initialized)
+                    {
+                        if (levelsFile.Exists)
+                        {
+                            levelsFile.Clear();
+                        }
+
+                        // write headers.
+                        data[0] = "level_id";
+                        data[1] = "level_index";
+                        data[2] = "level_name";
+                        levelsFile.Write(data);
+                        initialized = true;
+                    }
+
+                    // write level details.
+                    data[0] = this.WriteFieldString("level", "level_id", level.Id);
+                    data[1] = this.WriteFieldDouble("level", "level_index", level.Index);
+                    data[2] = this.WriteFieldString("level", "level_name", level.Name, true);
+                    levelsFile.Write(data);
+                }
+                levelsFile.Close();
+            }
+        }
+
+        /// <summary>
+        /// Writes all pathways to the given pathways file.
+        /// </summary>
+        /// <param name="pathwaysFile"></param>
+        /// <param name="pathways"></param>
+        protected virtual void Write(IGTFSTargetFile pathwaysFile, IEnumerable<Pathway> pathways)
+        {
+            if (pathwaysFile != null)
+            {
+                bool initialized = false;
+                var data = new string[12];
+                foreach (var pathway in pathways)
+                {
+                    if (!initialized)
+                    {
+                        if (pathwaysFile.Exists)
+                        {
+                            pathwaysFile.Clear();
+                        }
+
+                        // write headers.
+                        data[0] = "pathway_id";
+                        data[1] = "from_stop_id";
+                        data[2] = "to_stop_id";
+                        data[3] = "pathway_mode";
+                        data[4] = "is_bidirectional";
+                        data[5] = "length";
+                        data[6] = "traversal_time";
+                        data[7] = "stair_count";
+                        data[8] = "max_slope";
+                        data[9] = "min_width";
+                        data[10] = "signposted_as";
+                        data[11] = "reversed_signposted_as";
+                        pathwaysFile.Write(data);
+                        initialized = true;
+                    }
+
+                    // write pathway details.
+                    data[0] = this.WriteFieldString("pathway", "pathway_id", pathway.Id);
+                    data[1] = this.WriteFieldString("pathway", "from_stop_id", pathway.FromStopId);
+                    data[2] = this.WriteFieldString("pathway", "to_stop_id", pathway.ToStopId);
+                    data[3] = this.WriteFieldPathwayMode("pathway", "pathway_mode", pathway.PathwayMode);
+                    data[4] = this.WriteFieldIsBidirectional("pathway", "is_bidirectional", pathway.IsBidirectional);
+                    data[5] = this.WriteFieldDouble("pathway", "length", pathway.Length);
+                    data[6] = this.WriteFieldInt("pathway", "traversal_time", pathway.TraversalTime);
+                    data[7] = this.WriteFieldInt("pathway", "stair_count", pathway.StairCount);
+                    data[8] = this.WriteFieldDouble("pathway", "max_slope", pathway.MaxSlope);
+                    data[9] = this.WriteFieldDouble("pathway", "min_width", pathway.MinWidth);
+                    data[10] = this.WriteFieldString("pathway", "signposted_as", pathway.SignpostedAs);
+                    data[11] = this.WriteFieldString("pathway", "reversed_signposted_as", pathway.ReversedSignpostedAs);
+                    pathwaysFile.Write(data);
+                }
+                pathwaysFile.Close();
+            }
         }
 
         /// <summary>
@@ -594,7 +707,7 @@ namespace GTFS
             if (file != null)
             {
                 bool initialized = false;
-                var data = new string[12];
+                var data = new string[14];
                 foreach (var entity in entities)
                 {
                     if (!initialized)
@@ -617,6 +730,8 @@ namespace GTFS
                         data[9] = "parent_station";
                         data[10] = "stop_timezone";
                         data[11] = "wheelchair_boarding";
+                        data[12] = "level_id";
+                        data[13] = "platform_code";
                         file.Write(data);
                         initialized = true;
                     }
@@ -634,6 +749,8 @@ namespace GTFS
                     data[9] = this.WriteFieldString("stops", "parent_station", entity.ParentStation);
                     data[10] = this.WriteFieldString("stops", "stop_timezone", entity.Timezone);
                     data[11] = this.WriteFieldString("stops", "wheelchair_boarding", entity.WheelchairBoarding);
+                    data[12] = this.WriteFieldString("stops", "level_id", entity.LevelId);
+                    data[13] = this.WriteFieldString("stops", "platform_code", entity.PlatformCode);
                     file.Write(data);
                 }
                 file.Close();
@@ -978,13 +1095,20 @@ namespace GTFS
         {
             if(value.HasValue)
             {
-                switch (value.Value)
+                return ((int)value.Value).ToString();
+                /*switch (value.Value)
                 {
                     case LocationType.Stop:
                         return "0";
                     case LocationType.Station:
                         return "1";
-                }
+                    case LocationType.EntranceExit:
+                        return "2";
+                    case LocationType.GenericNode:
+                        return "3";
+                    case LocationType.BoardingArea:
+                        return "4";
+                }*/
             }
             return string.Empty;
         }
@@ -1095,6 +1219,71 @@ namespace GTFS
                         return "1";
                     case WheelchairAccessibilityType.NoAccessibility:
                         return "2";
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Writes is bidirectional.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string WriteFieldIsBidirectional(string name, string fieldName, IsBidirectional? value)
+        {
+            if (value.HasValue)
+            {
+                //0: Unidirectional pathway, it can only be used from from_stop_id to to_stop_id.
+                //1: Bidirectional pathway, it can be used in the two directions.
+
+                switch (value.Value)
+                {
+                    case IsBidirectional.Unidirectional:
+                        return "0";
+                    case IsBidirectional.Bidirectional:
+                        return "1";
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Writes a pathway mode.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string WriteFieldPathwayMode(string name, string fieldName, PathwayMode? value)
+        {
+            if (value.HasValue)
+            {
+                //1 - walkway
+                //2 - stairs
+                //3 - moving sidewalk/travelator
+                //4 - escalator
+                //5 - elevator
+                //6 - fare gate (or payment gate): A pathway that crosses into an area of the station where a proof of payment is required (usually via a physical payment gate).
+                //7 - exit gate: Indicates a pathway exiting an area where proof-of-payment is required into an area where proof-of-payment is no longer required.
+
+                switch (value.Value)
+                {
+                    case PathwayMode.Walkway:
+                        return "1";
+                    case PathwayMode.Stairs:
+                        return "2";
+                    case PathwayMode.Travelator:
+                        return "3";
+                    case PathwayMode.Escalator:
+                        return "4";
+                    case PathwayMode.Elevator:
+                        return "5";
+                    case PathwayMode.FareGate:
+                        return "6";
+                    case PathwayMode.ExitGate:
+                        return "7";
                 }
             }
             return string.Empty;

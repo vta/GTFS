@@ -32,7 +32,7 @@ using System.Linq;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Trips using an SQLite database.
+    /// Represents a collection of Trips using a Postgres database.
     /// </summary>
     public class PostgreSQLTripCollection : IUniqueEntityCollection<Trip>
     {

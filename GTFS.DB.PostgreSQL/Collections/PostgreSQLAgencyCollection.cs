@@ -32,7 +32,7 @@ using System.Linq;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Agencies using an SQLite database.
+    /// Represents a collection of Agencies using a Postgres database.
     /// </summary>
     public class PostgreSQLAgencyCollection : IUniqueEntityCollection<Agency>
     {

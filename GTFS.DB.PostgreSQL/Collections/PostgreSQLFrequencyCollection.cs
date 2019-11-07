@@ -31,7 +31,7 @@ using System.Linq;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Frequencies using an SQLite database.
+    /// Represents a collection of Frequencies using a Postgres database.
     /// </summary>
     public class PostgreSQLFrequencyCollection : IEntityCollection<Frequency>
     {
