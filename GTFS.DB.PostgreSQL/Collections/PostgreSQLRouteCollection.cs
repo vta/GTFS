@@ -126,6 +126,29 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public Route Get(string entityId)
         {
+            /*string sql = "SELECT id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color, vehicle_capacity FROM route WHERE FEED_ID = :id AND id = :route_id;";
+            var parameters = new List<NpgsqlParameter>();
+            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
+            parameters[0].Value = _id;
+            parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
+            parameters[1].Value = entityId;
+
+            return new PostgreSQLEnumerable<Route>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new Route()
+                {
+                    Id = x.GetString(0),
+                    AgencyId = x.IsDBNull(1) ? null : x.GetString(1),
+                    ShortName = x.IsDBNull(2) ? null : x.GetString(2),
+                    LongName = x.IsDBNull(3) ? null : x.GetString(3),
+                    Description = x.IsDBNull(4) ? null : x.GetString(4),
+                    Type = (RouteTypeExtended)x.GetInt64(5),
+                    Url = x.IsDBNull(6) ? null : x.GetString(6),
+                    Color = x.IsDBNull(7) ? null : (int?)x.GetInt64(7),
+                    TextColor = x.IsDBNull(8) ? null : (int?)x.GetInt64(8),
+                    VehicleCapacity = x.IsDBNull(9) ? null : (int?)x.GetInt64(9)
+                };
+            }).FirstOrDefault();*/
             throw new NotImplementedException();
         }
 

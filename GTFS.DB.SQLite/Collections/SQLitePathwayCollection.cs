@@ -230,7 +230,7 @@ namespace GTFS.DB.SQLite.Collections
                 {
                     while (reader.Read())
                     {
-                        outList.Add(Convert.ToString(reader["id"]));
+                        outList.Add(Convert.ToString(reader["pathway_id"]));
                     }
                 }
             }
