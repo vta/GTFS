@@ -228,7 +228,7 @@ namespace GTFS.DB.SQLite.Collections
 
         public bool Update(string entityId, Level entity)
         {
-            string sql = "UPDATE level SET FEED_ID=:feed_id, level_id=:level_id, level_index=:level_index, level_name=:level_name WHERE id=:entityId;";
+            string sql = "UPDATE level SET FEED_ID=:feed_id, level_id=:level_id, level_index=:level_index, level_name=:level_name WHERE level_id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;

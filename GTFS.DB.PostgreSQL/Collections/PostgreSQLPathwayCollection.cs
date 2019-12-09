@@ -264,7 +264,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public bool Update(string entityId, Pathway entity)
         {
-            string sql = "UPDATE pathway SET FEED_ID=:feed_id, pathway_id=:pathway_id, from_stop_id=:from_stop_id, to_stop_id=:to_stop_id, pathway_mode=:pathway_mode, is_bidirectional=:is_bidirectional, length=:length, traversal_time=:traversal_time, stair_count=:stair_count, max_slope=:max_slope, min_width=:min_width, signposted_as=:signposted_as, reversed_signposted_as=:reversed_signposted_as WHERE id=:entityId;";
+            string sql = "UPDATE pathway SET FEED_ID=:feed_id, pathway_id=:pathway_id, from_stop_id=:from_stop_id, to_stop_id=:to_stop_id, pathway_mode=:pathway_mode, is_bidirectional=:is_bidirectional, length=:length, traversal_time=:traversal_time, stair_count=:stair_count, max_slope=:max_slope, min_width=:min_width, signposted_as=:signposted_as, reversed_signposted_as=:reversed_signposted_as WHERE pathway_id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
