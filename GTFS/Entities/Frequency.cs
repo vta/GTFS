@@ -142,5 +142,21 @@ namespace GTFS.Entities
             }
             else return otherEndTime.TotalSeconds > startTime.TotalSeconds;
         }
+
+        /// <summary>
+        /// Returns a new Frequency object created from a previous Frequency object
+        /// </summary>
+        public static Frequency From(Frequency other)
+        {
+            return new Frequency()
+            {
+                TripId = other.TripId,
+                StartTime = other.StartTime,
+                EndTime = other.EndTime,
+                HeadwaySecs = other.HeadwaySecs,
+                ExactTimes = other.ExactTimes,
+                Tag = other.Tag
+            };
+        }
     }
 }
