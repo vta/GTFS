@@ -44,16 +44,16 @@ namespace GTFS
         public void Write(T feed, IEnumerable<IGTFSTargetFile> target)
         {
             // order files by id
-            var agenciesToWrite = feed.Agencies.OrderBy(x => x.Id).ToList();
+            var agenciesToWrite = feed.Agencies.OrderBy(x => x.Name ?? x.Id).ToList();
             var calendarDatesToWrite = feed.CalendarDates.OrderBy(x => x.ServiceId).OrderBy(y => y.ExceptionType).OrderBy(z => z.Date).ToList();
             var calendarsToWrite = feed.Calendars.OrderBy(x => x.ServiceId).ToList();
             var fareAttributesToWrite = feed.FareAttributes.OrderBy(x => x.FareId).ToList();
             var fareRulesToWrite = feed.FareRules.OrderBy(x => x.RouteId).ToList();
             var frequenciesToWrite = feed.Frequencies.OrderBy(x => x.TripId).ToList();
-            var routesToWrite = feed.Routes.OrderBy(x => x.Id).ToList();
-            var stopsToWrite = feed.Stops.OrderBy(x => x.Id).ToList();
-            var stopTimesToWrite = feed.StopTimes.OrderBy(x => x.TripId).ToList();
-            var tripsToWrite = feed.Trips.OrderBy(x => x.Id).ToList();
+            var routesToWrite = feed.Routes.OrderBy(x => x.ToString()).ToList();
+            var stopsToWrite = feed.Stops.OrderBy(x => x.Name ?? x.Id).ToList();
+            var stopTimesToWrite = feed.StopTimes.OrderBy(x => x.StopSequence).OrderBy(x => x.TripId).ToList();
+            var tripsToWrite = feed.Trips.OrderBy(x => x.Id).OrderBy(x => x.RouteId).ToList();
             var levelsToWrite = feed.Levels.OrderBy(x => x.Id).ToList();
             var pathwaysToWrite = feed.Pathways.OrderBy(x => x.Id).ToList();
 
@@ -84,75 +84,86 @@ namespace GTFS
         /// <param name="writeAgencies"></param>
         /// <param name="writeRoutes"></param>
         /// <param name="onlyTripsWithShapes"></param>
-        public void Write(T feed, IEnumerable<string> idsToWrite, IEnumerable<IGTFSTargetFile> target, bool writeAgencies = false, bool writeRoutes = false, bool onlyTripsWithShapes = false)
+        public void Write(T feed, IEnumerable<string> idsToWrite, IEnumerable<IGTFSTargetFile> target, bool writeAgencies = false, bool writeRoutes = false, bool writeTrips = false, bool onlyTripsWithShapes = false)
         {
-            if (!writeAgencies && !writeRoutes) throw new Exception("One of the 2 booleans must be true!");
-            if (writeAgencies && writeRoutes) throw new Exception("Only one of the 2 booleans may be true!");
+            if (!idsToWrite.Any())
+            {
+                throw new ArgumentException("No ids specified");
+            }
+
+            if (!writeAgencies && !writeRoutes && !writeTrips) 
+            { 
+                throw new ArgumentException("1 of the 3 booleans must be true!"); 
+            }
+            if (new List<bool>() { writeAgencies, writeRoutes, writeTrips }.Count(x => x == true) > 1)
+            { 
+                throw new ArgumentException("Only 1 of the 3 booleans may be true!"); 
+            }
+
+            var AgenciesById = feed.Agencies.ToDictionary(x => x.Id);
+            var RoutesById = feed.Routes.ToDictionary(x => x.Id);
+            var StopsById = feed.Stops.ToDictionary(x => x.Id);
+            var ShapesById = feed.Shapes.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.ToList());
 
             var agenciesToWrite = new List<Agency>();
             var routesToWrite = new List<Route>();
+            var routeIds = new List<string>();
+            var tripsToWrite = new List<Trip>();
 
             if (writeAgencies)
             {
-                agenciesToWrite = feed.Agencies.Where(x => idsToWrite.Contains(x.Id)).ToList();
-                routesToWrite = feed.Routes.Where(x => idsToWrite.Contains(x.AgencyId)).ToList();
+                agenciesToWrite = idsToWrite.Select(x => AgenciesById[x]).ToList();
+                routesToWrite = RoutesById.Values.Where(x => idsToWrite.Contains(x.AgencyId)).ToList();
+                routeIds = routesToWrite.Select(x => x.Id).ToList();
+                tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId)).ToList();
             }
             else if (writeRoutes)
             {
-                routesToWrite = feed.Routes.Where(x => idsToWrite.Contains(x.Id)).ToList();
-                foreach (var route in routesToWrite)
-                {
-                    var agency = feed.Agencies.Where(x => route.AgencyId == x.Id).ToList().First();
-                    if (!agenciesToWrite.Contains(agency))
-                    {
-                        agenciesToWrite.Add(agency);
-                    }
-                }
+                routesToWrite = idsToWrite.Select(x => RoutesById[x]).ToList();
+                routeIds = routesToWrite.Select(x => x.Id).ToList();
+                var agencyIds = routesToWrite.Select(x => x.AgencyId).Distinct().ToList();
+                agenciesToWrite = agencyIds.Select(x => AgenciesById[x]).ToList();
+                tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId)).ToList();
             }
-
-            var routeIds = routesToWrite.Select(x => x.Id).ToList();
-            var tripsToWrite = feed.Trips.Where(x => routeIds.Contains(x.RouteId)).ToList();
+            else if (writeTrips)
+            {
+                tripsToWrite = feed.Trips.Where(x => idsToWrite.Contains(x.Id)).ToList();
+                routeIds = tripsToWrite.Select(x => x.RouteId).Distinct().ToList();
+                routesToWrite = routeIds.Select(x => RoutesById[x]).ToList();
+                var agencyIds = routesToWrite.Select(x => x.AgencyId).Distinct().ToList();
+                agenciesToWrite = agencyIds.Select(x => AgenciesById[x]).ToList();
+            }
             
             if (onlyTripsWithShapes) {
-                var allShapeIds = feed.Shapes.Select(x => x.Id).Distinct().ToList();
-                tripsToWrite = tripsToWrite.Where(x => allShapeIds.Contains(x.ShapeId)).ToList();
-                var newRoutesToWriteIds = new List<string>();
-                foreach (var trip in tripsToWrite)
-                {
-                    if (!newRoutesToWriteIds.Contains(trip.RouteId))
-                    {
-                        newRoutesToWriteIds.Add(trip.RouteId);
-                        newRoutesToWriteIds.Sort();
-                    }
-                }
+                tripsToWrite = tripsToWrite.Where(x => ShapesById.ContainsKey(x.ShapeId)).ToList();
+                var newRoutesToWriteIds = tripsToWrite.Select(x => x.RouteId).Distinct().ToList();
                 routesToWrite = routesToWrite.Where(x => newRoutesToWriteIds.Contains(x.Id)).ToList();
             }
 
             var tripIds = tripsToWrite.Select(x => x.Id).ToList();
-            var stopTimesToWrite = feed.StopTimes.Where(x => tripIds.Contains(x.TripId)).ToList();
+            var stopTimesToWrite = feed.StopTimes.GetForTrips(tripIds).ToList();
             var stopIds = stopTimesToWrite.Select(x => x.StopId).Distinct().ToList();
             var fromStopIds = feed.Pathways.Select(x => x.FromStopId).ToList();
             var toStopIds = feed.Pathways.Select(x => x.ToStopId).ToList();
             stopIds.AddRange(fromStopIds);
             stopIds.AddRange(toStopIds);
             stopIds = stopIds.Distinct().ToList();
-            var stopsToWrite = feed.Stops.Where(x => stopIds.Contains(x.Id)).ToList();
+            var stopsToWrite = stopIds.Select(x => StopsById[x]).ToList();
             
             // add stopsToWrite's stops' parent_stations not in stopsToWrite
-            var allStations = feed.Stops.Where(x => x.IsTypeStation()).ToList();
-            var stopsToWrite_NotStations = stopsToWrite.Where(x => x.IsTypeStop()).ToList();
-            foreach (var stop in stopsToWrite_NotStations)
+            var childStopsToWrite = stopsToWrite.Where(x => !x.IsTypeStation() && !string.IsNullOrWhiteSpace(x.ParentStation)).ToList();
+            foreach (var stop in childStopsToWrite)
             {
-                var station = allStations.FirstOrDefault(x => x.Id.Equals(stop.ParentStation));
-                if (!stopsToWrite.Contains(station)) 
-                { 
-                    stopsToWrite.Add(station); 
+                var parent = StopsById[stop.ParentStation];
+                if (!stopsToWrite.Contains(parent)) 
+                {
+                    stopsToWrite.Add(parent); 
                 }
             }
 
             var transfersToWrite = feed.Transfers.Where(x => stopIds.Contains(x.FromStopId) || stopIds.Contains(x.ToStopId)).ToList();
             var shapeIds = tripsToWrite.Select(x => x.ShapeId).Distinct().ToList();
-            var shapesToWrite = feed.Shapes.Where(x => shapeIds.Contains(x.Id)).ToList();
+            var shapesToWrite = shapeIds.Select(x => ShapesById[x]).SelectMany(x => x).ToList();
             var frequenciesToWrite = feed.Frequencies.Where(x => tripIds.Contains(x.TripId)).ToList();
             var fareRulesToWrite = feed.FareRules.Where(x => routeIds.Contains(x.RouteId)).ToList();
             var fareRulesIds = fareRulesToWrite.Select(x => x.FareId).ToList();
@@ -162,23 +173,22 @@ namespace GTFS
             var calendarDatesToWrite = feed.CalendarDates.Where(x => serviceIds.Contains(x.ServiceId)).ToList();
             var levelsToWrite = feed.Levels.ToList();
             var pathwaysToWrite = feed.Pathways.ToList();
-            
 
             // remove null stops
             stopsToWrite = stopsToWrite.Where(x => x != null).ToList();
 
             // order files by id
-            agenciesToWrite = agenciesToWrite.OrderBy(x => x.Id).ToList();
+            agenciesToWrite = agenciesToWrite.OrderBy(x => x.Name ?? x.Id).ToList();
             calendarDatesToWrite = calendarDatesToWrite.OrderBy(x => x.ServiceId).OrderBy(y => y.ExceptionType).OrderBy(z => z.Date).ToList();
             calendarsToWrite = calendarsToWrite.OrderBy(x => x.ServiceId).ToList();
             fareAttributesToWrite = fareAttributesToWrite.OrderBy(x => x.FareId).ToList();
             fareRulesToWrite = fareRulesToWrite.OrderBy(x => x.RouteId).ToList();
             frequenciesToWrite = frequenciesToWrite.OrderBy(x => x.TripId).ToList();
-            routesToWrite = routesToWrite.OrderBy(x => x.Id).ToList();
-            stopsToWrite = stopsToWrite.OrderBy(x => x.Id).ToList();
-            stopTimesToWrite = stopTimesToWrite.OrderBy(x => x.TripId).ToList();
+            routesToWrite = routesToWrite.OrderBy(x => x.ToString()).ToList();
+            stopsToWrite = stopsToWrite.OrderBy(x => x.Name ?? x.Id).ToList();
+            stopTimesToWrite = stopTimesToWrite.OrderBy(x => x.StopSequence).OrderBy(x => x.TripId).ToList();
             shapesToWrite = shapesToWrite.OrderBy(x => x.Sequence).OrderBy(x => x.Id).ToList();
-            tripsToWrite = tripsToWrite.OrderBy(x => x.Id).ToList();
+            tripsToWrite = tripsToWrite.OrderBy(x => x.Id).OrderBy(x => x.RouteId).ToList();
             levelsToWrite = levelsToWrite.OrderBy(x => x.Id).ToList();
             pathwaysToWrite = pathwaysToWrite.OrderBy(x => x.Id).ToList();
 

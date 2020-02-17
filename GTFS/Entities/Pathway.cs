@@ -114,7 +114,7 @@ namespace GTFS.Entities
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{this.PathwayMode.ToString()} {(IsBidirectional == IsBidirectional.Unidirectional ? "(Unidirectional)" : "")}";
+            return $"{this.PathwayMode.ToString()} {(IsBidirectional == IsBidirectional.Unidirectional ? "(Unidirectional)" : "")}".Trim();
         }
 
         /// <summary>
