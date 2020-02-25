@@ -104,6 +104,7 @@ namespace GTFS
             var RoutesById = feed.Routes.ToDictionary(x => x.Id);
             var StopsById = feed.Stops.ToDictionary(x => x.Id);
             var ShapesById = feed.Shapes.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.ToList());
+            var Pathways = feed.Pathways.ToList();
 
             var agenciesToWrite = new List<Agency>();
             var routesToWrite = new List<Route>();
@@ -143,21 +144,21 @@ namespace GTFS
             var tripIds = tripsToWrite.Select(x => x.Id).ToList();
             var stopTimesToWrite = feed.StopTimes.GetForTrips(tripIds).ToList();
             var stopIds = stopTimesToWrite.Select(x => x.StopId).Distinct().ToList();
-            var fromStopIds = feed.Pathways.Select(x => x.FromStopId).ToList();
-            var toStopIds = feed.Pathways.Select(x => x.ToStopId).ToList();
-            stopIds.AddRange(fromStopIds);
-            stopIds.AddRange(toStopIds);
+            var pathwaysByFromStopId = Pathways.GroupBy(x => x.FromStopId).ToDictionary(g => g.Key, g => g.ToList());
+            var pathwaysByToStopId = Pathways.GroupBy(x => x.ToStopId).ToDictionary(g => g.Key, g => g.ToList());
+            stopIds.AddRange(pathwaysByFromStopId.Keys);
+            stopIds.AddRange(pathwaysByToStopId.Keys);
             stopIds = stopIds.Distinct().ToList();
-            var stopsToWrite = stopIds.Select(x => StopsById[x]).ToList();
+            var stopsToWriteById = stopIds.Select(x => StopsById[x]).ToDictionary(x => x.Id);
             
             // add stopsToWrite's stops' parent_stations not in stopsToWrite
-            var childStopsToWrite = stopsToWrite.Where(x => !x.IsTypeStation() && !string.IsNullOrWhiteSpace(x.ParentStation)).ToList();
+            var childStopsToWrite = stopsToWriteById.Values.Where(x => !x.IsTypeStation() && !string.IsNullOrWhiteSpace(x.ParentStation)).ToList();
             foreach (var stop in childStopsToWrite)
             {
                 var parent = StopsById[stop.ParentStation];
-                if (!stopsToWrite.Contains(parent)) 
+                if (!stopsToWriteById.ContainsKey(parent.Id))
                 {
-                    stopsToWrite.Add(parent); 
+                    stopsToWriteById.Add(parent.Id, parent); 
                 }
             }
 
@@ -175,7 +176,7 @@ namespace GTFS
             var pathwaysToWrite = feed.Pathways.ToList();
 
             // remove null stops
-            stopsToWrite = stopsToWrite.Where(x => x != null).ToList();
+            var stopsToWrite = stopsToWriteById.Values.Where(x => x != null).ToList();
 
             // order files by id
             agenciesToWrite = agenciesToWrite.OrderBy(x => x.Name ?? x.Id).ToList();
