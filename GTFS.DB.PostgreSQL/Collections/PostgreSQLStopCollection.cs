@@ -32,7 +32,7 @@ using System.Linq;
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Stops using an SQLite database.
+    /// Represents a collection of Stops using a Postgres database.
     /// </summary>
     public class PostgreSQLStopCollection : IUniqueEntityCollection<Stop>
     {
@@ -63,7 +63,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entity"></param>
         public void Add(Stop entity)
         {
-            string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding);";
+            string sql = "INSERT INTO stop VALUES (:feed_id, :id, :stop_code, :stop_name, :stop_desc, :stop_lat, :stop_lon, :zone_id, :stop_url, :location_type, :parent_station, :stop_timezone, :wheelchair_boarding, :level_id, :platform_code);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -80,6 +80,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"parent_station", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"stop_timezone", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"wheelchair_boarding", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"level_id", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"platform_code", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
@@ -94,6 +96,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[10].Value = entity.ParentStation;
                 command.Parameters[11].Value = entity.Timezone;
                 command.Parameters[12].Value = entity.WheelchairBoarding;
+                command.Parameters[13].Value = entity.LevelId;
+                command.Parameters[14].Value = entity.PlatformCode;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 command.ExecuteNonQuery();
@@ -102,7 +106,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IUniqueEntityCollection<Stop> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY stop (feed_id, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding) FROM STDIN (FORMAT BINARY)"))
+            using (var writer = _connection.BeginBinaryImport("COPY stop (feed_id, id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, level_id, platform_code) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var stop in entities)
                 {
@@ -120,6 +124,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(stop.ParentStation, NpgsqlTypes.NpgsqlDbType.Text);
                     writer.Write(stop.Timezone, NpgsqlTypes.NpgsqlDbType.Text);
                     writer.Write(stop.WheelchairBoarding, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.LevelId, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(stop.PlatformCode, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }
@@ -131,7 +137,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public Stop Get(string entityId)
         {
-            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding FROM stop WHERE FEED_ID = :id AND id = :entityId";
+            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, level_id, platform_code FROM stop WHERE FEED_ID = :id AND id = :entityId";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
@@ -153,7 +159,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                     LocationType = x.IsDBNull(8) ? null : (LocationType?)x.GetInt64(8),
                     ParentStation = x.IsDBNull(9) ? null : x.GetString(9),
                     Timezone = x.IsDBNull(10) ? null : x.GetString(10),
-                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11)
+                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11),
+                    LevelId = x.IsDBNull(12) ? null : x.GetString(12),
+                    PlatformCode = x.IsDBNull(13) ? null : x.GetString(13)
                 };
             }).FirstOrDefault();
         }
@@ -243,7 +251,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public bool Update(string entityId, Stop entity)
         {
-            string sql = "UPDATE stop SET FEED_ID=:feed_id, id=:id, stop_code=:stop_code, stop_name=:stop_name, stop_desc=:stop_desc, stop_lat=:stop_lat, stop_lon=:stop_lon, zone_id=:zone_id, stop_url=:stop_url, location_type=:location_type, parent_station=:parent_station, stop_timezone=:stop_timezone, wheelchair_boarding=:wheelchair_boarding WHERE id=:entityId;";
+            string sql = "UPDATE stop SET FEED_ID=:feed_id, id=:id, stop_code=:stop_code, stop_name=:stop_name, stop_desc=:stop_desc, stop_lat=:stop_lat, stop_lon=:stop_lon, zone_id=:zone_id, stop_url=:stop_url, location_type=:location_type, parent_station=:parent_station, stop_timezone=:stop_timezone, wheelchair_boarding=:wheelchair_boarding, level_id=:level_id, platform_code=:platform_code WHERE id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -260,6 +268,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"parent_station", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"stop_timezone", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"wheelchair_boarding", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"level_id", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"platform_code", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
 
                 command.Parameters[0].Value = _id;
@@ -275,27 +285,14 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[10].Value = entity.ParentStation;
                 command.Parameters[11].Value = entity.Timezone;
                 command.Parameters[12].Value = entity.WheelchairBoarding;
-                command.Parameters[13].Value = entityId;
+                command.Parameters[13].Value = entity.LevelId;
+                command.Parameters[14].Value = entity.PlatformCode;
+                command.Parameters[15].Value = entityId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                if (command.ExecuteNonQuery() <= 0) return false;
-            }
-
-            //update cleaned_stops if the stop_id changed
-            if (!entityId.Equals(entity.Id))
-            {
-                sql = "UPDATE cleaned_stops SET stop_id=:stop_id WHERE stop_id=:entityId;";
-                using (var command = _connection.CreateCommand())
+                if (command.ExecuteNonQuery() <= 0)
                 {
-                    command.CommandText = sql;
-                    command.Parameters.Add(new NpgsqlParameter(@"stop_id", DbType.String));
-                    command.Parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
-
-                    command.Parameters[0].Value = entity.Id;
-                    command.Parameters[1].Value = entityId;
-
-                    command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
-                    return command.ExecuteNonQuery() > 0;
+                    return false;
                 }
             }
 
@@ -332,7 +329,9 @@ namespace GTFS.DB.PostgreSQL.Collections
                         LocationType = (LocationType?)reader.ReadIntSafe(),
                         ParentStation = reader.ReadStringSafe(),
                         Timezone = reader.ReadStringSafe(),
-                        WheelchairBoarding = reader.ReadStringSafe()
+                        WheelchairBoarding = reader.ReadStringSafe(),
+                        LevelId = reader.ReadStringSafe(),
+                        PlatformCode = reader.ReadStringSafe()
                     });
                 }
             }
@@ -371,6 +370,37 @@ namespace GTFS.DB.PostgreSQL.Collections
             Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
             #endif
             return outList;
+        }
+
+        public IEnumerable<Stop> GetChildStops(string parentStationId)
+        {
+            string sql = "SELECT id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding, level_id, platform_code FROM stop WHERE FEED_ID = :id AND parent_station = :parent_station";
+            var parameters = new List<NpgsqlParameter>();
+            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
+            parameters[0].Value = _id;
+            parameters.Add(new NpgsqlParameter(@"parent_station", DbType.String));
+            parameters[1].Value = parentStationId;
+
+            return new PostgreSQLEnumerable<Stop>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new Stop()
+                {
+                    Id = x.GetString(0),
+                    Code = x.IsDBNull(1) ? null : x.GetString(1),
+                    Name = x.IsDBNull(2) ? null : x.GetString(2),
+                    Description = x.IsDBNull(3) ? null : x.GetString(3),
+                    Latitude = x.GetDouble(4),
+                    Longitude = x.GetDouble(5),
+                    Zone = x.IsDBNull(6) ? null : x.GetString(6),
+                    Url = x.IsDBNull(7) ? null : x.GetString(7),
+                    LocationType = x.IsDBNull(8) ? null : (LocationType?)x.GetInt64(8),
+                    ParentStation = x.IsDBNull(9) ? null : x.GetString(9),
+                    Timezone = x.IsDBNull(10) ? null : x.GetString(10),
+                    WheelchairBoarding = x.IsDBNull(11) ? null : x.GetString(11),
+                    LevelId = x.IsDBNull(12) ? null : x.GetString(12),
+                    PlatformCode = x.IsDBNull(13) ? null : x.GetString(13)
+                };
+            });
         }
 
         /// <summary>

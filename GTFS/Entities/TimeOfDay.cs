@@ -20,9 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+
 namespace GTFS.Entities
 {
-    using System;
     /// <summary>
     /// A stop time of day.
     /// </summary>
@@ -59,8 +60,13 @@ namespace GTFS.Entities
         /// </summary>
         public static TimeOfDay FromTotalSeconds(int totalSeconds)
         {
-            var hours = (int)System.Math.Floor(totalSeconds / 3600.0);
-            var minutes = (int)System.Math.Floor((totalSeconds - hours * 3600.0) / 60.0);
+            if (totalSeconds < 0)
+            {
+                throw new ArgumentException($"Total seconds '{totalSeconds}' must be >= 0.");
+            }
+
+            var hours = (int)Math.Floor(totalSeconds / 3600.0);
+            var minutes = (int)Math.Floor((totalSeconds - hours * 3600.0) / 60.0);
             var seconds = (int)(totalSeconds - hours * 3600.0 - minutes * 60.0);
 
             return new TimeOfDay()
@@ -88,7 +94,7 @@ namespace GTFS.Entities
         {
             try
             {
-                TimeOfDay tod = new TimeOfDay();
+                var tod = new TimeOfDay();
                 var tokens = timeString.Split(':');
                 for (int i = 0; i < tokens.Length; i++)
                 {
@@ -103,7 +109,7 @@ namespace GTFS.Entities
                 }
                 tod.Hours = int.Parse(tokens[0]);
                 tod.Minutes = int.Parse(tokens[1]);
-                tod.Seconds = int.Parse(tokens[2]);
+                tod.Seconds = tokens.Length > 2 ? int.Parse(tokens[2]) : 0;
                 if (tod.Seconds >= 60)
                 {
                     tod.Minutes += (tod.Seconds / 60);
@@ -158,6 +164,20 @@ namespace GTFS.Entities
             return !(a == b);
         }
 
+        public static TimeOfDay operator -(TimeOfDay a, TimeOfDay b)
+        {
+            if (b > a)
+            {
+                throw new ArgumentException("TimeOfDay b is larger that TimeOfDay a. The subtraction result will be negative which is not allowed.");
+            }
+            return TimeOfDay.FromTotalSeconds(a.TotalSeconds - b.TotalSeconds);
+        }
+
+        public static TimeOfDay operator +(TimeOfDay a, TimeOfDay b)
+        {
+            return TimeOfDay.FromTotalSeconds(a.TotalSeconds + b.TotalSeconds);
+        }
+
         /// <summary>
         /// Serves as a hash function.
         /// </summary>
@@ -202,10 +222,74 @@ namespace GTFS.Entities
         /// </summary>
         public override string ToString()
         {
-            string hours = Hours < 10 ? "0" + Hours : "" + Hours;
+            return ToString("hh:mm:ss");
+            /*string hours = Hours < 10 ? "0" + Hours : "" + Hours;
             string minutes = Minutes < 10 ? "0" + Minutes : "" + Minutes;
             string seconds = Seconds < 10 ? "0" + Seconds : "" + Seconds;
-            return String.Format("{0}:{1}:{2}", hours, minutes, seconds);
+            return String.Format("{0}:{1}:{2}", hours, minutes, seconds);*/
+        }
+
+        /// <summary>
+        /// D - days, HH - hours, MM - minutes, SS - seconds. If days is included, then the hours will by subtracted by 24*numdays
+        /// </summary>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public string ToString(string format)
+        {
+            var result = format.ToUpper();
+
+            if (result.Contains("D"))
+            {
+                int d = (int)Math.Floor((double)Hours / 24);
+                int h = Hours % 24;
+                result.Replace("D", d + "");
+                if (result.Contains("H"))
+                {
+                    if (result.Contains("HH"))
+                    {
+                        result = result.Replace("HH", (h < 10 ? "0" : "") + h);
+                    }
+                    else
+                    {
+                        result = result.Replace("H", h + "");
+                    }
+                }
+            }
+            else if (result.Contains("H"))
+            {
+                if (result.Contains("HH"))
+                {
+                    result = result.Replace("HH", (Hours < 10 ? "0" : "") + Hours);
+                }
+                else
+                {
+                    result = result.Replace("H", Hours + "");
+                }
+            }
+            if (result.Contains("M"))
+            {
+                if (result.Contains("MM"))
+                {
+                    result = result.Replace("MM", (Minutes < 10 ? "0" : "") + Minutes);
+                }
+                else
+                {
+                    result = result.Replace("M", Minutes + "");
+                }
+            }
+            if (result.Contains("S"))
+            {
+                if (result.Contains("SS"))
+                {
+                    result = result.Replace("SS", (Seconds < 10 ? "0" : "") + Seconds);
+                }
+                else
+                {
+                    result = result.Replace("S", Seconds + "");
+                }
+            }
+
+            return result;
         }
     }
 }

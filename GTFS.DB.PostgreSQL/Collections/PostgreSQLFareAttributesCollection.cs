@@ -27,13 +27,14 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of FareAttributes using an SQLite database.
+    /// Represents a collection of FareAttributes using a Postgres database.
     /// </summary>
     public class PostgreSQLFareAttributeCollection : IEntityCollection<FareAttribute>
     {
@@ -64,7 +65,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entity"></param>
         public void Add(FareAttribute entity)
         {
-            string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration);";
+            string sql = "INSERT INTO fare_attribute VALUES (:feed_id, :fare_id, :price, :currency_type, :payment_method, :transfers, :transfer_duration, :agency_id);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -75,14 +76,16 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"payment_method", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"transfers", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"transfer_duration", DbType.String));
+                command.Parameters.Add(new NpgsqlParameter(@"agency_id", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.FareId;
                 command.Parameters[2].Value = entity.Price;
                 command.Parameters[3].Value = entity.CurrencyType;
                 command.Parameters[4].Value = (int)entity.PaymentMethod;
-                command.Parameters[5].Value = entity.Transfers == null ? -1 : (int)entity.Transfers;
+                command.Parameters[5].Value = entity.Transfers;
                 command.Parameters[6].Value = entity.TransferDuration;
+                command.Parameters[7].Value = entity.AgencyId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 command.ExecuteNonQuery();
@@ -91,7 +94,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IEntityCollection<FareAttribute> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY fare_attribute (feed_id, fare_id, price, currency_type, payment_method, transfers, transfer_duration) FROM STDIN (FORMAT BINARY)"))
+            using (var writer = _connection.BeginBinaryImport("COPY fare_attribute (feed_id, fare_id, price, currency_type, payment_method, transfers, transfer_duration, agency_id) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var fareAttribute in entities)
                 {
@@ -103,6 +106,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(fareAttribute.PaymentMethod, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(fareAttribute.Transfers, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(fareAttribute.TransferDuration, NpgsqlTypes.NpgsqlDbType.Text);
+                    writer.Write(fareAttribute.AgencyId, NpgsqlTypes.NpgsqlDbType.Text);
                 }
             }
         }
@@ -130,7 +134,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         CurrencyType = reader.ReadStringSafe(),
                         PaymentMethod = (PaymentMethodType)reader.ReadIntSafe(),
                         Transfers = (uint?)reader.ReadIntSafe(),
-                        TransferDuration = reader.ReadStringSafe()
+                        TransferDuration = reader.ReadStringSafe(),
+                        AgencyId = reader.ReadStringSafe()
                     });
                 }
             }
@@ -190,7 +195,26 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public void RemoveRange(IEnumerable<string> entityIds)
         {
-            throw new NotImplementedException();
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var fareId in entityIds)
+                    {
+                        string sql = "DELETE FROM fare_attribute WHERE FEED_ID = :feed_id AND fare_id = :fare_id;";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new NpgsqlParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new NpgsqlParameter(@"fare_id", DbType.String));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = fareId;
+
+                        command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }
         }
 
         /// <summary>
@@ -218,7 +242,27 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public IEnumerable<string> GetIds()
         {
-            throw new NotImplementedException();
+            #if DEBUG
+            var stopwatch = Stopwatch.StartNew();
+            Console.Write($"Fetching fare attribute ids...");
+            #endif
+            var outList = new List<string>();
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "SELECT fare_id FROM fare_attribute";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        outList.Add(Convert.ToString(reader["fare_id"]));
+                    }
+                }
+            }
+            #if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine($" {stopwatch.ElapsedMilliseconds} ms");
+            #endif
+            return outList;
         }
     }
 }

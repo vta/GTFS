@@ -32,9 +32,9 @@ using System.Linq;
 namespace GTFS.DB.SQLite.Collections
 {
     /// <summary>
-    /// Represents a collection of FareRules using an SQLite database.
+    /// Represents a collection of Levels using an SQLite database.
     /// </summary>
-    public class SQLiteFareRuleCollection : IUniqueEntityCollection<FareRule>
+    public class SQLiteLevelCollection : IUniqueEntityCollection<Level>
     {
         /// <summary>
         /// Holds the connection.
@@ -51,7 +51,7 @@ namespace GTFS.DB.SQLite.Collections
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="id"></param>
-        internal SQLiteFareRuleCollection(SQLiteConnection connection, int id)
+        internal SQLiteLevelCollection(SQLiteConnection connection, int id)
         {
             _connection = connection;
             _id = id;
@@ -61,27 +61,50 @@ namespace GTFS.DB.SQLite.Collections
         /// Adds an entity.
         /// </summary>
         /// <param name="entity"></param>
-        public void Add(FareRule entity)
+        public void Add(Level entity)
         {
-            string sql = "INSERT INTO fare_rule VALUES (:feed_id, :fare_id, :route_id, :origin_id, :destination_id, :contains_id);";
+            string sql = "INSERT INTO level VALUES (:feed_id, :level_id, :level_index, :level_name);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
-                command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"route_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"origin_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"destination_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"contains_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"level_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"level_index", DbType.Double));
+                command.Parameters.Add(new SQLiteParameter(@"level_name", DbType.String));
 
                 command.Parameters[0].Value = _id;
-                command.Parameters[1].Value = entity.FareId;
-                command.Parameters[2].Value = entity.RouteId;
-                command.Parameters[3].Value = entity.OriginId;
-                command.Parameters[4].Value = entity.DestinationId;
-                command.Parameters[5].Value = entity.ContainsId;
+                command.Parameters[1].Value = entity.Id;
+                command.Parameters[2].Value = entity.Index;
+                command.Parameters[3].Value = entity.Name;
 
                 command.ExecuteNonQuery();
+            }
+        }
+
+        public void AddRange(IUniqueEntityCollection<Level> entities)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    foreach (var entity in entities)
+                    {
+                        string sql = "INSERT INTO level VALUES (:feed_id, :level_id, :level_index, :level_name);";
+                        command.CommandText = sql;
+                        command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
+                        command.Parameters.Add(new SQLiteParameter(@"level_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"level_index", DbType.Double));
+                        command.Parameters.Add(new SQLiteParameter(@"level_name", DbType.String));
+
+                        command.Parameters[0].Value = _id;
+                        command.Parameters[1].Value = entity.Id;
+                        command.Parameters[2].Value = entity.Index;
+                        command.Parameters[3].Value = entity.Name;
+
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
             }
         }
 
@@ -90,7 +113,7 @@ namespace GTFS.DB.SQLite.Collections
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        public FareRule Get(string entityId)
+        public Level Get(string entityId)
         {
             throw new NotImplementedException();
         }
@@ -100,7 +123,7 @@ namespace GTFS.DB.SQLite.Collections
         /// </summary>
         /// <param name="idx"></param>
         /// <returns></returns>
-        public FareRule Get(int idx)
+        public Level Get(int idx)
         {
             throw new NotImplementedException();
         }
@@ -112,12 +135,12 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public bool Remove(string entityId)
         {
-            string sql = "DELETE FROM fare_rule WHERE FEED_ID = :feed_id AND fare_id = :fare_id;";
+            string sql = "DELETE FROM level WHERE FEED_ID = :feed_id AND level_id = :level_id;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
-                command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"level_id", DbType.String));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entityId;
@@ -130,22 +153,20 @@ namespace GTFS.DB.SQLite.Collections
         /// Returns all entities.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<FareRule> Get()
+        public IEnumerable<Level> Get()
         {
-            string sql = "SELECT fare_id, route_id, origin_id, destination_id, contains_id FROM fare_rule WHERE FEED_ID = :id";
+            string sql = "SELECT level_id, level_index, level_name FROM level WHERE FEED_ID = :id";
             var parameters = new List<SQLiteParameter>();
             parameters.Add(new SQLiteParameter(@"id", DbType.Int64));
             parameters[0].Value = _id;
 
-            return new SQLiteEnumerable<FareRule>(_connection, sql, parameters.ToArray(), (x) =>
+            return new SQLiteEnumerable<Level>(_connection, sql, parameters.ToArray(), (x) =>
             {
-                return new FareRule()
+                return new Level()
                 {
-                    FareId = x.GetString(0),
-                    RouteId = x.IsDBNull(1) ? null : x.GetString(1),
-                    OriginId = x.IsDBNull(2) ? null : x.GetString(2),
-                    DestinationId = x.IsDBNull(3) ? null : x.GetString(3),
-                    ContainsId = x.IsDBNull(4) ? null : x.GetString(4)
+                    Id = x.GetString(0),
+                    Index = x.GetDouble(1),
+                    Name = x.IsDBNull(2) ? null : x.GetString(2)
                 };
             });
         }
@@ -159,12 +180,12 @@ namespace GTFS.DB.SQLite.Collections
             var outList = new List<string>();
             using (var command = _connection.CreateCommand())
             {
-                command.CommandText = "SELECT fare_id FROM fare_rule";
+                command.CommandText = "SELECT level_id FROM level";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        outList.Add(Convert.ToString(reader["fare_id"]));
+                        outList.Add(Convert.ToString(reader["level_id"]));
                     }
                 }
             }
@@ -176,14 +197,22 @@ namespace GTFS.DB.SQLite.Collections
         /// </summary>
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                string sql = "SELECT count(level_id) FROM level;";
+                using (var command = _connection.CreateCommand())
+                {
+                    command.CommandText = sql;
+                    return int.Parse(command.ExecuteScalar().ToString());
+                }
+            }
         }
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<FareRule> GetEnumerator()
+        public IEnumerator<Level> GetEnumerator()
         {
             return this.Get().GetEnumerator();
         }
@@ -197,61 +226,26 @@ namespace GTFS.DB.SQLite.Collections
             return this.Get().GetEnumerator();
         }
 
-        public bool Update(string entityId, FareRule newEntity)
+        public bool Update(string entityId, Level entity)
         {
-            string sql = "UPDATE fare_rule SET FEED_ID=:feed_id, fare_id=:fare_id, route_id=:route_id, origin_id=:origin_id, destination_id=:destination_id, contains_id=:contains_id WHERE fare_id=:entityId;";
+            string sql = "UPDATE level SET FEED_ID=:feed_id, level_id=:level_id, level_index=:level_index, level_name=:level_name WHERE level_id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
-                command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"route_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"origin_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"destination_id", DbType.String));
-                command.Parameters.Add(new SQLiteParameter(@"contains_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"level_id", DbType.String));
+                command.Parameters.Add(new SQLiteParameter(@"level_index", DbType.Double));
+                command.Parameters.Add(new SQLiteParameter(@"level_name", DbType.String));
                 command.Parameters.Add(new SQLiteParameter(@"entityId", DbType.String));
 
                 command.Parameters[0].Value = _id;
-                command.Parameters[1].Value = newEntity.FareId;
-                command.Parameters[2].Value = newEntity.RouteId;
-                command.Parameters[3].Value = newEntity.OriginId;
-                command.Parameters[4].Value = newEntity.DestinationId;
-                command.Parameters[5].Value = newEntity.ContainsId;
-                command.Parameters[6].Value = entityId;
+                command.Parameters[1].Value = entity.Id;
+                command.Parameters[2].Value = entity.Index;
+                command.Parameters[3].Value = entity.Name;
+                command.Parameters[4].Value = entityId;
 
                 return command.ExecuteNonQuery() > 0;
             }
-        }
-
-        public void AddRange(IUniqueEntityCollection<FareRule> entities)
-        {
-            using (var command = _connection.CreateCommand())
-            {
-                using (var transaction = _connection.BeginTransaction())
-                {
-                    foreach (var entity in entities)
-                    {
-                        string sql = "INSERT INTO fare_rule VALUES (:feed_id, :fare_id, :route_id, :origin_id, :destination_id, :contains_id);";
-                        command.CommandText = sql;
-                        command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
-                        command.Parameters.Add(new SQLiteParameter(@"route_id", DbType.String));
-                        command.Parameters.Add(new SQLiteParameter(@"origin_id", DbType.String));
-                        command.Parameters.Add(new SQLiteParameter(@"destination_id", DbType.String));
-                        command.Parameters.Add(new SQLiteParameter(@"contains_id", DbType.String));
-
-                        command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = entity.FareId;
-                        command.Parameters[2].Value = entity.RouteId;
-                        command.Parameters[3].Value = entity.OriginId;
-                        command.Parameters[4].Value = entity.DestinationId;
-                        command.Parameters[5].Value = entity.ContainsId;
-
-                        command.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
-                }
-            }            
         }
 
         public void RemoveRange(IEnumerable<string> entityIds)
@@ -260,15 +254,15 @@ namespace GTFS.DB.SQLite.Collections
             {
                 using (var transaction = _connection.BeginTransaction())
                 {
-                    foreach (var fareId in entityIds)
+                    foreach (var entityId in entityIds)
                     {
-                        string sql = "DELETE FROM fare_rule WHERE FEED_ID = :feed_id AND fare_id = :fare_id;";
+                        string sql = "DELETE FROM level WHERE FEED_ID = :feed_id AND level_id = :level_id;";
                         command.CommandText = sql;
                         command.Parameters.Add(new SQLiteParameter(@"feed_id", DbType.Int64));
-                        command.Parameters.Add(new SQLiteParameter(@"fare_id", DbType.String));
+                        command.Parameters.Add(new SQLiteParameter(@"level_id", DbType.String));
 
                         command.Parameters[0].Value = _id;
-                        command.Parameters[1].Value = fareId;
+                        command.Parameters[1].Value = entityId;
 
                         command.ExecuteNonQuery();
                     }

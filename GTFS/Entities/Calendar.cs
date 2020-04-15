@@ -149,7 +149,6 @@ namespace GTFS.Entities
             set { _endDate = value; OnEntityChanged(); }
         }
 
-
         /// <summary>
         /// Gets or sets the day of week.
         /// </summary>

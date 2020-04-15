@@ -93,14 +93,29 @@ namespace GTFS.Entities
         public int? TextColor { get; set; }
 
         /// <summary>
+        /// The number of windows
+        /// </summary>
+        [FieldName("vehicle_capacity")]
+        public int? VehicleCapacity { get; set; }
+
+        /// <summary>
         /// Returns a description of this route.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            if (this.LongName != null && this.LongName != "") return this.LongName;
-            else if (this.ShortName != null && this.ShortName != "") return this.ShortName;
-            else return this.Id;
+            if (!string.IsNullOrWhiteSpace(this.LongName))
+            {
+                return this.LongName;
+            }
+            else if (!string.IsNullOrWhiteSpace(this.ShortName))
+            {
+                return this.ShortName;
+            }
+            else
+            {
+                return this.Id;
+            }
         }
 
         /// <summary>
@@ -162,7 +177,8 @@ namespace GTFS.Entities
                 Tag = route.Tag,
                 TextColor = route.TextColor,
                 Type = route.Type,
-                Url = route.Url
+                Url = route.Url,
+                VehicleCapacity = route.VehicleCapacity
             };
         }
     }

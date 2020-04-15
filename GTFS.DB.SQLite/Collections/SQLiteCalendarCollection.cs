@@ -172,7 +172,7 @@ namespace GTFS.DB.SQLite.Collections
         /// <returns></returns>
         public IEnumerable<Calendar> Get(List<string> entityIds)
         {
-            if (entityIds.Count() == 0)
+            if (entityIds.Count == 0)
             {
                 return new List<Calendar>();
             }

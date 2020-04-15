@@ -165,7 +165,10 @@ namespace GTFS.Entities.Collections
         /// <returns></returns>
         public void RemoveForTrips(IEnumerable<string> tripIds)
         {
-            throw new NotImplementedException();
+            _entities.RemoveAll(x =>
+            {
+                return tripIds.Contains(x.TripId);
+            });
         }
 
         /// <summary>

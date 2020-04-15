@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\PostgreSQLPathwayCollection.cs" />
+    <Compile Include="Collections\PostgreSQLLevelCollection.cs" />
     <Compile Include="Collections\PostgreSQLAgencyCollection.cs" />
     <Compile Include="Collections\PostgreSQLCalendarCollection.cs" />
     <Compile Include="Collections\PostgreSQLCalendarDateCollection.cs" />

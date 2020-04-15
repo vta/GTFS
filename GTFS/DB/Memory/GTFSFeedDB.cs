@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 using GTFS.Entities;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -38,15 +39,9 @@ namespace GTFS.DB.Memory
         /// </summary>
         private List<IGTFSFeed> _feeds = new List<IGTFSFeed>();
 
-        public DbConnection Connection => throw new System.NotImplementedException();
+        public DbConnection Connection => throw new NotImplementedException();
 
-        public string ConnectionString => throw new System.NotImplementedException();
-
-        public object Tag
-        {
-            get { throw new System.NotImplementedException(); }
-            set { throw new System.NotImplementedException(); }
-        }
+        public string ConnectionString => throw new NotImplementedException();
 
         /// <summary>
         /// Adds a new empty feed to this db.
@@ -76,7 +71,7 @@ namespace GTFS.DB.Memory
         /// <returns></returns>
         public bool RemoveFeed(int id)
         {
-            if(id < _feeds.Count && _feeds[id] != null)
+            if (id < _feeds.Count && _feeds[id] != null)
             {
                 _feeds[id] = null;
                 return true;
@@ -105,67 +100,74 @@ namespace GTFS.DB.Memory
 
         public bool TableExists(string tableName)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public bool ColumnExists(string tableName, string columnName)
+        {
+            throw new NotImplementedException();
         }
 
         public string GetFullDataSource()
         {
-            throw new System.NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void SortAllTables()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortRoutes()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortTrips()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortStops()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortStopTimes()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortFrequencies()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortCalendars()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortCalendarDates()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortShapes()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SortPolygons()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public DbParameter CreateParameter(string name, DbType type)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
+
+        public object Tag { get; set; }
     }
 }

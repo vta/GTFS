@@ -91,7 +91,7 @@ namespace GTFS.Entities
             if (other != null)
             {
                 return (this.EndTime ?? string.Empty) == (other.EndTime ?? string.Empty) &&
-                    this.ExactTimes == other.ExactTimes &&
+                    (this.ExactTimes ?? false) == (other.ExactTimes ?? false) &&
                     (this.HeadwaySecs ?? string.Empty) == (other.HeadwaySecs ?? string.Empty) &&
                     (this.StartTime ?? string.Empty) == (other.StartTime ?? string.Empty) &&
                     (this.TripId ?? string.Empty) == (other.TripId ?? string.Empty);
@@ -104,7 +104,7 @@ namespace GTFS.Entities
         /// </summary>
         public override string ToString()
         {
-            return System.String.Format("{0} - {1} ({2})", StartTime, EndTime, HeadwaySecs);
+            return $"{StartTime} - {EndTime} ({HeadwaySecs}){(ExactTimes != null && (bool)ExactTimes ? " - fixed times" : "")}";
         }
 
         /// <summary>
@@ -141,6 +141,22 @@ namespace GTFS.Entities
                 return endTime.TotalSeconds > otherStartTime.TotalSeconds;
             }
             else return otherEndTime.TotalSeconds > startTime.TotalSeconds;
+        }
+
+        /// <summary>
+        /// Returns a new Frequency object created from a previous Frequency object
+        /// </summary>
+        public static Frequency From(Frequency other)
+        {
+            return new Frequency()
+            {
+                TripId = other.TripId,
+                StartTime = other.StartTime,
+                EndTime = other.EndTime,
+                HeadwaySecs = other.HeadwaySecs,
+                ExactTimes = other.ExactTimes,
+                Tag = other.Tag
+            };
         }
     }
 }

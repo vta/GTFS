@@ -27,12 +27,13 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 
 namespace GTFS.DB.PostgreSQL.Collections
 {
     /// <summary>
-    /// Represents a collection of Routes using an SQLite database.
+    /// Represents a collection of Routes using a Postgres database.
     /// </summary>
     public class PostgreSQLRouteCollection : IUniqueEntityCollection<Route>
     {
@@ -63,7 +64,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <param name="entity"></param>
         public void Add(Route entity)
         {
-            string sql = "INSERT INTO route VALUES (:feed_id, :id, :agency_id, :route_short_name, :route_long_name, :route_desc, :route_type, :route_url, :route_color, :route_text_color);";
+            string sql = "INSERT INTO route VALUES (:feed_id, :id, :agency_id, :route_short_name, :route_long_name, :route_desc, :route_type, :route_url, :route_color, :route_text_color, :vehicle_capacity);";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -77,6 +78,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"route_url", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"route_color", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"route_text_color", DbType.Int64));
+                command.Parameters.Add(new NpgsqlParameter(@"vehicle_capacity", DbType.Int64));
 
                 command.Parameters[0].Value = _id;
                 command.Parameters[1].Value = entity.Id;
@@ -88,6 +90,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[7].Value = entity.Url;
                 command.Parameters[8].Value = entity.Color;
                 command.Parameters[9].Value = entity.TextColor;
+                command.Parameters[10].Value = entity.VehicleCapacity;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 command.ExecuteNonQuery();
@@ -96,7 +99,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public void AddRange(IUniqueEntityCollection<Route> entities)
         {
-            using (var writer = _connection.BeginBinaryImport("COPY route (feed_id, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color) FROM STDIN (FORMAT BINARY)"))
+            using (var writer = _connection.BeginBinaryImport("COPY route (feed_id, id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color, vehicle_capacity) FROM STDIN (FORMAT BINARY)"))
             {
                 foreach (var route in entities)
                 {
@@ -111,6 +114,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                     writer.Write(route.Url, NpgsqlTypes.NpgsqlDbType.Text);
                     writer.Write(route.Color, NpgsqlTypes.NpgsqlDbType.Integer);
                     writer.Write(route.TextColor, NpgsqlTypes.NpgsqlDbType.Integer);
+                    writer.Write(route.VehicleCapacity, NpgsqlTypes.NpgsqlDbType.Integer);
                 }
             }
         }
@@ -122,6 +126,29 @@ namespace GTFS.DB.PostgreSQL.Collections
         /// <returns></returns>
         public Route Get(string entityId)
         {
+            /*string sql = "SELECT id, agency_id, route_short_name, route_long_name, route_desc, route_type, route_url, route_color, route_text_color, vehicle_capacity FROM route WHERE FEED_ID = :id AND id = :route_id;";
+            var parameters = new List<NpgsqlParameter>();
+            parameters.Add(new NpgsqlParameter(@"id", DbType.Int64));
+            parameters[0].Value = _id;
+            parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
+            parameters[1].Value = entityId;
+
+            return new PostgreSQLEnumerable<Route>(_connection, sql, parameters.ToArray(), (x) =>
+            {
+                return new Route()
+                {
+                    Id = x.GetString(0),
+                    AgencyId = x.IsDBNull(1) ? null : x.GetString(1),
+                    ShortName = x.IsDBNull(2) ? null : x.GetString(2),
+                    LongName = x.IsDBNull(3) ? null : x.GetString(3),
+                    Description = x.IsDBNull(4) ? null : x.GetString(4),
+                    Type = (RouteTypeExtended)x.GetInt64(5),
+                    Url = x.IsDBNull(6) ? null : x.GetString(6),
+                    Color = x.IsDBNull(7) ? null : (int?)x.GetInt64(7),
+                    TextColor = x.IsDBNull(8) ? null : (int?)x.GetInt64(8),
+                    VehicleCapacity = x.IsDBNull(9) ? null : (int?)x.GetInt64(9)
+                };
+            }).FirstOrDefault();*/
             throw new NotImplementedException();
         }
 
@@ -164,8 +191,7 @@ namespace GTFS.DB.PostgreSQL.Collections
         public IEnumerable<Route> Get()
         {
             #if DEBUG
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
+            var stopwatch = Stopwatch.StartNew();
             Console.Write($"Fetching routes...");
             #endif
             var routes = new List<Route>();
@@ -184,7 +210,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                         Type = (RouteTypeExtended)reader.Read<int>(NpgsqlTypes.NpgsqlDbType.Integer),
                         Url = reader.ReadStringSafe(),
                         Color = reader.ReadIntSafe(),
-                        TextColor = reader.ReadIntSafe()
+                        TextColor = reader.ReadIntSafe(),
+                        VehicleCapacity = reader.ReadIntSafe()
                     });
                 }
             }
@@ -261,7 +288,7 @@ namespace GTFS.DB.PostgreSQL.Collections
 
         public bool Update(string entityId, Route entity)
         {
-            string sql = "UPDATE route SET FEED_ID=:feed_id, id=:id, agency_id=:agency_id, route_short_name=:route_short_name, route_long_name=:route_long_name, route_desc=:route_desc, route_type=:route_type, route_url=:route_url, route_color=:route_color, route_text_color=:route_text_color WHERE id=:entityId;";
+            string sql = "UPDATE route SET FEED_ID=:feed_id, id=:id, agency_id=:agency_id, route_short_name=:route_short_name, route_long_name=:route_long_name, route_desc=:route_desc, route_type=:route_type, route_url=:route_url, route_color=:route_color, route_text_color=:route_text_color, vehicle_capacity=:vehicle_capacity WHERE id=:entityId;";
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -275,6 +302,7 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters.Add(new NpgsqlParameter(@"route_url", DbType.String));
                 command.Parameters.Add(new NpgsqlParameter(@"route_color", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"route_text_color", DbType.Int64));
+                command.Parameters.Add(new NpgsqlParameter(@"vehicle_capacity", DbType.Int64));
                 command.Parameters.Add(new NpgsqlParameter(@"entityId", DbType.String));
 
                 command.Parameters[0].Value = _id;
@@ -287,7 +315,8 @@ namespace GTFS.DB.PostgreSQL.Collections
                 command.Parameters[7].Value = entity.Url;
                 command.Parameters[8].Value = entity.Color;
                 command.Parameters[9].Value = entity.TextColor;
-                command.Parameters[10].Value = entityId;
+                command.Parameters[10].Value = entity.VehicleCapacity;
+                command.Parameters[11].Value = entityId;
 
                 command.Parameters.Where(x => x.Value == null).ToList().ForEach(x => x.Value = DBNull.Value);
                 return command.ExecuteNonQuery() > 0;

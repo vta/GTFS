@@ -76,6 +76,14 @@ namespace GTFS.DB
         bool TableExists(string tableName);
 
         /// <summary>
+        /// Checks if the given table contains a column with the given name.
+        /// </summary>
+        /// <param name="tableName">The table in this database to check.</param>
+        /// <param name="columnName">The column in the given table to look for.</param>
+        /// <returns>True if the given table contains a column with the given name.</returns>
+        bool ColumnExists(string tableName, string columnName);
+
+        /// <summary>
         /// Returns the data source of the DB
         /// </summary>
         string GetFullDataSource();
@@ -148,6 +156,6 @@ namespace GTFS.DB
         /// <summary>
         /// Deletes and recreates the polygons table in a sorted order (first by poly_pt_seq then by id) - may take time
         /// </summary>
-        void SortPolygons();        
+        void SortPolygons();
     }
 }
